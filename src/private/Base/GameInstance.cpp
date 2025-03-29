@@ -1,0 +1,151 @@
+#ifndef RAYGUI_IMPLEMENTATION
+#define RAYGUI_IMPLEMENTATION
+#endif // !RAYGUI_IMPLEMENTATION
+#include "Base/GameInstance.h"
+#include "Base/Core.h"
+#include "Base/StateMachine.h"
+#include "Base/GameMode.h"
+#include "Base/TextBox.h"
+#include "Base/SaveGameEvent.h"
+#include "Base/LoadGameEvent.h"
+#include "Base/EventDispatcher.hpp"
+#include "Base/Button.h"
+
+// GameModes
+#include "GameModes/SandboxGameMode.hpp"
+#include "GameModes/Menu.hpp"
+
+// Events
+#include "Events/AllPurposeEvent.h"
+#include "Events/UIEvent.h"
+
+// EventData
+#include "Base/EventData.hpp"
+#include "Events/WindowResizeData.hpp"
+
+EventDispatcher GameInstance::UIEventDispatcher;
+EventDispatcher GameInstance::SaveStateDispatcher;
+EventDispatcher GameInstance::AllPurposeDispatcher;
+StateMachine GameInstance::ActiveStateMachine;
+
+// Definition of the static member
+GameInstance* GameInstance::Instance = nullptr;
+
+GameInstance::GameInstance(WindowProperties Properties)
+	: m_WindowProperties(Properties)
+{
+	std::cout << "GameInstance was Initialized" << std::endl;
+}
+
+
+void GameInstance::InitGameInstance(WindowProperties Properties)
+{
+	if (Instance != nullptr)
+	{
+		std::cerr << "GameInstance was already initialized" << std::endl;
+		return;
+	}
+
+	Instance = new GameInstance(Properties);
+	CreateWindow();
+	GameLoop();
+}
+
+GameInstance* GameInstance::GetInstance()
+{
+	if (Instance != nullptr)
+	{
+		return Instance;
+	}
+	std::cerr << "GameInstance was not Created, please Call InitGameInstance first" << std::endl;
+}
+
+EventDispatcher& GameInstance::GetUIEventDispatcher()
+{
+	return UIEventDispatcher;
+}
+
+EventDispatcher& GameInstance::GetSaveStateEventDispatcher()
+{
+	return SaveStateDispatcher;
+}
+
+
+void GameInstance::CreateWindow()
+{
+	SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
+
+	InitWindow(Instance->m_WindowProperties.ScreenWidth, Instance->m_WindowProperties.ScreenHeight, "Sonar");
+	SetTargetFPS(Instance->m_WindowProperties.TargetFps);
+}
+
+void GameInstance::GameLoop()
+{
+	
+
+	ActiveStateMachine.RegisterState("Menu", []() {return new MenuMode(); });
+	ActiveStateMachine.RegisterState("Sandbox", []() {return new SandboxGameMode(); });
+	//ActiveStateMachine.RegisterState("Pong", []() {return new PongGameMod(); });
+	//ActiveStateMachine.RegisterState("Chat", []() {return new ChatTest(); });
+
+
+	// Setting initial Start Mode
+	ActiveStateMachine.ChangeState("Menu");
+
+	// Handling UI Event
+	// We Use this Event to Switch GameMode which then will update in the GameLoop
+	//UIEventDispatcher.AddListener("UIEvent", [&ActiveStateMachine](std::shared_ptr<Event> Event) -> void
+	//	{
+	//		auto ButtonClickEvent = std::dynamic_pointer_cast<UIEvent>(Event);
+	//		if (ButtonClickEvent == nullptr)
+	//		{
+	//			return;
+	//		}
+	//		Button* ClickedButton = static_cast<Button*>(ButtonClickEvent.get()->ClickedUIElement);
+
+	//		ActiveStateMachine.ChangeState(ClickedButton->GetEventPayload());
+
+	//	});
+
+	std::shared_ptr<AllPurposeEvent> WindowResizeEvent = std::make_shared<AllPurposeEvent>();
+	std::shared_ptr<WindowResizeData> CurrentWindowResizeData = std::make_shared<WindowResizeData>();
+
+
+
+
+
+
+
+	// GAMELOOP //
+	while (!WindowShouldClose())
+	{
+		BeginDrawing();
+		ActiveStateMachine.UpdateGameMode();
+
+		// Windows Resize Event
+		if (GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.ScreenHeight || GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.ScreenWidth)
+		{
+			std::cout << "Window Resize" << std::endl;
+			GameInstance::GetInstance()->m_WindowProperties.ScreenHeight = GetScreenHeight();
+			GameInstance::GetInstance()->m_WindowProperties.ScreenWidth = GetScreenWidth();
+
+			// Dispatch Event
+
+			CurrentWindowResizeData->width = GetScreenWidth();
+			CurrentWindowResizeData->height = GetScreenHeight();
+
+			std::shared_ptr<IEventData> Payload = std::static_pointer_cast<IEventData>(CurrentWindowResizeData);
+
+			WindowResizeEvent->Payload = Payload;
+
+			AllPurposeDispatcher.Dispatch(WindowResizeEvent);
+
+		}
+
+		// GameMode Independend UI Drawings
+
+
+
+		EndDrawing();
+	}
+}
