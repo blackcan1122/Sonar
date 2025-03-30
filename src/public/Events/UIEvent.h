@@ -11,5 +11,7 @@ public:
 
 	BaseUI* ClickedUIElement = nullptr;
 
+	std::string Payload;
+
 };
 

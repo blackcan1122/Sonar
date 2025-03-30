@@ -31,7 +31,10 @@ public:
 	virtual Button& UpdateFontSize(int NewFontSize);
 
 	virtual Button& OnHover(std::function<void(Button* ButtonClass)> callback);
-	virtual Button& OnHoverLeave(std::function<void(Button* ButtonClass)> callback);
+
+	// TODO: Refactor this out, this is just a workaround, as the Button Class right now doesn't really save its own State
+	// or atleast make it optional
+	virtual Button& OnHoverLeave(std::function<void(Button* ButtonClass)> callback); 
 
 	virtual std::string GetEventPayload();
 	
@@ -47,7 +50,7 @@ private:
 	std::function<void(Button* ButtonClass)> HoverCallback;
 	std::function<void(Button* ButtonClass)> HoverEndCallback;
 
-	std::string ResponsibleGameMode;
+	std::string m_Payload;
 	std::string m_Text;
 	Vector2 TextPosition;
 	int FontSize = 14;

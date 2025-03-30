@@ -43,9 +43,9 @@ Button& Button::SetEventDispatcher(std::shared_ptr<EventDispatcher> UsedDispatch
     return *this;
 }
 
-Button& Button::SetEventPayload(std::string GameModeName)
+Button& Button::SetEventPayload(std::string Payload)
 {
-    ResponsibleGameMode = GameModeName;
+    m_Payload = Payload;
     return *this;
 }
 
@@ -141,7 +141,7 @@ Button& Button::OnHoverLeave(std::function<void(Button* ButtonClass)> callback)
 
 std::string Button::GetEventPayload()
 {
-    return ResponsibleGameMode;
+    return m_Payload;
 }
 
 void Button::Update()
@@ -162,8 +162,12 @@ void Button::Update()
 
     if (IsClicked(GetMousePosition(), isHovered))
     {
-        std::cout << "Dispatching Event" << std::endl;
-        UsedEventDispatcher->Dispatch(OnClickEvent());
+        if (UsedEventDispatcher)
+        {
+            std::cout << "Dispatching Event" << std::endl;
+            UsedEventDispatcher->Dispatch(OnClickEvent());
+        }
+
     }
     if (m_IsRounded)
     {
@@ -181,6 +185,7 @@ std::shared_ptr<UIEvent> Button::OnClickEvent()
 {
     std::shared_ptr<UIEvent> EventUI = std::make_shared<UIEvent>();
     EventUI->ClickedUIElement = this;
+    EventUI->Payload = m_Payload;
     return EventUI;
 }
 
