@@ -17,6 +17,7 @@ MenuMode::MenuMode()
 	SetName("SandboxGameMode");
 
 	UIDispatcher = std::make_shared<EventDispatcher>();
+	UIDispatcher->Name = "UIDispatcher Menu";
 
 	Image BackgroundImg = LoadImage("C:\\Users\\marce\\Documents\\Hax0rStuff\\Sonar\\resources\\imgs\\BackgroundMenu.jpg");
 	Background = LoadTextureFromImage(BackgroundImg);
@@ -42,7 +43,7 @@ MenuMode::MenuMode()
 
 	Rectangle OptionRec = { CenterX - ButtonWidth / 2, 300, ButtonWidth, 50 };
 	Option = std::make_shared<Button>();
-	Option->Construct(OptionRec, "Option", RED).CenterText();
+	Option->Construct(OptionRec, "Option", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Option");
 
 	Rectangle ExitRec = { CenterX - ButtonWidth / 2, 400, ButtonWidth, 50 };
 	Exit = std::make_shared<Button>();
@@ -50,12 +51,13 @@ MenuMode::MenuMode()
 
 	SetUpEvents();
 	
+	std::cout << UIEvent::StaticClass().name() << std::endl;
 
 }
 
 MenuMode::~MenuMode()
 {
-	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize", AllPurposeEvent::StaticClass());
+	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
 }
 
 void MenuMode::Update()
@@ -80,7 +82,7 @@ void MenuMode::SetName(std::string Name)
 void MenuMode::SetUpEvents()
 {
 	// Windows Resize Event
-	GameInstance::GetInstance()->AllPurposeDispatcher.AddListener("WindowsResize", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event) -> void
+	GameInstance::GetInstance()->AllPurposeDispatcher.AddListener("WindowsResize Menu", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event) -> void
 		{
 			std::cerr << "Called Event WindowResize" << std::endl;
 			auto WindowResizeEvent = std::dynamic_pointer_cast<AllPurposeEvent>(Event);
@@ -127,6 +129,21 @@ void MenuMode::SetUpEvents()
 			if (CastedEvent->Payload == "Exit")
 			{
 				CloseWindow();
+			}
+		});
+
+	// OptionsEvent
+	UIDispatcher->AddListener("Option Event", UIEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event) -> void
+		{
+			if (!Event || Event->GetStaticClass() != UIEvent::StaticClass())
+			{
+				return;
+			}
+
+			auto CastedEvent = std::dynamic_pointer_cast<UIEvent>(Event);
+			if (CastedEvent->Payload == "Option")
+			{
+				GameInstance::GetInstance()->ActiveStateMachine.ChangeState("Options");
 			}
 		});
 }

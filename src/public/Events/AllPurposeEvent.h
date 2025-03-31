@@ -5,13 +5,13 @@
 #include "Base/EventData.hpp"
 #include "Events/WindowResizeData.hpp"
 
-class AllPurposeEvent : public Event<AllPurposeEvent>
-{
+DECLARE_CLASS(AllPurposeEvent, Event)
+
 public:
 
 	virtual std::string GetName() const override;
 
 	std::shared_ptr<IEventData> Payload = nullptr;
 
-};
+END_CLASS
 

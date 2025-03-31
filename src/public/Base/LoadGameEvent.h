@@ -2,7 +2,8 @@
 #include "Base/Core.h"
 #include "Base/Event.hpp"
 
-class LoadGameEvent : public Event<LoadGameEvent>
+// TODO REFACTOR
+class LoadGameEvent : public Event
 {
 public:
 	virtual ~LoadGameEvent() override;

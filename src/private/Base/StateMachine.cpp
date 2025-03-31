@@ -10,7 +10,6 @@ void StateMachine::ChangeState(const std::string& StateName)
 {
 	if (CurrentGameMode)
 	{
-		std::cout << CurrentGameMode << std::endl;
 		delete CurrentGameMode;
 		CurrentGameMode = nullptr;
 		if (CurrentGameMode == nullptr)
@@ -19,8 +18,10 @@ void StateMachine::ChangeState(const std::string& StateName)
 		}
 	}
 
+
 	CurrentGameMode = StateFactory[StateName]();
 	std::cout << "GameMode is now : " << StateName << std::endl;
+
 }
 
 void StateMachine::UpdateGameMode() const

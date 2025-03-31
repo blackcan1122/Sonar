@@ -4,7 +4,7 @@
 #include "Base/Event.hpp"
 #include "Base/EventDispatcher.hpp"
 
-class DispatcherEvent : public Event<DispatcherEvent>
+class DispatcherEvent : public Event
 {
 public:
 	DispatcherEvent() = default;

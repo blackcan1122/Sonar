@@ -2,8 +2,8 @@
 #include "Base/Core.h"
 #include "Base/Event.hpp"
 
-
-class SaveGameEvent : public Event<SaveGameEvent>
+// TODO REFACTOR
+class SaveGameEvent : public Event
 {
 public:
 	virtual ~SaveGameEvent() override;

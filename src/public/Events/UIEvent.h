@@ -3,8 +3,7 @@
 #include "Base/Event.hpp"
 #include "Base/TextBox.h"
 
-class UIEvent : public Event<UIEvent>
-{
+DECLARE_CLASS(UIEvent, Event)
 public:
 
 	virtual std::string GetName() const override;
@@ -13,5 +12,5 @@ public:
 
 	std::string Payload;
 
-};
+END_CLASS
 

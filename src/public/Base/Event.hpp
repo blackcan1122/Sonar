@@ -2,25 +2,22 @@
 #include "Base/Core.h"
 #include <typeindex>
 
+// also maybe introduce a EvenType DataType which could also be used to identify different events, instead the need of creating a different event for each use case
 
+DECLARE_CLASS(IEvent, Object)
 
-class IEvent
-{
 public:
 
 	virtual ~IEvent() = default;
 	virtual std::string GetName() const = 0;
-	virtual std::type_index GetStaticClass() const = 0;
 
-};
+END_CLASS
 
 
-template<typename Derived>
-class Event : public IEvent
-{
+DECLARE_CLASS(Event, IEvent)
+
 public:
 
 	virtual std::string GetName() const = 0;
-	virtual std::type_index GetStaticClass() const override { return typeid(Derived); };
-	static std::type_index StaticClass() { return typeid(Derived); };
-};
+
+END_CLASS

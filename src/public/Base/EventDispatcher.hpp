@@ -12,6 +12,10 @@ public:
 
 	void Dispatch(std::shared_ptr<IEvent> EventToDispatch);
 
+	std::string Name;
+
 private:
-	std::unordered_map<std::type_index, std::unordered_map<std::string, std::vector<EventCallback>>> m_Listener;
+	std::unordered_map<std::type_index, std::unordered_map<std::string, EventCallback>> m_Listener;
+
+	
 };

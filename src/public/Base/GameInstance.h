@@ -2,6 +2,7 @@
 #include "Base/Core.h"
 #include "Base/EventDispatcher.hpp"
 #include "Base/StateMachine.h"
+#include "StateMachines/GameModeSwitcher.h"
 
 struct WindowProperties
 {
@@ -57,7 +58,7 @@ public:
 	static EventDispatcher SaveStateDispatcher;
 	static EventDispatcher AllPurposeDispatcher;
 
-	static StateMachine ActiveStateMachine;
+	static GameModeSwitcher ActiveStateMachine;
 
 	static void InitGameInstance(WindowProperties Properties);
 	static GameInstance* GetInstance();

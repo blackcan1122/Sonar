@@ -14,6 +14,7 @@
 // GameModes
 #include "GameModes/SandboxGameMode.hpp"
 #include "GameModes/Menu.hpp"
+#include "GameModes/OptionsMode.hpp"
 
 // Events
 #include "Events/AllPurposeEvent.h"
@@ -26,7 +27,7 @@
 EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
-StateMachine GameInstance::ActiveStateMachine;
+GameModeSwitcher GameInstance::ActiveStateMachine;
 
 // Definition of the static member
 GameInstance* GameInstance::Instance = nullptr;
@@ -85,6 +86,7 @@ void GameInstance::GameLoop()
 
 	ActiveStateMachine.RegisterState("Menu", []() {return new MenuMode(); });
 	ActiveStateMachine.RegisterState("Sandbox", []() {return new SandboxGameMode(); });
+	ActiveStateMachine.RegisterState("Options", []() {return new OptionsMode(); });
 	//ActiveStateMachine.RegisterState("Pong", []() {return new PongGameMod(); });
 	//ActiveStateMachine.RegisterState("Chat", []() {return new ChatTest(); });
 
@@ -92,34 +94,18 @@ void GameInstance::GameLoop()
 	// Setting initial Start Mode
 	ActiveStateMachine.ChangeState("Menu");
 
-	// Handling UI Event
-	// We Use this Event to Switch GameMode which then will update in the GameLoop
-	//UIEventDispatcher.AddListener("UIEvent", [&ActiveStateMachine](std::shared_ptr<Event> Event) -> void
-	//	{
-	//		auto ButtonClickEvent = std::dynamic_pointer_cast<UIEvent>(Event);
-	//		if (ButtonClickEvent == nullptr)
-	//		{
-	//			return;
-	//		}
-	//		Button* ClickedButton = static_cast<Button*>(ButtonClickEvent.get()->ClickedUIElement);
-
-	//		ActiveStateMachine.ChangeState(ClickedButton->GetEventPayload());
-
-	//	});
-
 	std::shared_ptr<AllPurposeEvent> WindowResizeEvent = std::make_shared<AllPurposeEvent>();
 	std::shared_ptr<WindowResizeData> CurrentWindowResizeData = std::make_shared<WindowResizeData>();
-
-
-
-
-
 
 
 	// GAMELOOP //
 	while (!WindowShouldClose())
 	{
 		BeginDrawing();
+		if (ActiveStateMachine.isPendingKillLastMode())
+		{
+			ActiveStateMachine.KillLastGameMode();
+		}
 		ActiveStateMachine.UpdateGameMode();
 
 		// Windows Resize Event

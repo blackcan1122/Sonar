@@ -3,7 +3,7 @@
 
 void EventDispatcher::AddListener(const std::string& Identifier, std::type_index EventClass, EventCallback Callback)
 {
-	m_Listener[EventClass][Identifier].push_back(Callback);
+	m_Listener[EventClass][Identifier] = Callback;
 }
 
 void EventDispatcher::RemoveListener(const std::string& Identifier, std::type_index EventClass)
@@ -37,10 +37,7 @@ void EventDispatcher::Dispatch(std::shared_ptr<IEvent> EventToDispatch)
 		// Dann Loopen wir durch alle Funktionen die sich für das Event Interessieren
 		for (const auto& listener : m_Listener[EventClass])
 		{
-			for (const auto& Functor : listener.second)
-			{
-				Functor(EventToDispatch);
-			}
+			listener.second(EventToDispatch);
 		}
 	}
 }

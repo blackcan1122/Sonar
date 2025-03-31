@@ -14,11 +14,11 @@ public:
 
 	StateMachine() : CurrentGameMode(nullptr) {};
 
-	void RegisterState(const std::string& StateName, std::function<GameMode*()> FactoryFunction);
+	virtual void RegisterState(const std::string& StateName, std::function<GameMode*()> FactoryFunction);
 
-	void ChangeState(const std::string& StateName);
+	virtual void ChangeState(const std::string& StateName);
 
-	void UpdateGameMode() const;
+	virtual void UpdateGameMode() const;
 
 	GameMode* GetCurrentGameMode();
 
