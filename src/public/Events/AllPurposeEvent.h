@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Core.h"
 #include "Base/Event.hpp"
-#include "Base/TextBox.h"
+#include "UI/TextBox.h"
 #include "Base/EventData.hpp"
 #include "Events/WindowResizeData.hpp"
 

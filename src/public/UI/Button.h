@@ -1,12 +1,12 @@
 #pragma once
 #include "Base/Core.h"
-#include "BaseUI.h"
+#include "Base/BaseUI.h"
 
 class UIEvent;
 class EventDispatcher;
 
-class Button : public BaseUI
-{
+DECLARE_CLASS(Button, BaseUI)
+
 public:
 	Button() = default;
 	Button(int X, int Y, int Width, int Height, std::string InitialText, Color BackgroundColor);
@@ -60,4 +60,5 @@ private:
 	Rectangle ButtonDim;
 	Color m_BackgroundColor;
 	Color m_TextColor = BLACK;
-};
+
+END_CLASS

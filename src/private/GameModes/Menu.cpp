@@ -19,7 +19,7 @@ MenuMode::MenuMode()
 	UIDispatcher = std::make_shared<EventDispatcher>();
 	UIDispatcher->Name = "UIDispatcher Menu";
 
-	Image BackgroundImg = LoadImage("C:\\Users\\marce\\Documents\\Hax0rStuff\\Sonar\\resources\\imgs\\BackgroundMenu.jpg");
+	Image BackgroundImg = LoadImage((GameInstance::GetInstance()->WorkingDirectory + "\\resources\\imgs\\BackgroundMenu.jpg").c_str());
 	Background = LoadTextureFromImage(BackgroundImg);
 	UnloadImage(BackgroundImg);
 
@@ -58,6 +58,7 @@ MenuMode::MenuMode()
 MenuMode::~MenuMode()
 {
 	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
+	UnloadTexture(Background);
 }
 
 void MenuMode::Update()
@@ -144,6 +145,21 @@ void MenuMode::SetUpEvents()
 			if (CastedEvent->Payload == "Option")
 			{
 				GameInstance::GetInstance()->ActiveStateMachine.ChangeState("Options");
+			}
+		});
+
+	// Sandbox Event
+	UIDispatcher->AddListener("Sandbox Event", UIEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event) -> void
+		{
+			if (!Event || Event->GetStaticClass() != UIEvent::StaticClass())
+			{
+				return;
+			}
+
+			auto CastedEvent = std::dynamic_pointer_cast<UIEvent>(Event);
+			if (CastedEvent->Payload == "Sandbox")
+			{
+				GameInstance::GetInstance()->ActiveStateMachine.ChangeState("Sandbox");
 			}
 		});
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Core.h"
-class BaseUI
-{
+
+DECLARE_CLASS(BaseUI, Object)
 
 public:
 
@@ -18,5 +18,6 @@ private:
 	// Member
 
 	Color m_BackgroundColor;
-};
+
+END_CLASS
 

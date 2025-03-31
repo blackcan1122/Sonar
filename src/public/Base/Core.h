@@ -50,7 +50,7 @@ class IEvent;
 
 #define AUTOBODY(cls) \
 public: \
-    static std::type_index StaticClass() { return typeid(cls); };
+    static std::type_index StaticClass() { return typeid(cls); }
 
 // Macro for intermediate CRTP base classes
 #define DECLARE_CRTP_INTERMEDIATE_CLASS(ClassName, BaseName) \
@@ -63,8 +63,8 @@ class ClassName : public BaseName<ClassName>
 
 #define DECLARE_CLASS(ClassName, BaseClass) \
 class ClassName : public BaseClass \
-{\
-public:\
-AUTOBODY(ClassName)
+{ \
+public: \
+AUTOBODY(ClassName) \
 
 #define END_CLASS };

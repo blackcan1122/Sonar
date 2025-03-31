@@ -5,11 +5,11 @@
 #include "Base/Core.h"
 #include "Base/StateMachine.h"
 #include "Base/GameMode.h"
-#include "Base/TextBox.h"
-#include "Base/SaveGameEvent.h"
-#include "Base/LoadGameEvent.h"
+#include "UI/TextBox.h"
+#include "Events/SaveGameEvent.h"
+#include "Events/LoadGameEvent.h"
 #include "Base/EventDispatcher.hpp"
-#include "Base/Button.h"
+#include "UI/Button.h"
 
 // GameModes
 #include "GameModes/SandboxGameMode.hpp"
@@ -28,6 +28,7 @@ EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
 GameModeSwitcher GameInstance::ActiveStateMachine;
+std::string GameInstance::WorkingDirectory;
 
 // Definition of the static member
 GameInstance* GameInstance::Instance = nullptr;
@@ -46,6 +47,8 @@ void GameInstance::InitGameInstance(WindowProperties Properties)
 		std::cerr << "GameInstance was already initialized" << std::endl;
 		return;
 	}
+
+	WorkingDirectory = GetWorkingDirectory();
 
 	Instance = new GameInstance(Properties);
 	CreateWindow();
