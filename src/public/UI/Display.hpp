@@ -8,11 +8,13 @@ public:
 	Display(int Width, int Height);
 	virtual ~Display();
 
-	virtual void Update(float Deltatime);
+
 	virtual void Draw();
 
 	void SetPosition(Vector2 NewPosition);
 	void RenderToMainBuffer();
+
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 

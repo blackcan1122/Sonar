@@ -130,7 +130,6 @@ void GameInstance::GameLoop()
 			AllPurposeDispatcher.Dispatch(WindowResizeEvent);
 
 		}
-
 		// GameMode Independend UI Drawings
 
 

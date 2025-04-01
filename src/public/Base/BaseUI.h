@@ -10,14 +10,8 @@ public:
 	BaseUI() = default;
 	~BaseUI() = default;
 
-	virtual void Update() = 0;
-
 
 private:
-
-	// Member
-
-	Color m_BackgroundColor;
 
 END_CLASS
 

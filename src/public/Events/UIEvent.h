@@ -10,6 +10,8 @@ public:
 
 	BaseUI* ClickedUIElement = nullptr;
 
+	virtual void Tick(float DeltaTime) override;
+
 	std::string Payload;
 
 END_CLASS

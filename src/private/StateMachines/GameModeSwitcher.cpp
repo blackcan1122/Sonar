@@ -44,6 +44,8 @@ bool GameModeSwitcher::isPendingKillLastMode()
 	return bPendingKillLastMode;
 }
 
+
+
 GameMode* GameModeSwitcher::GetCurrentGameMode()
 {
 	return CurrentGameMode;

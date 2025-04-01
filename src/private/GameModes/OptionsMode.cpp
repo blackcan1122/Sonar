@@ -54,9 +54,11 @@ void OptionsMode::Update()
 	ClearBackground(PURPLE);
 	DrawTexture(Background, 0, 0, WHITE);
 
+	float DeltaTime = GetFrameTime();
 
-	Back->Update();
-	Apply->Update();
+
+	Back->Tick(DeltaTime);
+	Apply->Tick(DeltaTime);
 }
 
 void OptionsMode::SetName(std::string Name)

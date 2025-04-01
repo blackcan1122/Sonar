@@ -48,7 +48,7 @@ public:
 
 
 
-	virtual void Update() override;
+	virtual void Tick(float DeltaTime) override;
 
 	bool bIsFocused(Vector2 MousePosition);
 

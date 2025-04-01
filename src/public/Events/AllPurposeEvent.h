@@ -11,6 +11,8 @@ public:
 
 	virtual std::string GetName() const override;
 
+	virtual void Tick(float DeltaTime) override;
+
 	std::shared_ptr<IEventData> Payload = nullptr;
 
 END_CLASS

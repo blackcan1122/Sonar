@@ -41,3 +41,15 @@ void EventDispatcher::Dispatch(std::shared_ptr<IEvent> EventToDispatch)
 		}
 	}
 }
+
+int EventDispatcher::AmountOfListener(std::shared_ptr<IEvent> EventToDispatch)
+{
+	const auto& EventClass = EventToDispatch->GetStaticClass();
+
+	if (m_Listener.find(EventClass) == m_Listener.end())
+	{
+		return 0;
+	}
+
+	return m_Listener[EventClass].size();
+}

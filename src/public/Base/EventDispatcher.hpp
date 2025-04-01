@@ -12,6 +12,8 @@ public:
 
 	void Dispatch(std::shared_ptr<IEvent> EventToDispatch);
 
+	int AmountOfListener(std::shared_ptr<IEvent> EventToDispatch);
+
 	std::string Name;
 
 private:

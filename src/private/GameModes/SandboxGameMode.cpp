@@ -4,8 +4,8 @@ SandboxGameMode::SandboxGameMode()
 {
 	SetName("SandboxGameMode");
 
-	WaterfallDisplay = std::make_shared<Waterfall>(200, 200);
-	WaterfallDisplay->SetPosition(Vector2{400,400});
+	WaterfallDisplay = std::make_shared<Waterfall>(360, 600, 120);
+	WaterfallDisplay->SetPosition(Vector2{0,0});
 }
 
 SandboxGameMode::~SandboxGameMode()
@@ -15,10 +15,14 @@ SandboxGameMode::~SandboxGameMode()
 void SandboxGameMode::Update()
 {
 		ClearBackground(RED);
-		DrawFPS(20, 20);
-		WaterfallDisplay->Update();
+		
+		float DeltaTime = GetFrameTime();
+
+		WaterfallDisplay->Tick(DeltaTime);
 		WaterfallDisplay->Draw();
 		WaterfallDisplay->RenderToMainBuffer();
+
+		DrawFPS(20, 20);
 
 }
 

@@ -172,7 +172,7 @@ bool TextInputBox::bIsFocused(Vector2 MousePosition)
 
 
 
-void TextInputBox::Update()
+void TextInputBox::Tick(float DeltaTime)
 {
 	if (bGrowBoxToText)
 	{

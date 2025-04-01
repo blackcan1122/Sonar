@@ -1,6 +1,8 @@
 #pragma once
 #include "Base/Core.h"
 #include "UI/Display.hpp"
+#include <atomic>
+#include <future>
 
 struct PixelData
 {
@@ -78,33 +80,42 @@ struct PixelBuffer
 
 	void ShiftPixelDown()
 	{
-		// Move all rows down by one (starting from bottom row)
-		for (int y = m_Height - 1; y > 0; --y) {
-			// Calculate row indices
-			const size_t prev_row = (y - 1) * m_Width;
-			const size_t curr_row = y * m_Width;
+		// Calculate total number of pixels excluding the top row.
+		size_t TotalPixelsToMove = (m_Height - 1) * m_Width;
 
-			// Copy previous row to current row
-			std::copy(
-				PixelArray.begin() + prev_row,
-				PixelArray.begin() + prev_row + m_Width,
-				PixelArray.begin() + curr_row
-			);
-		}
+		// Since we use a 1D array for the pixel, we can just move the complete block of memory
+		std::memmove(
+			PixelArray.data() + m_Width,			// destination: starting at second row
+			PixelArray.data(),						// source: starting at first row
+			TotalPixelsToMove * sizeof(PixelData)	// Amount of Work
+		);
 	}
 };
 
 DECLARE_CLASS(Waterfall, Display)
-
 public:
-
-	Waterfall(int Width, int Height);
+	Waterfall(int Width, int Height, int TimeFrameInSec);
 	virtual ~Waterfall() override;
 
-	virtual void Update() override;
+	virtual void Tick(float Deltatime) override;
 	virtual void Draw() override;
 
-	std::shared_ptr<PixelBuffer> CurrentPixelBuffer;
+private:
 
+	float AccDelta = 0;
+	std::mutex AccDeltaMutex;
+	std::shared_ptr<PixelBuffer> FrontBuffer;
+	std::shared_ptr<PixelBuffer> BackBuffer;
+	Texture2D FrontTexture;
+	std::atomic<bool> WorkerDone;
+	std::future<void> WorkerFuture;
+	bool FirstUpdate = true;
 
-END_CLASS
+	int TimeFrameInSec;
+
+	size_t Index = 0;
+
+	void ProcessBackBuffer(int LinesToShift);
+
+	float TimestepPerPixel();
+	END_CLASS

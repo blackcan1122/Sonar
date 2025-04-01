@@ -65,14 +65,16 @@ void MenuMode::Update()
 {
 	ClearBackground(GREEN);
 	DrawTexture(Background,0,0,WHITE);
+
+	float DeltaTime = GetFrameTime();
 	
 #if DEBUG
-	Sandbox->Update();
+	Sandbox->Tick(DeltaTime);
 #endif
 
-	StartGame->Update();
-	Option->Update();
-	Exit->Update();
+	StartGame->Tick(DeltaTime);
+	Option->Tick(DeltaTime);
+	Exit->Tick(DeltaTime);
 }
 
 void MenuMode::SetName(std::string Name)

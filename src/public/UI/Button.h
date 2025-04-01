@@ -38,9 +38,7 @@ public:
 
 	virtual std::string GetEventPayload();
 	
-
-	virtual void Update() override;
-
+	virtual void Tick(float DeltaTime) override;
 private:
 
 	virtual std::shared_ptr<UIEvent> OnClickEvent();

@@ -12,11 +12,6 @@ Display::~Display()
 	UnloadRenderTexture(ActiveRenderTarget);
 }
 
-void Display::Update(float Deltatime)
-{
-	
-}
-
 void Display::Draw()
 {
 	BeginTextureMode(ActiveRenderTarget);
@@ -33,4 +28,8 @@ void Display::SetPosition(Vector2 NewPosition)
 void Display::RenderToMainBuffer()
 {
 	DrawTexturePro(ActiveRenderTarget.texture, SourceRect, DestinationRect, { 0,0 }, 0, WHITE);
+}
+
+void Display::Tick(float DeltaTime)
+{
 }

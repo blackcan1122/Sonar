@@ -4,3 +4,7 @@ std::string AllPurposeEvent::GetName() const
 {
 	return "AllPurposeEvent";
 }
+
+void AllPurposeEvent::Tick(float DeltaTime)
+{
+}
