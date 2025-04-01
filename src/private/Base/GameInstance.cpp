@@ -64,6 +64,11 @@ GameInstance* GameInstance::GetInstance()
 	std::cerr << "GameInstance was not Created, please Call InitGameInstance first" << std::endl;
 }
 
+GameMode* GameInstance::GetCurrentGameMode()
+{
+	return ActiveStateMachine.GetCurrentGameMode();
+}
+
 EventDispatcher& GameInstance::GetUIEventDispatcher()
 {
 	return UIEventDispatcher;

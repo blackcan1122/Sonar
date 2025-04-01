@@ -38,38 +38,19 @@ void Waterfall::Tick(float DeltaTime)
         Index++;
     }
 
-    if (WorkerDone == false)
-    {
-        return;
-    }
+    AccDelta += DeltaTime;
 
-    {
-        std::lock_guard<std::mutex> Lock(AccDeltaMutex);
-        std::cout << AccDelta << std::endl;
-        AccDelta += DeltaTime;
-    }
 
     // Calculate lines to process
     float TimeStep = TimestepPerPixel();
     int LinesToShift = 0;
     {
-        std::lock_guard<std::mutex> Lock(AccDeltaMutex);
         LinesToShift = static_cast<int>(AccDelta / TimeStep);
-        std::cout << LinesToShift << std::endl;
         if (LinesToShift > 0)
         {
             AccDelta -= LinesToShift * TimeStep;
         }
     }
-
-    //if (LinesToShift > 0)
-    //{
-    //    ProcessBackBuffer(LinesToShift);
-
-    //    UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
-    //    std::swap(FrontBuffer, BackBuffer);
-
-    //}
 
     // Start worker if needed
     if (LinesToShift > 0 && WorkerDone)
@@ -84,9 +65,13 @@ void Waterfall::Tick(float DeltaTime)
 
     if (WorkerDone)
     {
-        UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
         std::swap(FrontBuffer, BackBuffer);
+        UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
+        BackBuffer = FrontBuffer;
+
     }
+    Draw();
+    RenderToMainBuffer();
 }
 
 void Waterfall::ProcessBackBuffer(int LinesToShift) 
@@ -101,11 +86,7 @@ void Waterfall::ProcessBackBuffer(int LinesToShift)
 
                 // just some quick hack to make signal line wider
                 PixelData myPixel(0, 80, 0, 255);
-                (*BackBuffer)[abs(i - 2)] = myPixel;
-                (*BackBuffer)[abs(i - 1)] = myPixel;
                 (*BackBuffer)[i] = myPixel;
-                (*BackBuffer)[i + 1] = myPixel;
-                (*BackBuffer)[i + 2] = myPixel;
                 continue;
             }
 

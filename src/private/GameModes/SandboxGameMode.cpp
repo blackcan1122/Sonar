@@ -1,11 +1,12 @@
 #include "GameModes/SandboxGameMode.hpp"
+#include "Base/GameInstance.h"
 
 SandboxGameMode::SandboxGameMode()
 {
 	SetName("SandboxGameMode");
 
-	WaterfallDisplay = std::make_shared<Waterfall>(360, 600, 120);
-	WaterfallDisplay->SetPosition(Vector2{0,0});
+	WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 360, 30);
+	WaterfallDisplay.lock()->SetPosition(Vector2{0,0});
 }
 
 SandboxGameMode::~SandboxGameMode()
@@ -15,15 +16,19 @@ SandboxGameMode::~SandboxGameMode()
 void SandboxGameMode::Update()
 {
 		ClearBackground(RED);
-		
-		float DeltaTime = GetFrameTime();
+		GameMode::Update();
 
-		WaterfallDisplay->Tick(DeltaTime);
-		WaterfallDisplay->Draw();
-		WaterfallDisplay->RenderToMainBuffer();
+		if (IsKeyPressed(KEY_S))
+		{
+			WaterfallDisplay.lock()->MarkForDestruction();
+		}
+		if (IsKeyPressed(KEY_N))
+		{
+			WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 360, 30);
+			WaterfallDisplay.lock()->SetPosition(Vector2{ 0,0 });
+		}
 
 		DrawFPS(20, 20);
-
 }
 
 void SandboxGameMode::SetName(std::string Name)

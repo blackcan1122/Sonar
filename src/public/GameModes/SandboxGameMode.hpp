@@ -19,7 +19,7 @@ protected:
 
 	float m_DeltaTime = 0;
 
-	std::shared_ptr<Waterfall> WaterfallDisplay;
+	std::weak_ptr<Waterfall> WaterfallDisplay;
 	std::shared_ptr<Waterfall> WaterfallDisplay2;
 	std::shared_ptr<Waterfall> WaterfallDisplay3;
 	std::shared_ptr<Waterfall> WaterfallDisplay4;

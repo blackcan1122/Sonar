@@ -67,6 +67,8 @@ public:
 
 	WindowProperties GetWindowProperties() const { return m_WindowProperties; }
 
+	static GameMode* GetCurrentGameMode();
+
 
 	static EventDispatcher& GetUIEventDispatcher();
 	static EventDispatcher& GetSaveStateEventDispatcher();
