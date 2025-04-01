@@ -11,8 +11,9 @@ void GameModeSwitcher::ChangeState(const std::string& StateName)
 	LastGameMode = CurrentGameMode;
 
 	CurrentGameMode = StateFactory[StateName]();
+#if DEBUG
 	std::cout << "GameMode is now : " << StateName << std::endl;
-
+#endif
 	bPendingKillLastMode = true;
 
 }
@@ -26,7 +27,9 @@ void GameModeSwitcher::KillLastGameMode()
 		if (LastGameMode == nullptr)
 		{
 			bPendingKillLastMode = false;
-			std::cout << "GameMode is now successfully Deleted" << std::endl;
+#if DEBUG
+			std::cout << "Previous GameMode is now successfully Deleted" << std::endl;
+#endif
 		}
 	}
 }

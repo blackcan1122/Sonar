@@ -5,7 +5,7 @@ SandboxGameMode::SandboxGameMode()
 {
 	SetName("SandboxGameMode");
 
-	WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 360, 30);
+	WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 600, 30);
 	WaterfallDisplay.lock()->SetPosition(Vector2{0,0});
 }
 
@@ -16,7 +16,8 @@ SandboxGameMode::~SandboxGameMode()
 void SandboxGameMode::Update()
 {
 		ClearBackground(RED);
-		GameMode::Update();
+
+		auto MyDisplay = WaterfallDisplay.lock();
 
 		if (IsKeyPressed(KEY_S))
 		{
@@ -28,6 +29,12 @@ void SandboxGameMode::Update()
 			WaterfallDisplay.lock()->SetPosition(Vector2{ 0,0 });
 		}
 
+		if (IsKeyDown(KEY_D))
+		{
+			MyDisplay = nullptr;
+		}
+
+		GameMode::Update();
 		DrawFPS(20, 20);
 }
 

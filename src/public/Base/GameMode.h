@@ -2,6 +2,9 @@
 #include "Base/Core.h"
 #include "Base/Factory.hpp"
 
+/**
+* Info: All Objects created via the Factory will execute their Tick Function automatically
+*/
 
 
 class GameMode
