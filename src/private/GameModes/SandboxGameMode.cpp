@@ -5,8 +5,11 @@ SandboxGameMode::SandboxGameMode()
 {
 	SetName("SandboxGameMode");
 
-	WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 600, 30);
+	WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 300, 10);
 	WaterfallDisplay.lock()->SetPosition(Vector2{0,0});
+
+	WaterfallDisplay2 = ObjectFactory.NewObject<Waterfall>(360, 300, 60);
+	WaterfallDisplay2.lock()->SetPosition(Vector2{ 0,310 });
 }
 
 SandboxGameMode::~SandboxGameMode()
@@ -35,7 +38,10 @@ void SandboxGameMode::Update()
 		}
 
 		GameMode::Update();
-		DrawFPS(20, 20);
+#if DEBUG
+		DrawFPS(GameInstance::GetInstance()->GetWindowProperties().ScreenWidth - 100, 20);
+#endif
+		
 }
 
 void SandboxGameMode::SetName(std::string Name)

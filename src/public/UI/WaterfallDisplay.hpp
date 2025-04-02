@@ -108,6 +108,7 @@ private:
 	std::shared_ptr<PixelBuffer> BackBuffer;
 	Texture2D FrontTexture;
 	std::atomic<bool> WorkerDone;
+	std::atomic<bool> RenderReady;
 	std::future<void> WorkerFuture;
 	bool FirstUpdate = true;
 
@@ -116,6 +117,7 @@ private:
 	size_t Index = 0;
 
 	void ProcessBackBuffer(int LinesToShift);
+	void GenerateBearings();
 
 	float TimestepPerPixel();
 	END_CLASS

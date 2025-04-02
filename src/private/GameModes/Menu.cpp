@@ -110,8 +110,9 @@ void MenuMode::SetUpEvents()
 
 			Background.height = CurrentProperties->height;
 			Background.width = CurrentProperties->width;
-
+#if DEBUG
 			Sandbox->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 100);
+#endif
 			StartGame->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 200);
 			Option->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 300);
 			Exit->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 400);

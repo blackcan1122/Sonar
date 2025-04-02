@@ -30,7 +30,7 @@ void EventDispatcher::Dispatch(std::shared_ptr<IEvent> EventToDispatch)
 	// Holen uns den Name des Events
 	const auto& EventClass = EventToDispatch->GetStaticClass();
 	
-	// wir schauen ob sich eine Funktion, lambda etc. schon für das event Interessiert
+	// we check if we can find a std::function which has subscriped
 	if (m_Listener.find(EventClass) != m_Listener.end())
 	{
 		// Falls sich jemand für das Event Interessiert
