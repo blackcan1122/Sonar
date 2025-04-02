@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Core.h"
 #include "Base/GameMode.h"
-#include "Base/Button.h"
+#include "UI/Button.h"
 
 class MenuMode : public GameMode
 {

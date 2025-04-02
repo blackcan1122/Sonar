@@ -1,4 +1,4 @@
-#include "Base/TextBox.h"
+#include "UI/TextBox.h"
 
 TextInputBox& TextInputBox::Construct(Rectangle Box, Color BackgroundColor)
 {
@@ -172,7 +172,7 @@ bool TextInputBox::bIsFocused(Vector2 MousePosition)
 
 
 
-void TextInputBox::Update()
+void TextInputBox::Tick(float DeltaTime)
 {
 	if (bGrowBoxToText)
 	{

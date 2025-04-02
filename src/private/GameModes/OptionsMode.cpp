@@ -21,7 +21,7 @@ OptionsMode::OptionsMode()
 	UIDispatcher = std::make_shared<EventDispatcher>();
 	UIDispatcher->Name = "UIDispatcher Menu";
 
-	Image BackgroundImg = LoadImage("C:\\Users\\marce\\Documents\\Hax0rStuff\\Sonar\\resources\\imgs\\BackgroundMenu.jpg");
+	Image BackgroundImg = LoadImage((GameInstance::GetInstance()->WorkingDirectory + "\\resources\\imgs\\BackgroundMenu.jpg").c_str());
 	Background = LoadTextureFromImage(BackgroundImg);
 	UnloadImage(BackgroundImg);
 
@@ -46,15 +46,19 @@ OptionsMode::OptionsMode()
 OptionsMode::~OptionsMode()
 {
 	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Option", AllPurposeEvent::StaticClass());
+	UnloadTexture(Background);
 }
 
 void OptionsMode::Update()
 {
 	ClearBackground(PURPLE);
+	DrawTexture(Background, 0, 0, WHITE);
+
+	float DeltaTime = GetFrameTime();
 
 
-	Back->Update();
-	Apply->Update();
+	Back->Tick(DeltaTime);
+	Apply->Tick(DeltaTime);
 }
 
 void OptionsMode::SetName(std::string Name)

@@ -24,3 +24,5 @@ public:
     static std::type_index StaticClass() { return typeid(Derived); };
     
 };
+
+

@@ -43,10 +43,12 @@
 int main (int args, char* argv[])
 {
 	bool isDebug = false;
-
-	if (args > 1 && strcmp(argv[1], "-debug") == 0)
+	if (args > 1)
 	{
-		isDebug = true;
+		if (strcmp(argv[1], "-debug") == 0)
+		{
+			isDebug = true;
+		}
 	}
 
 #if DEBUG
@@ -55,7 +57,7 @@ int main (int args, char* argv[])
 #endif
 
 	std::cout << isDebug << std::endl;
-	GameInstance::InitGameInstance(WindowProperties(1280, 720, 60, false, isDebug));
+	GameInstance::InitGameInstance(WindowProperties(1280, 720, 9999, false, isDebug));
 	
 	CloseWindow();
 	return 0;

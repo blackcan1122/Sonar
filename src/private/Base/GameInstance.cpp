@@ -5,11 +5,11 @@
 #include "Base/Core.h"
 #include "Base/StateMachine.h"
 #include "Base/GameMode.h"
-#include "Base/TextBox.h"
-#include "Base/SaveGameEvent.h"
-#include "Base/LoadGameEvent.h"
+#include "UI/TextBox.h"
+#include "Events/SaveGameEvent.h"
+#include "Events/LoadGameEvent.h"
 #include "Base/EventDispatcher.hpp"
-#include "Base/Button.h"
+#include "UI/Button.h"
 
 // GameModes
 #include "GameModes/SandboxGameMode.hpp"
@@ -28,6 +28,7 @@ EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
 GameModeSwitcher GameInstance::ActiveStateMachine;
+std::string GameInstance::WorkingDirectory;
 
 // Definition of the static member
 GameInstance* GameInstance::Instance = nullptr;
@@ -47,6 +48,8 @@ void GameInstance::InitGameInstance(WindowProperties Properties)
 		return;
 	}
 
+	WorkingDirectory = GetWorkingDirectory();
+
 	Instance = new GameInstance(Properties);
 	CreateWindow();
 	GameLoop();
@@ -59,6 +62,11 @@ GameInstance* GameInstance::GetInstance()
 		return Instance;
 	}
 	std::cerr << "GameInstance was not Created, please Call InitGameInstance first" << std::endl;
+}
+
+GameMode* GameInstance::GetCurrentGameMode()
+{
+	return ActiveStateMachine.GetCurrentGameMode();
 }
 
 EventDispatcher& GameInstance::GetUIEventDispatcher()
@@ -127,7 +135,6 @@ void GameInstance::GameLoop()
 			AllPurposeDispatcher.Dispatch(WindowResizeEvent);
 
 		}
-
 		// GameMode Independend UI Drawings
 
 

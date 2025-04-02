@@ -18,6 +18,5 @@ DECLARE_CLASS(Event, IEvent)
 
 public:
 
-	virtual std::string GetName() const = 0;
 
 END_CLASS

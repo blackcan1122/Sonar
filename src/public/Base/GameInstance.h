@@ -60,10 +60,14 @@ public:
 
 	static GameModeSwitcher ActiveStateMachine;
 
+	static std::string WorkingDirectory;
+
 	static void InitGameInstance(WindowProperties Properties);
 	static GameInstance* GetInstance();
 
 	WindowProperties GetWindowProperties() const { return m_WindowProperties; }
+
+	static GameMode* GetCurrentGameMode();
 
 
 	static EventDispatcher& GetUIEventDispatcher();

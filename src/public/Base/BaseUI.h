@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Core.h"
-class BaseUI
-{
+
+DECLARE_CLASS(BaseUI, Object)
 
 public:
 
@@ -10,13 +10,8 @@ public:
 	BaseUI() = default;
 	~BaseUI() = default;
 
-	virtual void Update() = 0;
-
 
 private:
 
-	// Member
-
-	Color m_BackgroundColor;
-};
+END_CLASS
 

@@ -1,4 +1,4 @@
-#include "Base/Button.h"
+#include "UI/Button.h"
 #include "Events/UIEvent.h"
 #include "Base/EventDispatcher.hpp"
 
@@ -144,7 +144,21 @@ std::string Button::GetEventPayload()
     return m_Payload;
 }
 
-void Button::Update()
+
+std::shared_ptr<UIEvent> Button::OnClickEvent()
+{
+    std::shared_ptr<UIEvent> EventUI = std::make_shared<UIEvent>();
+    EventUI->ClickedUIElement = this;
+    EventUI->Payload = m_Payload;
+    return EventUI;
+}
+
+bool Button::IsClicked(Vector2 MousePosition, bool IsHovered)
+{
+    return IsMouseButtonPressed(0) && IsHovered;
+}
+
+void Button::Tick(float DeltaTime)
 {
     bool isHovered = (CheckCollisionPointRec(GetMousePosition(), ButtonDim) && IsCursorOnScreen());
 
@@ -179,17 +193,4 @@ void Button::Update()
     }
 
     DrawText(m_Text.c_str(), ButtonDim.x + TextPosition.x, ButtonDim.y + TextPosition.y, FontSize, m_TextColor);
-}
-
-std::shared_ptr<UIEvent> Button::OnClickEvent()
-{
-    std::shared_ptr<UIEvent> EventUI = std::make_shared<UIEvent>();
-    EventUI->ClickedUIElement = this;
-    EventUI->Payload = m_Payload;
-    return EventUI;
-}
-
-bool Button::IsClicked(Vector2 MousePosition, bool IsHovered)
-{
-    return IsMouseButtonPressed(0) && IsHovered;
 }

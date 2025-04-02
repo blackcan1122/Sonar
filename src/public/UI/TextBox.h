@@ -1,11 +1,10 @@
 #pragma once
 #include "raylib.h"
 #include <string>
-#include "BaseUI.h"
+#include "Base/BaseUI.h"
 
+DECLARE_CLASS(TextInputBox, BaseUI)
 
-class TextInputBox : public BaseUI
-{
 public:
 
 	// Methods
@@ -49,7 +48,7 @@ public:
 
 
 
-	virtual void Update() override;
+	virtual void Tick(float DeltaTime) override;
 
 	bool bIsFocused(Vector2 MousePosition);
 
@@ -94,5 +93,5 @@ private:
 	bool bHasBeenConstructed;
 	bool bUsesText;
 
-};
+END_CLASS
 

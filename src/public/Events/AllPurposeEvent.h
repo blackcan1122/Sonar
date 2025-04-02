@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Core.h"
 #include "Base/Event.hpp"
-#include "Base/TextBox.h"
+#include "UI/TextBox.h"
 #include "Base/EventData.hpp"
 #include "Events/WindowResizeData.hpp"
 
@@ -10,6 +10,8 @@ DECLARE_CLASS(AllPurposeEvent, Event)
 public:
 
 	virtual std::string GetName() const override;
+
+	virtual void Tick(float DeltaTime) override;
 
 	std::shared_ptr<IEventData> Payload = nullptr;
 

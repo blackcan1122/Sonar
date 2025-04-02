@@ -19,7 +19,7 @@ MenuMode::MenuMode()
 	UIDispatcher = std::make_shared<EventDispatcher>();
 	UIDispatcher->Name = "UIDispatcher Menu";
 
-	Image BackgroundImg = LoadImage("C:\\Users\\marce\\Documents\\Hax0rStuff\\Sonar\\resources\\imgs\\BackgroundMenu.jpg");
+	Image BackgroundImg = LoadImage((GameInstance::GetInstance()->WorkingDirectory + "\\resources\\imgs\\BackgroundMenu.jpg").c_str());
 	Background = LoadTextureFromImage(BackgroundImg);
 	UnloadImage(BackgroundImg);
 
@@ -58,20 +58,23 @@ MenuMode::MenuMode()
 MenuMode::~MenuMode()
 {
 	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
+	UnloadTexture(Background);
 }
 
 void MenuMode::Update()
 {
 	ClearBackground(GREEN);
 	DrawTexture(Background,0,0,WHITE);
+
+	float DeltaTime = GetFrameTime();
 	
 #if DEBUG
-	Sandbox->Update();
+	Sandbox->Tick(DeltaTime);
 #endif
 
-	StartGame->Update();
-	Option->Update();
-	Exit->Update();
+	StartGame->Tick(DeltaTime);
+	Option->Tick(DeltaTime);
+	Exit->Tick(DeltaTime);
 }
 
 void MenuMode::SetName(std::string Name)
@@ -107,8 +110,9 @@ void MenuMode::SetUpEvents()
 
 			Background.height = CurrentProperties->height;
 			Background.width = CurrentProperties->width;
-
+#if DEBUG
 			Sandbox->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 100);
+#endif
 			StartGame->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 200);
 			Option->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 300);
 			Exit->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 400);
@@ -144,6 +148,21 @@ void MenuMode::SetUpEvents()
 			if (CastedEvent->Payload == "Option")
 			{
 				GameInstance::GetInstance()->ActiveStateMachine.ChangeState("Options");
+			}
+		});
+
+	// Sandbox Event
+	UIDispatcher->AddListener("Sandbox Event", UIEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event) -> void
+		{
+			if (!Event || Event->GetStaticClass() != UIEvent::StaticClass())
+			{
+				return;
+			}
+
+			auto CastedEvent = std::dynamic_pointer_cast<UIEvent>(Event);
+			if (CastedEvent->Payload == "Sandbox")
+			{
+				GameInstance::GetInstance()->ActiveStateMachine.ChangeState("Sandbox");
 			}
 		});
 }

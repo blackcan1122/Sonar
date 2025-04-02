@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Core.h"
 #include "Base/Event.hpp"
-#include "Base/TextBox.h"
+#include "UI/TextBox.h"
 
 DECLARE_CLASS(UIEvent, Event)
 public:
@@ -9,6 +9,8 @@ public:
 	virtual std::string GetName() const override;
 
 	BaseUI* ClickedUIElement = nullptr;
+
+	virtual void Tick(float DeltaTime) override;
 
 	std::string Payload;
 
