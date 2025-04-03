@@ -1,6 +1,14 @@
 #include "GameModes/SandboxGameMode.hpp"
 #include "Base/GameInstance.h"
 
+/*
+* TODO:
+*	- Give IObjects a unique tag, and when not defined by the User, should auto generate a Tag,
+*		so it can be used to iterate over the GameMode Object Registry, and doesn't have to create a intermediate gamemode member
+*	- Player Implementation duh
+*	- World Scale and Coordinate System
+*/
+
 SandboxGameMode::SandboxGameMode()
 {
 	SetName("SandboxGameMode");
@@ -10,6 +18,12 @@ SandboxGameMode::SandboxGameMode()
 
 	WaterfallDisplay2 = ObjectFactory.NewObject<Waterfall>(360, 300, 60);
 	WaterfallDisplay2.lock()->SetPosition(Vector2{ 0,310 });
+
+	MapDisplay = ObjectFactory.NewObject<Map>(400, 400);
+	MapDisplay.lock()->SetPosition(Vector2{ 400,100 });
+
+	PlayerOne = ObjectFactory.NewObject<Player>();
+	MapDisplay.lock()->AddObjectToDraw(PlayerOne);
 }
 
 SandboxGameMode::~SandboxGameMode()
@@ -36,6 +50,12 @@ void SandboxGameMode::Update()
 		{
 			MyDisplay = nullptr;
 		}
+
+		{
+			PlayerOne.lock()->Accel(0.2f);
+		}
+
+		DrawCircleLines(600, 600, 15, BLUE);
 
 		GameMode::Update();
 #if DEBUG

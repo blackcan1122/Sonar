@@ -2,6 +2,8 @@
 #include "Base/Core.h"
 #include "Base/GameMode.h"
 #include "UI/WaterfallDisplay.hpp"
+#include "UI/Map.hpp"
+#include "Entities/Player.hpp"
 
 /**
 * Core game state manager and object lifecycle controller.
@@ -72,5 +74,7 @@ protected:
 
 	std::weak_ptr<Waterfall> WaterfallDisplay;
 	std::weak_ptr<Waterfall> WaterfallDisplay2;
+	std::weak_ptr<Map> MapDisplay;
+	std::weak_ptr<Player> PlayerOne;
 
 };
