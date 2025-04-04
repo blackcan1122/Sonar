@@ -36,7 +36,10 @@ GameInstance* GameInstance::Instance = nullptr;
 GameInstance::GameInstance(WindowProperties Properties)
 	: m_WindowProperties(Properties)
 {
-	std::cout << "GameInstance was Initialized" << std::endl;
+	init_logger();
+	spdlog::flush_every(std::chrono::seconds(1));
+	LOG_INFO("GameInstace Initialized");
+
 }
 
 
@@ -44,7 +47,7 @@ void GameInstance::InitGameInstance(WindowProperties Properties)
 {
 	if (Instance != nullptr)
 	{
-		std::cerr << "GameInstance was already initialized" << std::endl;
+		LOG_ERROR("GameInstance already Existing");
 		return;
 	}
 
@@ -61,7 +64,7 @@ GameInstance* GameInstance::GetInstance()
 	{
 		return Instance;
 	}
-	std::cerr << "GameInstance was not Created, please Call InitGameInstance first" << std::endl;
+	LOG_ERROR("Call InitGameInstance First");
 }
 
 GameMode* GameInstance::GetCurrentGameMode()
@@ -102,6 +105,7 @@ void GameInstance::GameLoop()
 	// Setting initial Start Mode
 	ActiveStateMachine.ChangeState("Menu");
 
+
 	std::shared_ptr<AllPurposeEvent> WindowResizeEvent = std::make_shared<AllPurposeEvent>();
 	std::shared_ptr<WindowResizeData> CurrentWindowResizeData = std::make_shared<WindowResizeData>();
 
@@ -112,14 +116,17 @@ void GameInstance::GameLoop()
 		BeginDrawing();
 		if (ActiveStateMachine.isPendingKillLastMode())
 		{
+			std::string LastName = ActiveStateMachine.GetLastGameMode()->GetName();
 			ActiveStateMachine.KillLastGameMode();
+
 		}
+
 		ActiveStateMachine.UpdateGameMode();
 
 		// Windows Resize Event
 		if (GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.ScreenHeight || GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.ScreenWidth)
 		{
-			std::cout << "Window Resize" << std::endl;
+
 			GameInstance::GetInstance()->m_WindowProperties.ScreenHeight = GetScreenHeight();
 			GameInstance::GetInstance()->m_WindowProperties.ScreenWidth = GetScreenWidth();
 

@@ -17,6 +17,28 @@
 #include <cmath>
 #include <iostream>
 #include <typeindex>
+#include <chrono>
+#include <filesystem>
+
+
+// Spdlog
+
+#if defined(_WIN32)           
+#define NOGDI             // All GDI defines and routines
+#define NOUSER            // All USER defines and routines
+#endif
+
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO  // Set minimal log level to capture
+#define SPDLOG_ENABLE_SOURCE_LOC 1             // Enable source location
+
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+inline std::shared_ptr<spdlog::logger> g_logger = nullptr;
+void init_logger();
+#if defined(_WIN32)           // raylib uses these names as function parameters
+#undef near
+#undef far
+#endif
 
 
 
@@ -68,3 +90,10 @@ public: \
 AUTOBODY(ClassName) \
 
 #define END_CLASS };
+
+
+
+// Logging Macros
+#define LOG_INFO(...)  SPDLOG_LOGGER_INFO(g_logger, __VA_ARGS__)
+#define LOG_WARN(...)  SPDLOG_LOGGER_WARN(g_logger, __VA_ARGS__)
+#define LOG_ERROR(...) SPDLOG_LOGGER_ERROR(g_logger, __VA_ARGS__)

@@ -26,12 +26,16 @@ public:
 	Texture2D ShipIcon;
 
 
-	Vector2 CenterMap;
-	Vector2 CenterPlayer;
-
 private:
 
 	std::vector<std::pair<std::weak_ptr<IObject>, ObjectType>> ObjectsToDraw;
+	float ZoomLevel = 1.f;
+
+	Vector2 MapOffset = { 0, 0 };			// World-space offset
+	Vector2 MapCenter = { 0, 0 };			// World Space Position of The Map
+
+	Vector2 ConvertWorldToScreenPos(Vector2 VectorToConver) const;
+
 
 
 END_CLASS

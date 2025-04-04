@@ -23,6 +23,7 @@ SandboxGameMode::SandboxGameMode()
 	MapDisplay.lock()->SetPosition(Vector2{ 400,100 });
 
 	PlayerOne = ObjectFactory.NewObject<Player>();
+	PlayerOne.lock()->Position = Vector2{0,0};
 	MapDisplay.lock()->AddObjectToDraw(PlayerOne);
 }
 
@@ -51,9 +52,8 @@ void SandboxGameMode::Update()
 			MyDisplay = nullptr;
 		}
 
-		{
-			PlayerOne.lock()->Accel(0.2f);
-		}
+
+		PlayerOne.lock()->Accel(0.2f);
 
 		DrawCircleLines(600, 600, 15, BLUE);
 
