@@ -38,9 +38,27 @@ function check_raylib()
     os.chdir("../")
 end
 
+function checkspdlog()
+    os.chdir("external")
+    if(os.isdir("spdlog-1.x") == false) then
+        if(not os.isfile("v1.x.zip")) then
+            print("spdlog not found, downloading from github")
+            local result_str, response_code = http.download("https://github.com/gabime/spdlog/archive/refs/heads/v1.x.zip", "v1.x.zip", {
+                progress = download_progress,
+                headers = { "From: Premake", "Referer: Premake" }
+            })
+        end
+        print("Unzipping to " ..  os.getcwd())
+        zip.extract("v1.x.zip", os.getcwd())
+        os.remove("v1.x.zip")
+    end
+    os.chdir("../")
+end
+
 function build_externals()
      print("calling externals")
      check_raylib()
+     checkspdlog()
 end
 
 function platform_defines()
@@ -89,6 +107,7 @@ end
 -- if you don't want to download raylib, then set this to false, and set the raylib dir to where you want raylib to be pulled from, must be full sources.
 downloadRaylib = true
 raylib_dir = "external/raylib-master"
+spdlog_dir = "external/spdlog-1.x"
 
 workspaceName = 'Sonar'
 baseName = path.getbasename(path.getdirectory(os.getcwd()));
@@ -175,15 +194,22 @@ if (downloadRaylib) then
         includedirs {raylib_dir .. "/src" }
         includedirs {raylib_dir .."/src/external" }
         includedirs { raylib_dir .."/src/external/glfw/include" }
+
+        includedirs {spdlog_dir .. "/include" }
+        
+        defines { "SPDLOG_COMPILED_LIB" }
+
+
         flags { "ShadowedVariables"}
         platform_defines()
 
         filter "action:vs*"
             defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS"}
-            dependson {"raylib"}
-            links {"raylib.lib"}
+            dependson {"raylib", "spdlog"}
+            links {"raylib.lib", "spdlog.lib"}
+            libdirs { "../bin/%{cfg.buildcfg}" }  -- Tell linker where to find .lib files
             characterset ("Unicode")
-            buildoptions { "/Zc:__cplusplus" }
+            buildoptions { "/Zc:__cplusplus", "/utf-8" }
 
         filter "system:windows"
             defines{"_WIN32"}
@@ -229,3 +255,31 @@ if (downloadRaylib) then
             compileas "Objective-C"
 
         filter{}
+
+
+    project "spdlog"
+        kind "StaticLib"
+        language "C++"
+        location "build_files/"
+        targetdir "../bin/%{cfg.buildcfg}"  -- Match raylib's output directory
+    
+        -- Include spdlog headers and source files
+        includedirs { spdlog_dir .. "/include" }
+        files { 
+            spdlog_dir .. "/include/**.h", 
+            spdlog_dir .. "/src/**.cpp"  -- Include all .cpp files recursively
+        }
+    
+        -- Required for static library compilation
+        defines { "SPDLOG_COMPILED_LIB" }
+    
+        -- Platform-specific configurations
+        filter { "system:windows" }
+            defines { "_CRT_SECURE_NO_WARNINGS" }
+            characterset "Unicode"
+    
+        filter { "configurations:Debug" }
+            symbols "On"
+    
+        filter { "configurations:Release" }
+            optimize "On"

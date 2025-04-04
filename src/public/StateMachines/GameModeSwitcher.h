@@ -30,4 +30,6 @@ public:
 
 	GameMode* GetCurrentGameMode();
 
+	GameMode* GetLastGameMode();
+
 };

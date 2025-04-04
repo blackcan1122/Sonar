@@ -14,7 +14,7 @@
 
 MenuMode::MenuMode()
 {
-	SetName("SandboxGameMode");
+	SetName("Menu");
 
 	UIDispatcher = std::make_shared<EventDispatcher>();
 	UIDispatcher->Name = "UIDispatcher Menu";
