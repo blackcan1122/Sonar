@@ -1,8 +1,7 @@
 #include "UI/Map.hpp"
-#include "Entities/Player.hpp"
 #include <cstdio>
-
-
+#include "Entities/Player.hpp"
+#include <iostream>
 
 Map::Map(Vector2 Pos)
     :Display(Pos.x, Pos.y)
@@ -18,13 +17,11 @@ Map::Map(int X, int Y)
     Init();
 }
 
-
 void Map::Draw()
 {
     BeginTextureMode(ActiveRenderTarget);
     ClearBackground(BLACK);
 
-    Vector2 CamPos = ConvertWorldToScreenPos(MapCenter);
     for (const auto& Object : ObjectsToDraw)
     {
         if (Object.second == ObjectType::Submarine)
@@ -32,24 +29,17 @@ void Map::Draw()
             auto CurrentPlayer = std::dynamic_pointer_cast<Player>(Object.first.lock());
             if (!CurrentPlayer) continue;
 
-            // Use positive scale for the icon
             float iconScale = ZoomLevel;
             Vector2 iconSize = {
                 PlayerIcon.width * iconScale,
                 PlayerIcon.height * iconScale
             };
 
-            // Convert player's world position to texture coordinates
-            Vector2 posInTexture = Vector2Subtract(ConvertWorldToScreenPos(Vector2Scale((CurrentPlayer->Position), ZoomLevel)), CamPos);
-
-            
-
-            // Center the icon by subtracting half of its scaled size
+            Vector2 posInTexture = ConvertWorldToScreenPos(CurrentPlayer->Position);
             posInTexture.x -= iconSize.x / 2.0f;
             posInTexture.y -= iconSize.y / 2.0f;
 
             DrawTextureEx(PlayerIcon, posInTexture, 0.0f, iconScale, BLUE);
-            
         }
     }
 
@@ -58,25 +48,33 @@ void Map::Draw()
 
 void Map::Tick(float DeltaTime)
 {
+    // Handle zoom and pan only if mouse is over the map
     if (CheckCollisionPointRec(GetMousePosition(), DestinationRect))
     {
-        float prevScale = ZoomLevel;
+        // Zoom
         ZoomLevel += GetMouseWheelMove() * 0.1f;
+        ZoomLevel = std::clamp(ZoomLevel, 0.1f, 10.0f);
 
-        ZoomLevel = std::clamp(ZoomLevel, 0.0001f, 1000.f);
-
-        // Adjust map offset to keep the view centered
-        Vector2 delta = {
-            SourceRect.width * 0.5f * (1.0f / prevScale - 1.0f / ZoomLevel),
-            SourceRect.height * 0.5f * (1.0f / prevScale - 1.0f / ZoomLevel)
-        };
-
-        MapOffset.x += delta.x;
-        MapOffset.y += delta.y;
-
+        // Pan
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            IsDragging = true;
+            LastMousePosition = GetMousePosition();
+        }
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+            IsDragging = false;
+        }
+        if (IsDragging && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+            Vector2 currentMousePos = GetMousePosition();
+            Vector2 deltaMouse = Vector2Subtract(currentMousePos, LastMousePosition);
+            Vector2 deltaWorld = Vector2Scale(deltaMouse, 1.0f / ZoomLevel);
+            CameraWorldPosition.x -= deltaWorld.x;
+            CameraWorldPosition.y -= deltaWorld.y;
+            LastMousePosition = currentMousePos;
+        }
     }
-
-        std::cout << "Test" << std::endl;
+    else {
+        IsDragging = false;
+    }
 
     Draw();
     RenderToMainBuffer();
@@ -84,28 +82,33 @@ void Map::Tick(float DeltaTime)
 
 void Map::Init()
 {
-    Image ImagePlayer = LoadImage(((GameInstance::GetInstance())->WorkingDirectory + "\\resources\\imgs\\PlayerMap.png").c_str());
+    Image ImagePlayer = LoadImage((GameInstance::GetInstance()->WorkingDirectory + "\\resources\\imgs\\PlayerMap.png").c_str());
     PlayerIcon = LoadTextureFromImage(ImagePlayer);
-    PlayerIcon.height = 100;
-    PlayerIcon.width = 100;
-    std::freopen("log.txt", "w", stdout);
-
-    MapOffset = { DestinationRect.width / 2, DestinationRect.height / 2 };
     UnloadImage(ImagePlayer);
+    CameraWorldPosition = { 0.0f, 0.0f };
+    ZoomLevel = 1.0f;
 }
 
 void Map::AddObjectToDraw(std::weak_ptr<IObject> Object)
 {
     if (Object.lock()->GetStaticClass() == Player::StaticClass())
     {
+        auto playerPtr = std::dynamic_pointer_cast<Player>(Object.lock());
         ObjectsToDraw.push_back({ Object, ObjectType::Submarine });
+        TrackedPlayer = playerPtr;
+        // Initialize camera to player's position
+        if (!IsDragging) {
+            CameraWorldPosition = playerPtr->Position;
+        }
     }
 }
 
-Vector2 Map::ConvertWorldToScreenPos(Vector2 VectorToConvert) const
+Vector2 Map::ConvertWorldToScreenPos(Vector2 worldPos) const
 {
+    Vector2 relativePos = Vector2Subtract(worldPos, CameraWorldPosition);
+    Vector2 scaledPos = Vector2Scale(relativePos, ZoomLevel);
     return Vector2{
-        VectorToConvert.x + DestinationRect.width / 2,
-        VectorToConvert.y + DestinationRect.height / 2
+        scaledPos.x + (DestinationRect.width / 2),
+        scaledPos.y + (DestinationRect.height / 2)
     };
 }

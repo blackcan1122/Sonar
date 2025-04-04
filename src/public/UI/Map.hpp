@@ -2,6 +2,7 @@
 #include "Base/GameInstance.h"
 #include "UI/Display.hpp"
 
+class Player;
 
 enum ObjectType
 {
@@ -25,6 +26,11 @@ public:
 	Texture2D PlayerIcon;
 	Texture2D ShipIcon;
 
+	bool IsDragging = false;
+
+	Vector2 LastMousePosition = { 0,0 };
+	std::weak_ptr<Player> TrackedPlayer;
+
 
 private:
 
@@ -32,7 +38,7 @@ private:
 	float ZoomLevel = 1.f;
 
 	Vector2 MapOffset = { 0, 0 };			// World-space offset
-	Vector2 MapCenter = { 0, 0 };			// World Space Position of The Map
+	Vector2 CameraWorldPosition = { 0, 0 };			// World Space Position of The Map
 
 	Vector2 ConvertWorldToScreenPos(Vector2 VectorToConver) const;
 

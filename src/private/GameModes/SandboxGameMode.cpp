@@ -25,6 +25,10 @@ SandboxGameMode::SandboxGameMode()
 	PlayerOne = ObjectFactory.NewObject<Player>();
 	PlayerOne.lock()->Position = Vector2{0,0};
 	MapDisplay.lock()->AddObjectToDraw(PlayerOne);
+
+	PlayerTwo = ObjectFactory.NewObject<Player>();
+	PlayerTwo.lock()->Position = Vector2{ 800,200 };
+	MapDisplay.lock()->AddObjectToDraw(PlayerTwo);
 }
 
 SandboxGameMode::~SandboxGameMode()
