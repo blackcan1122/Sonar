@@ -11,7 +11,6 @@ private:
 	std::map<std::string, std::function<GameMode*()>> StateFactory;
 	GameMode* CurrentGameMode;
 	GameMode* LastGameMode;
-
 	bool bPendingKillLastMode = false;
 
 public:
@@ -29,5 +28,8 @@ public:
 	virtual bool isPendingKillLastMode();
 
 	GameMode* GetCurrentGameMode();
+
+	GameMode* GetLastGameMode();
+
 
 };

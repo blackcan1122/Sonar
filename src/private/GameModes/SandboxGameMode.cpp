@@ -3,13 +3,28 @@
 
 SandboxGameMode::SandboxGameMode()
 {
-	SetName("SandboxGameMode");
+	SetName("Sandbox");
 
+}
+
+void SandboxGameMode::BeginPlay()
+{
 	WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 300, 10);
-	WaterfallDisplay.lock()->SetPosition(Vector2{0,0});
+	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
 
 	WaterfallDisplay2 = ObjectFactory.NewObject<Waterfall>(360, 300, 60);
-	WaterfallDisplay2.lock()->SetPosition(Vector2{ 0,310 });
+	WaterfallDisplay2.TryLoad()->SetPosition(Vector2{ 0,310 });
+
+	MapDisplay = ObjectFactory.NewObject<Map>(400, 400);
+	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,100 });
+
+	PlayerOne = ObjectFactory.NewObject<Player>();
+	PlayerOne.TryLoad()->Position = Vector2{ 0,0 };
+	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
+
+	PlayerTwo = ObjectFactory.NewObject<Player>();
+	PlayerTwo.TryLoad()->Position = Vector2{ 800,200 };
+	MapDisplay.TryLoad()->AddObjectToDraw(PlayerTwo.TryLoad());
 }
 
 SandboxGameMode::~SandboxGameMode()
@@ -20,22 +35,21 @@ void SandboxGameMode::Update()
 {
 		ClearBackground(RED);
 
-		auto MyDisplay = WaterfallDisplay.lock();
 
 		if (IsKeyPressed(KEY_S))
 		{
-			WaterfallDisplay.lock()->MarkForDestruction();
+			WaterfallDisplay.TryLoad()->MarkForDestruction();
 		}
 		if (IsKeyPressed(KEY_N))
 		{
 			WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 360, 30);
-			WaterfallDisplay.lock()->SetPosition(Vector2{ 0,0 });
+			WaterfallDisplay.TryLoad()->SetPosition(Vector2{0,0});
 		}
 
-		if (IsKeyDown(KEY_D))
-		{
-			MyDisplay = nullptr;
-		}
+
+		PlayerOne.TryLoad()->Accel(0.2f);
+
+		DrawCircleLines(600, 600, 15, BLUE);
 
 		GameMode::Update();
 #if DEBUG
@@ -48,6 +62,8 @@ void SandboxGameMode::SetName(std::string Name)
 {
 	m_Name = Name;
 }
+
+
 
 std::string SandboxGameMode::GetName()
 {

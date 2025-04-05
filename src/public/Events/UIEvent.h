@@ -6,8 +6,6 @@
 DECLARE_CLASS(UIEvent, Event)
 public:
 
-	virtual std::string GetName() const override;
-
 	BaseUI* ClickedUIElement = nullptr;
 
 	virtual void Tick(float DeltaTime) override;

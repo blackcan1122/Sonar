@@ -11,10 +11,10 @@ void GameMode::Update()
 	float Dt = GetFrameTime();
 	for (auto& Object : m_Objects)
 	{
-		Object->Tick(Dt);
-		if (Object->IsMarkedForDestruction())
+		Object.second->Tick(Dt);
+		if (Object.second->IsMarkedForDestruction())
 		{
-			m_PendingKill.push_back(Object);
+			m_PendingKill.push_back(Object.second);
 		}
 	}
 
@@ -26,6 +26,10 @@ void GameMode::SetName(std::string Name)
 	this->m_Name = Name;
 }
 
+void GameMode::BeginPlay()
+{
+}
+
 std::string GameMode::GetName()
 {
 	return this->m_Name;
@@ -35,9 +39,9 @@ void GameMode::CollectPendingDestruction()
 {
 	for (auto& Object : m_Objects)
 	{
-		if (Object->IsMarkedForDestruction())
+		if (Object.second->IsMarkedForDestruction())
 		{
-			m_PendingKill.push_back(Object);
+			m_PendingKill.push_back(Object.second);
 		}
 	}
 }
@@ -53,27 +57,20 @@ void GameMode::CleanUpPendingKill()
 
 void GameMode::RegisterObject(std::shared_ptr<IObject> Object)
 {
-	m_Objects.push_back(Object);
+	if (m_Objects.insert({ Object->GetName(), Object }).second == false)
+	{
+		LOG_ERROR("Couldn't Add {}, as it already registred.", Object->GetName());
+	}
 }
 
 void GameMode::UnregisterObject(IObject* inObject)
 {
-	m_Objects.erase(
-		std::remove_if(m_Objects.begin(), m_Objects.end(),
-			[inObject](const std::shared_ptr<IObject>& ptr) 
-			{
-				return ptr.get() == inObject;
-			}),
-		m_Objects.end()
-	);
+	m_Objects.erase(inObject->GetName());
 }
 
 void GameMode::DestroyObjectExplicitly(std::shared_ptr<IObject> InObject)
 {
-	m_Objects.erase(
-		std::remove(m_Objects.begin(), m_Objects.end(), InObject),
-		m_Objects.end()
-	);
+	m_Objects.erase(InObject->GetName());
 
 	InObject.reset();
 }

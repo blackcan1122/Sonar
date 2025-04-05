@@ -8,8 +8,6 @@ class LoadGameEvent : public Event
 public:
 	virtual ~LoadGameEvent() override;
 
-	virtual std::string GetName() const override;
-
 	GameMode* TimeCalcGameMode = nullptr;
 
 };

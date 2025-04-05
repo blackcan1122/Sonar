@@ -13,7 +13,7 @@ public:
 	GameMode* m_Outter;
 
 	template<typename T, typename... Args>
-	std::shared_ptr<T> NewObject(Args&&... args)
+	SoftObjectPath<T> NewObject(Args&&... args)
 	{
 		if (!m_Outter) return nullptr;
 
@@ -24,12 +24,20 @@ public:
 				new T(std::forward<Args>(args)...),
 				[Outter = m_Outter](T* ptr) 
 				{
-					std::cout << "It Worked i guess?" << std::endl;
 					Outter->UnregisterObject(ptr);
+					GameInstance::GetInstance()->UnregisterAsset(ptr->m_Name);
 					delete ptr;
 				});
+		
+		LOG_INFO("Factory Created Object from Type {} with size: {} and Registred to Outter: {}", typeid(T).name(), sizeof(T), m_Outter->GetName());
 
+
+		std::shared_ptr<IObject> CastedObj = std::dynamic_pointer_cast<IObject>(Obj);
+		std::string ClassName = CastedObj->GetStaticClass().name();
+		std::replace(ClassName.begin(), ClassName.end(), ' ', '.');
+		std::string GeneratedName = m_Outter->GetName() + "/" + ClassName;
+		CastedObj->m_Name = GameInstance::GetInstance()->RegisterAsset(GeneratedName);
 		m_Outter->RegisterObject(Obj);
-		return Obj;
+		return SoftObjectPath<T>(CastedObj->GetName());
 	}
 };

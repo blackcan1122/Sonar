@@ -3,6 +3,9 @@
 #include "Base/EventDispatcher.hpp"
 #include "Base/StateMachine.h"
 #include "StateMachines/GameModeSwitcher.h"
+#include <set>
+#include <sstream>
+#include <algorithm>
 
 struct WindowProperties
 {
@@ -25,6 +28,8 @@ private:
 	~GameInstance() = default;
 
 	static GameInstance* Instance;
+	static std::unordered_map<std::string, std::set<int32_t>> AssetRegistry;
+
 
 protected:
 
@@ -36,10 +41,6 @@ protected:
 
 	WindowProperties m_WindowProperties;
 
-
-
-
-
 	/*
 	*****************************
 	* Methods
@@ -49,6 +50,8 @@ protected:
 	static void CreateWindow();
 	static void GameLoop();
 
+	bool ParseAssetName(const std::string& FullName, std::string& OutBaseName, int32_t& OutNumber);
+
 public:
 
 	GameInstance(const GameInstance&) = delete;
@@ -57,6 +60,48 @@ public:
 	static EventDispatcher UIEventDispatcher;
 	static EventDispatcher SaveStateDispatcher;
 	static EventDispatcher AllPurposeDispatcher;
+
+	/*
+	*****************************
+	* Asset Registry
+	* INFO:
+	* This could be refactored to reside inside the GameMode, cause in the current Implemention, only one GameMode can be active at a time
+	* but for future use or expansion, i will let them here for now
+	* but then it also should be its own class
+	* 
+	*****************************
+	*/
+
+	template <typename T>
+	std::shared_ptr<T> LoadAssetFromSoftObjectPath(SoftObjectPath<T> Path)
+	{
+		std::string FullPath = Path.ToString();
+		size_t Index = FullPath.find_first_of("/");
+
+		std::string GameMode = FullPath.substr(0, Index);
+		std::string Object = FullPath.substr(Index + 1);
+
+		if (ActiveStateMachine.GetCurrentGameMode()->GetName() != GameMode)
+		{
+			return nullptr;
+		}
+
+		std::shared_ptr<T> Obj = std::dynamic_pointer_cast<T>(ActiveStateMachine.GetCurrentGameMode()->m_Objects[FullPath]);
+
+		return Obj;
+	}
+
+	std::string RegisterAsset(const std::string name);
+
+	void UnregisterAsset(const std::string name);
+
+	std::string GenerateNextAvaiableName(const std::string base_name);
+
+	/*
+	*****************************
+	* Utitlity
+	*****************************
+	*/
 
 	static GameModeSwitcher ActiveStateMachine;
 

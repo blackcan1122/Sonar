@@ -2,6 +2,8 @@
 #include "Base/Core.h"
 #include "Base/GameMode.h"
 #include "UI/WaterfallDisplay.hpp"
+#include "UI/Map.hpp"
+#include "Entities/Player.hpp"
 
 /**
 * Core game state manager and object lifecycle controller.
@@ -54,6 +56,8 @@
 * - Override cleanup logic via DestroyObjectExplicitly() when needed
 */
 
+
+
 class SandboxGameMode : public GameMode
 {
 public:
@@ -64,13 +68,19 @@ public:
 
 	void Update() override;
 	void SetName(std::string Name) override;
+	void BeginPlay() override;
 	std::string GetName() override;
 
 protected:
 
 	float m_DeltaTime = 0;
 
-	std::weak_ptr<Waterfall> WaterfallDisplay;
-	std::weak_ptr<Waterfall> WaterfallDisplay2;
+	SoftObjectPath<Waterfall> WaterfallDisplay;
+	SoftObjectPath<Waterfall> WaterfallDisplay2;
+	SoftObjectPath<Map> MapDisplay;
+	SoftObjectPath<Player> PlayerOne;
+	SoftObjectPath<Player> PlayerTwo;
+
+
 
 };
