@@ -221,8 +221,6 @@ void GameInstance::GameLoop()
 		}
 		ActiveStateMachine.UpdateGameMode();
 
-		std::cout << AssetRegistry["Sandbox/class.Waterfall"].size() << std::endl;
-
 		// Windows Resize Event
 		if (GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.ScreenHeight || GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.ScreenWidth)
 		{
