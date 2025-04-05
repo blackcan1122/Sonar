@@ -10,10 +10,7 @@ class IObject
 	friend class Factory;
 public:
 
-	IObject()
-	{
-
-	};
+	IObject() = default;
 
 	virtual std::type_index GetStaticClass() const { return typeid(*this); };
 	std::type_index StaticClass() { return typeid(IObject); };

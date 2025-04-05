@@ -55,7 +55,6 @@ void InitLogger()
             try 
             {
                 fs::remove(FileEntries[i].first);  // Delete oldest files first
-                std::cout << "Deleted: " << FileEntries[i].first << std::endl;
                 LOG_INFO("Deleted: {}", FileEntries[i].first.string());
             }
             catch (const fs::filesystem_error& e) 
