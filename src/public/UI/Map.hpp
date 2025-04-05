@@ -4,17 +4,29 @@
 
 class Player;
 
+
+// TODO: Move this enums somewhere more fitting and correct
 enum ObjectType
 {
 	Submarine,
 	Ship
 };
 
+enum ObjectState
+{
+	Friendly,
+	Enemy,
+	Neutral,
+	Unknown
+};
+
+
+
 DECLARE_CLASS(Map, Display)
 
 public:
 
-	Map(Vector2 Pos);
+	Map(std::string Name, Vector2 Pos);
 	Map(int X, int Y);
 
 	virtual void Tick(float DeltaTime) override;
@@ -23,8 +35,7 @@ public:
 
 	void AddObjectToDraw(std::weak_ptr<IObject> Object);
 
-	Texture2D PlayerIcon;
-	Texture2D ShipIcon;
+
 
 	bool IsDragging = false;
 
@@ -34,7 +45,19 @@ public:
 
 private:
 
-	std::vector<std::pair<std::weak_ptr<IObject>, ObjectType>> ObjectsToDraw;
+	Matrix GetViewProjectionMatrix() const;
+
+	void LoadRessources();
+
+	const std::string PlayerIconPath = (GameInstance::GetInstance()->WorkingDirectory + "/resources/imgs/PlayerMap.png");
+	const std::string ShipIconPath = (GameInstance::GetInstance()->WorkingDirectory + "/resources/imgs/ShipIcon.png");
+
+	Texture2D PlayerIcon;
+	Texture2D ShipIcon;
+
+	Color ColorLookup[4] = { GREEN, RED, YELLOW, GRAY };
+
+	std::vector<std::pair<std::weak_ptr<IObject>, std::pair<ObjectType, ObjectState>>> ObjectsToDraw;
 	float ZoomLevel = 1.f;
 
 	Vector2 MapOffset = { 0, 0 };			// World-space offset

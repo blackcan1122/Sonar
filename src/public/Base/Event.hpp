@@ -9,8 +9,6 @@ DECLARE_CLASS(IEvent, Object)
 public:
 
 	virtual ~IEvent() = default;
-	virtual std::string GetName() const = 0;
-
 END_CLASS
 
 

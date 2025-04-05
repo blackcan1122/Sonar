@@ -3,7 +3,7 @@
 #include "Entities/Player.hpp"
 #include <iostream>
 
-Map::Map(Vector2 Pos)
+Map::Map(std::string Name, Vector2 Pos)
     :Display(Pos.x, Pos.y)
 {
     SourceRect.width = Pos.x;
@@ -22,24 +22,41 @@ void Map::Draw()
     BeginTextureMode(ActiveRenderTarget);
     ClearBackground(BLACK);
 
-    for (const auto& Object : ObjectsToDraw)
-    {
-        if (Object.second == ObjectType::Submarine)
+    for (const auto& [objWeak, type] : ObjectsToDraw) {
+        auto obj = objWeak.lock();
+        if (!obj) continue;
+
+        std::weak_ptr<Entity> Object = std::dynamic_pointer_cast<Entity>(obj);
+
+        Vector2 screenPos = ConvertWorldToScreenPos(Object.lock()->Position);
+
+        // Frustum culling: skip off-screen objects
+        if (screenPos.x < -100 || screenPos.x > DestinationRect.width + 100 ||
+            screenPos.y < -100 || screenPos.y > DestinationRect.height + 100) {
+            continue;
+        }
+
+        switch (type.first) 
         {
-            auto CurrentPlayer = std::dynamic_pointer_cast<Player>(Object.first.lock());
-            if (!CurrentPlayer) continue;
-
-            float iconScale = ZoomLevel;
-            Vector2 iconSize = {
-                PlayerIcon.width * iconScale,
-                PlayerIcon.height * iconScale
-            };
-
-            Vector2 posInTexture = ConvertWorldToScreenPos(CurrentPlayer->Position);
-            posInTexture.x -= iconSize.x / 2.0f;
-            posInTexture.y -= iconSize.y / 2.0f;
-
-            DrawTextureEx(PlayerIcon, posInTexture, 0.0f, iconScale, BLUE);
+            case ObjectType::Submarine: 
+            {
+                auto player = std::dynamic_pointer_cast<Player>(obj);
+                if (player) 
+                {
+                    DrawTextureEx(
+                        PlayerIcon,
+                        Vector2Subtract(screenPos, {
+                            PlayerIcon.width * ZoomLevel / 2,
+                            PlayerIcon.height * ZoomLevel / 2
+                            }),
+                        Object.lock()->Rotation,
+                        ZoomLevel,
+                        ColorLookup[static_cast<int>(type.second)]
+                    );
+                }
+                break;
+            }
+                                  // Handle Ship type similarly
         }
     }
 
@@ -48,33 +65,38 @@ void Map::Draw()
 
 void Map::Tick(float DeltaTime)
 {
-    // Handle zoom and pan only if mouse is over the map
-    if (CheckCollisionPointRec(GetMousePosition(), DestinationRect))
-    {
+    // Handle input (same as before)
+    if (CheckCollisionPointRec(GetMousePosition(), DestinationRect)) {
         // Zoom
         ZoomLevel += GetMouseWheelMove() * 0.1f;
-        ZoomLevel = std::clamp(ZoomLevel, 0.1f, 10.0f);
+        ZoomLevel = Clamp(ZoomLevel, 0.1f, 10.0f);
 
         // Pan
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
+        {
             IsDragging = true;
             LastMousePosition = GetMousePosition();
         }
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
+        {
             IsDragging = false;
         }
-        if (IsDragging && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-            Vector2 currentMousePos = GetMousePosition();
-            Vector2 deltaMouse = Vector2Subtract(currentMousePos, LastMousePosition);
-            Vector2 deltaWorld = Vector2Scale(deltaMouse, 1.0f / ZoomLevel);
-            CameraWorldPosition.x -= deltaWorld.x;
-            CameraWorldPosition.y -= deltaWorld.y;
-            LastMousePosition = currentMousePos;
+        if (IsDragging) 
+        {
+            Vector2 delta = Vector2Scale(
+                Vector2Subtract(GetMousePosition(), LastMousePosition),
+                1.0f / ZoomLevel
+            );
+            CameraWorldPosition = Vector2Subtract(CameraWorldPosition, delta);
+            LastMousePosition = GetMousePosition();
         }
     }
-    else {
+    else
+    {
         IsDragging = false;
     }
+
+
 
     Draw();
     RenderToMainBuffer();
@@ -82,33 +104,70 @@ void Map::Tick(float DeltaTime)
 
 void Map::Init()
 {
-    Image ImagePlayer = LoadImage((GameInstance::GetInstance()->WorkingDirectory + "\\resources\\imgs\\PlayerMap.png").c_str());
-    PlayerIcon = LoadTextureFromImage(ImagePlayer);
-    UnloadImage(ImagePlayer);
+    try
+    {
+        LoadRessources();
+    }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR("{}", e.what());
+    }
     CameraWorldPosition = { 0.0f, 0.0f };
     ZoomLevel = 1.0f;
 }
 
-void Map::AddObjectToDraw(std::weak_ptr<IObject> Object)
+void Map::AddObjectToDraw(std::weak_ptr<IObject> Object) 
 {
     if (Object.lock()->GetStaticClass() == Player::StaticClass())
     {
         auto playerPtr = std::dynamic_pointer_cast<Player>(Object.lock());
-        ObjectsToDraw.push_back({ Object, ObjectType::Submarine });
-        TrackedPlayer = playerPtr;
-        // Initialize camera to player's position
-        if (!IsDragging) {
-            CameraWorldPosition = playerPtr->Position;
-        }
+        ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, ObjectState::Enemy } });
     }
 }
 
 Vector2 Map::ConvertWorldToScreenPos(Vector2 worldPos) const
 {
-    Vector2 relativePos = Vector2Subtract(worldPos, CameraWorldPosition);
-    Vector2 scaledPos = Vector2Scale(relativePos, ZoomLevel);
-    return Vector2{
-        scaledPos.x + (DestinationRect.width / 2),
-        scaledPos.y + (DestinationRect.height / 2)
-    };
+    Matrix transform = GetViewProjectionMatrix();
+    Vector3 transformed = Vector3Transform({ worldPos.x, worldPos.y, 0 }, transform);
+    return { transformed.x, transformed.y };
+}
+
+Matrix Map::GetViewProjectionMatrix() const
+{
+    Matrix translate = MatrixTranslate(-CameraWorldPosition.x, -CameraWorldPosition.y, 0);
+
+    Matrix scale = MatrixScale(ZoomLevel, ZoomLevel, 1);
+
+    Matrix offset = MatrixTranslate(
+        DestinationRect.width / 2.0f,
+        DestinationRect.height / 2.0f,
+        0
+    );
+
+    return MatrixMultiply(MatrixMultiply(translate, scale), offset);
+}
+
+void Map::LoadRessources()
+{
+    // Player Icon
+    Image ImageSubmarine = LoadImage(PlayerIconPath.c_str());
+    if (!ImageSubmarine.data)
+    {
+        UnloadImage(ImageSubmarine);
+        throw std::runtime_error("Failed To Load Player Icon: " + PlayerIconPath);
+    }
+    PlayerIcon = LoadTextureFromImage(ImageSubmarine);
+    UnloadImage(ImageSubmarine);
+
+    // Ship Icon
+    Image ImageShip = LoadImage(ShipIconPath.c_str());
+    if (!ImageShip.data)
+    {
+        UnloadImage(ImageShip);
+        throw std::runtime_error("Failed To Load Ship Icon: " + ShipIconPath);
+    }
+
+    ShipIcon = LoadTextureFromImage(ImageShip);
+    UnloadImage(ImageShip);
+
 }

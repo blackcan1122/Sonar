@@ -18,8 +18,8 @@ void GameModeSwitcher::ChangeState(const std::string& StateName)
 	
 	LOG_INFO("GameMode: {} Requested Loading", StateName);
 	CurrentGameMode = StateFactory[StateName]();
-	LOG_INFO("GameMode: {} Sucessfully Loaded", StateName);
-
+	LOG_INFO("GameMode: {} Successfully Loaded", StateName);
+	CurrentGameMode->BeginPlay();
 
 }
 

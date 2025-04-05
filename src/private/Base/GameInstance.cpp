@@ -29,6 +29,7 @@ EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
 GameModeSwitcher GameInstance::ActiveStateMachine;
 std::string GameInstance::WorkingDirectory;
+std::unordered_map<std::string, std::set<int32_t>> GameInstance::AssetRegistry;
 
 // Definition of the static member
 GameInstance* GameInstance::Instance = nullptr;
@@ -36,18 +37,119 @@ GameInstance* GameInstance::Instance = nullptr;
 GameInstance::GameInstance(WindowProperties Properties)
 	: m_WindowProperties(Properties)
 {
-	init_logger();
+	InitLogger();
 	spdlog::flush_every(std::chrono::seconds(1));
 	LOG_INFO("GameInstace Initialized");
 
 }
 
+std::string GameInstance::RegisterAsset(const std::string name)
+{
+	std::string FutureName = GenerateNextAvaiableName(name);
+	std::string base;
+	int num;
+	if (!ParseAssetName(FutureName, base, num))
+	{
+		return std::string("");
+	}
+
+	if (num == -1) 
+	{
+		// Base name without number (implicit 0)
+		AssetRegistry[base].insert(0);
+	}
+	else 
+	{
+		AssetRegistry[base].insert(num);
+	}
+
+	return FutureName;
+}
+
+void GameInstance::UnregisterAsset(const std::string name)
+{
+	std::string base;
+	int num;
+	if (!ParseAssetName(name, base, num)) return;
+
+	auto it = AssetRegistry.find(base);
+	if (it == AssetRegistry.end()) return;
+
+	if (num == -1) num = 0; // Handle base name removal
+
+	it->second.erase(num);
+	if (it->second.empty()) {
+		AssetRegistry.erase(it);
+	}
+}
+
+std::string GameInstance::GenerateNextAvaiableName(const std::string base_name)
+{
+	const auto& numbers = AssetRegistry[base_name];
+	if (numbers.empty()) {
+		return base_name; // Use base name first
+	}
+
+	// Find first gap starting from 0
+	int expected = 0;
+	for (int num : numbers) 
+	{
+		if (num > expected) break;
+		expected++;
+	}
+
+	if (expected == 0) 
+	{
+		return base_name; // Use base name if 0 is available
+	}
+
+	// Format with leading zero for 2-digit numbers
+	std::ostringstream oss;
+	oss << base_name << "_" << std::setw(2) << std::setfill('0') << expected;
+	return oss.str();
+}
+
+
+bool GameInstance::ParseAssetName(const std::string& FullName, std::string& OutBaseName, int32_t& OutNumber)
+{
+	size_t last_underscore = FullName.find_last_of('_');
+	if (last_underscore == FullName.npos)
+	{
+		OutBaseName = FullName;
+		OutNumber = -1;
+		return true;
+	}
+
+	std::string NumberPart = FullName.substr(last_underscore + 1);
+	if (NumberPart.empty())
+	{
+		return false;
+	}
+
+	try
+	{
+		size_t Index;
+		int Num = std::stoi(NumberPart, &Index);
+		if (Index != NumberPart.size())
+		{
+			return false;
+		}
+
+		OutBaseName = FullName.substr(0, last_underscore);
+		OutNumber = Num;
+		return true;
+	}
+	catch (...)
+	{
+		return false;
+	}
+}
 
 void GameInstance::InitGameInstance(WindowProperties Properties)
 {
 	if (Instance != nullptr)
 	{
-		LOG_ERROR("GameInstance already Existing");
+		std::cerr << "GameInstance was already initialized" << std::endl;
 		return;
 	}
 
@@ -64,7 +166,7 @@ GameInstance* GameInstance::GetInstance()
 	{
 		return Instance;
 	}
-	LOG_ERROR("Call InitGameInstance First");
+	std::cerr << "GameInstance was not Created, please Call InitGameInstance first" << std::endl;
 }
 
 GameMode* GameInstance::GetCurrentGameMode()
@@ -105,7 +207,6 @@ void GameInstance::GameLoop()
 	// Setting initial Start Mode
 	ActiveStateMachine.ChangeState("Menu");
 
-
 	std::shared_ptr<AllPurposeEvent> WindowResizeEvent = std::make_shared<AllPurposeEvent>();
 	std::shared_ptr<WindowResizeData> CurrentWindowResizeData = std::make_shared<WindowResizeData>();
 
@@ -116,17 +217,14 @@ void GameInstance::GameLoop()
 		BeginDrawing();
 		if (ActiveStateMachine.isPendingKillLastMode())
 		{
-			std::string LastName = ActiveStateMachine.GetLastGameMode()->GetName();
 			ActiveStateMachine.KillLastGameMode();
-
 		}
-
 		ActiveStateMachine.UpdateGameMode();
 
 		// Windows Resize Event
 		if (GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.ScreenHeight || GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.ScreenWidth)
 		{
-
+			std::cout << "Window Resize" << std::endl;
 			GameInstance::GetInstance()->m_WindowProperties.ScreenHeight = GetScreenHeight();
 			GameInstance::GetInstance()->m_WindowProperties.ScreenWidth = GetScreenWidth();
 
@@ -149,3 +247,4 @@ void GameInstance::GameLoop()
 		EndDrawing();
 	}
 }
+

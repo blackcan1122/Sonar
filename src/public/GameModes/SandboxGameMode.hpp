@@ -68,17 +68,18 @@ public:
 
 	void Update() override;
 	void SetName(std::string Name) override;
+	void BeginPlay() override;
 	std::string GetName() override;
 
 protected:
 
 	float m_DeltaTime = 0;
 
-	std::weak_ptr<Waterfall> WaterfallDisplay;
-	std::weak_ptr<Waterfall> WaterfallDisplay2;
-	std::weak_ptr<Map> MapDisplay;
-	std::weak_ptr<Player> PlayerOne;
-	std::weak_ptr<Player> PlayerTwo;
+	SoftObjectPath<Waterfall> WaterfallDisplay;
+	SoftObjectPath<Waterfall> WaterfallDisplay2;
+	SoftObjectPath<Map> MapDisplay;
+	SoftObjectPath<Player> PlayerOne;
+	SoftObjectPath<Player> PlayerTwo;
 
 
 

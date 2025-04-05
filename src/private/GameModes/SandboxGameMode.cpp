@@ -1,34 +1,30 @@
 #include "GameModes/SandboxGameMode.hpp"
 #include "Base/GameInstance.h"
 
-/*
-* TODO:
-*	- Give IObjects a unique tag, and when not defined by the User, should auto generate a Tag,
-*		so it can be used to iterate over the GameMode Object Registry, and doesn't have to create a intermediate gamemode member
-*	- Player Implementation duh
-*	- World Scale and Coordinate System
-*/
-
 SandboxGameMode::SandboxGameMode()
 {
-	SetName("SandboxGameMode");
+	SetName("Sandbox");
 
+}
+
+void SandboxGameMode::BeginPlay()
+{
 	WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 300, 10);
-	WaterfallDisplay.lock()->SetPosition(Vector2{0,0});
+	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
 
 	WaterfallDisplay2 = ObjectFactory.NewObject<Waterfall>(360, 300, 60);
-	WaterfallDisplay2.lock()->SetPosition(Vector2{ 0,310 });
+	WaterfallDisplay2.TryLoad()->SetPosition(Vector2{ 0,310 });
 
 	MapDisplay = ObjectFactory.NewObject<Map>(400, 400);
-	MapDisplay.lock()->SetPosition(Vector2{ 400,100 });
+	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,100 });
 
 	PlayerOne = ObjectFactory.NewObject<Player>();
-	PlayerOne.lock()->Position = Vector2{0,0};
-	MapDisplay.lock()->AddObjectToDraw(PlayerOne);
+	PlayerOne.TryLoad()->Position = Vector2{ 0,0 };
+	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
 
 	PlayerTwo = ObjectFactory.NewObject<Player>();
-	PlayerTwo.lock()->Position = Vector2{ 800,200 };
-	MapDisplay.lock()->AddObjectToDraw(PlayerTwo);
+	PlayerTwo.TryLoad()->Position = Vector2{ 800,200 };
+	MapDisplay.TryLoad()->AddObjectToDraw(PlayerTwo.TryLoad());
 }
 
 SandboxGameMode::~SandboxGameMode()
@@ -39,25 +35,19 @@ void SandboxGameMode::Update()
 {
 		ClearBackground(RED);
 
-		auto MyDisplay = WaterfallDisplay.lock();
 
 		if (IsKeyPressed(KEY_S))
 		{
-			WaterfallDisplay.lock()->MarkForDestruction();
+			WaterfallDisplay.TryLoad()->MarkForDestruction();
 		}
 		if (IsKeyPressed(KEY_N))
 		{
 			WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 360, 30);
-			WaterfallDisplay.lock()->SetPosition(Vector2{ 0,0 });
-		}
-
-		if (IsKeyDown(KEY_D))
-		{
-			MyDisplay = nullptr;
+			WaterfallDisplay.TryLoad()->SetPosition(Vector2{0,0});
 		}
 
 
-		PlayerOne.lock()->Accel(0.2f);
+		PlayerOne.TryLoad()->Accel(0.2f);
 
 		DrawCircleLines(600, 600, 15, BLUE);
 
@@ -72,6 +62,8 @@ void SandboxGameMode::SetName(std::string Name)
 {
 	m_Name = Name;
 }
+
+
 
 std::string SandboxGameMode::GetName()
 {

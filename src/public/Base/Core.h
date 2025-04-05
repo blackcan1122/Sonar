@@ -34,7 +34,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 inline std::shared_ptr<spdlog::logger> g_logger = nullptr;
-void init_logger();
+void InitLogger();
 #if defined(_WIN32)           // raylib uses these names as function parameters
 #undef near
 #undef far
@@ -51,7 +51,7 @@ class TextInputBox;
 class Button;
 class IEvent;
 
-#include "Object.hpp"
+#include "Base/Object.hpp"
 
 // Unsure if i should keep them away, as handling recursive includes suck
 //#include "Base/TickableFactory.h"
@@ -66,13 +66,46 @@ class IEvent;
 //#include "Base/GameMode.h"
 //#include "GameInstance.h"
 
+// STRUCTS
+
+
+/**
+* SoftObjectPath provides a way to reference objects by name rather than direct pointer,
+* allowing for lazy loading, improved serialization, and better memory management.
+*/
+template <typename T>
+struct SoftObjectPath
+{
+
+    SoftObjectPath<T>::SoftObjectPath() {};
+
+    SoftObjectPath(std::string SoftPath)
+        :Path(SoftPath)
+    {
+    }
+
+    std::shared_ptr<T> TryLoad()
+    {
+        return GameInstance::GetInstance()->LoadAssetFromSoftObjectPath(*this);
+    }
+
+    std::string ToString()
+    {
+        return Path;
+    }
+
+private:
+    std::string Path;
+};
+
 
 // MACROS
 
 
 #define AUTOBODY(cls) \
 public: \
-    static std::type_index StaticClass() { return typeid(cls); }
+    static std::type_index StaticClass() { return typeid(cls); } \
+private:
 
 // Macro for intermediate CRTP base classes
 #define DECLARE_CRTP_INTERMEDIATE_CLASS(ClassName, BaseName) \

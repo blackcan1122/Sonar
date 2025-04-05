@@ -16,7 +16,8 @@ Waterfall::Waterfall(int Width, int Height, int TimeFrame)
     UnloadImage(frontImg);
 
     LOG_INFO("Allocated Waterfall Display with Size: {} x {} and {} bytes", Width, Height, sizeof(*this));
-    LOG_INFO("Allocated Waterfall RenderTexture on VRAM with Size: {} x {} and {} bytes", FrontBuffer->m_Width, FrontBuffer->m_Height, (FrontBuffer->m_Width * FrontBuffer->m_Height * sizeof(PixelData)) );
+    int Size = (FrontBuffer->m_Width * FrontBuffer->m_Height * sizeof(PixelData)) / 1024;
+    LOG_INFO("Allocated Waterfall RenderTexture on VRAM with Size: {} x {} and {} Kilobytes", FrontBuffer->m_Width, FrontBuffer->m_Height, Size);
 }
 
 Waterfall::~Waterfall() 

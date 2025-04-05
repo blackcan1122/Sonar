@@ -8,7 +8,6 @@ class DispatcherEvent : public Event
 public:
 	DispatcherEvent() = default;
 
-	std::string GetName() const override;
 	EventDispatcher* GetDispatcher();
 
 	EventDispatcher* CurrentDispatcher;
