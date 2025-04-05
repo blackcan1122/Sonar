@@ -7,5 +7,6 @@
 build/external/*
 build/build_files/*
 bin/*
+logs/*
 .vs
 *.sln
