@@ -68,6 +68,10 @@ class IEvent;
 
 // STRUCTS
 
+/**
+* SoftObjectPath provides a way to reference objects by name rather than direct pointer,
+* allowing for lazy loading, improved serialization, and better memory management.
+*/
 template <typename T>
 struct SoftObjectPath
 {
