@@ -4,6 +4,8 @@
 #include <atomic>
 #include <future>
 
+class Entity;
+
 struct PixelData
 {
 	uint8_t R = 0;
@@ -118,6 +120,8 @@ private:
 
 	void ProcessBackBuffer(int LinesToShift);
 	void GenerateBearings();
+
+	std::weak_ptr<Entity> Listener;
 
 	float TimestepPerPixel();
 	END_CLASS
