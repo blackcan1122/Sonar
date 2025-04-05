@@ -283,3 +283,6 @@ if (downloadRaylib) then
     
         filter { "configurations:Release" }
             optimize "On"
+        
+        filter "action:vs*"
+            buildoptions { "/Zc:__cplusplus", "/utf-8" }
