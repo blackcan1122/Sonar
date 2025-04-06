@@ -9,8 +9,6 @@ GameMode::GameMode()
 void GameMode::Update()
 {
 	float Dt = GetFrameTime();
-	std::vector<std::string> ObjectsToRemove;
-
 	for (auto& Object : m_Objects)
 	{
 		Object.second->Tick(Dt);
