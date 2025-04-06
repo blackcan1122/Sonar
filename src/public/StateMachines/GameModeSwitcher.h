@@ -33,6 +33,7 @@ public:
 	* Returns a pointer to the previously active game mode.
 	* May return nullptr if no previous game mode exists.
 	*/
+
 	GameMode* GetLastGameMode();
 
 

@@ -86,9 +86,16 @@ public:
 			return nullptr;
 		}
 
-		std::shared_ptr<T> Obj = std::dynamic_pointer_cast<T>(ActiveStateMachine.GetCurrentGameMode()->m_Objects[FullPath]);
+		auto MapIT = ActiveStateMachine.GetCurrentGameMode()->m_Objects.find(FullPath);
 
-		return Obj;
+		if (MapIT == ActiveStateMachine.GetCurrentGameMode()->m_Objects.end())
+		{
+			return nullptr;
+		}
+
+		std::shared_ptr<T> CastedOBJ = std::dynamic_pointer_cast<T>(MapIT->second);
+
+		return CastedOBJ;
 	}
 
 	std::string RegisterAsset(const std::string name);

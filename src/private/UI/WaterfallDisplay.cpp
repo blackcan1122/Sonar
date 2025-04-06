@@ -62,27 +62,6 @@ void Waterfall::Tick(float DeltaTime)
         std::swap(FrontBuffer, BackBuffer);
         UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
         std::swap(FrontBuffer, BackBuffer);
-
-        /*
-        * the second swap is a Issue, but for now i just leave it.
-        * we should do more like a partial copy of the frame before, so we keep history
-        * something like:
-        * 
-        * 
-        if (Work > 0 && ThreadDone.load())
-        {
-            WorkerFuture = std::asynch(std::launch::asynch, [this]()
-                {
-                    ShiftPixelDown();
-                    CopyFirstPreviousRow();
-                    ProcessBackBuffer(Work);
-                    ThreadDone.store(true);
-                    RenderReady.store(true);
-               });
-        }
-        * 
-        */
-
         RenderReady.store(false);
     }
 

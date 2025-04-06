@@ -58,6 +58,7 @@ private:
 	Color ColorLookup[4] = { GREEN, RED, YELLOW, GRAY };
 
 	std::vector<std::pair<std::weak_ptr<IObject>, std::pair<ObjectType, ObjectState>>> ObjectsToDraw;
+	std::vector<size_t> IndicesPendingKill;
 	float ZoomLevel = 1.f;
 
 	Vector2 MapOffset = { 0, 0 };			// World-space offset

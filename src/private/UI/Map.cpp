@@ -22,9 +22,18 @@ void Map::Draw()
     BeginTextureMode(ActiveRenderTarget);
     ClearBackground(BLACK);
 
-    for (const auto& [objWeak, type] : ObjectsToDraw) {
-        auto obj = objWeak.lock();
-        if (!obj) continue;
+    for (size_t i = 0; i < ObjectsToDraw.size(); i++)
+    {
+        auto ObjectPair = ObjectsToDraw[i];
+        auto Type = ObjectPair.second.first;
+        auto State = ObjectPair.second.second;
+        auto obj = ObjectPair.first.lock();
+
+        if (!obj)
+        {
+            IndicesPendingKill.push_back(i);
+            continue; 
+        }
 
         std::weak_ptr<Entity> Object = std::dynamic_pointer_cast<Entity>(obj);
 
@@ -36,7 +45,7 @@ void Map::Draw()
             continue;
         }
 
-        switch (type.first) 
+        switch (Type)
         {
             case ObjectType::Submarine: 
             {
@@ -51,7 +60,7 @@ void Map::Draw()
                             }),
                         Object.lock()->Rotation,
                         ZoomLevel,
-                        ColorLookup[static_cast<int>(type.second)]
+                        ColorLookup[static_cast<int>(State)]
                     );
                 }
                 break;
@@ -59,6 +68,13 @@ void Map::Draw()
                                   // Handle Ship type similarly
         }
     }
+
+    for (const auto Index : IndicesPendingKill)
+    {
+        ObjectsToDraw.erase(ObjectsToDraw.begin() + Index);
+    }
+    IndicesPendingKill.clear();
+    ObjectsToDraw.shrink_to_fit();
 
     EndTextureMode();
 }

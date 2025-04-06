@@ -2,7 +2,7 @@
 // Raylib
 
 #include "raylib.h"
-#include "raygui.h"
+#include "raygui.hpp"
 #include "rlgl.h"
 #include "raymath.h"
 
