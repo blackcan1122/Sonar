@@ -223,6 +223,11 @@ if (downloadRaylib) then
             links {"OpenGL.framework", "Cocoa.framework", "IOKit.framework", "CoreFoundation.framework", "CoreAudio.framework", "CoreVideo.framework", "AudioToolbox.framework"}
 
         filter{}
+
+        postbuildcommands {
+            -- Cross-platform way to copy entire folder recursively
+            '{COPYDIR} "../../resources/" "%{cfg.targetdir}/resources"'
+        }
 		
 
     project "raylib"

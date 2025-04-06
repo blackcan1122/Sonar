@@ -38,7 +38,10 @@ void SandboxGameMode::Update()
 
 		if (IsKeyPressed(KEY_S))
 		{
-			WaterfallDisplay.TryLoad()->MarkForDestruction();
+			if (auto player = PlayerOne.TryLoad())
+			{
+				player->MarkForDestruction();
+			}
 		}
 		if (IsKeyPressed(KEY_N))
 		{
@@ -47,11 +50,15 @@ void SandboxGameMode::Update()
 		}
 
 
-		PlayerOne.TryLoad()->Accel(0.2f);
+		if (auto tempPlayer = PlayerOne.TryLoad())
+		{
+			tempPlayer->Accel(0.2f);
+		}
 
 		DrawCircleLines(600, 600, 15, BLUE);
 
 		GameMode::Update();
+
 #if DEBUG
 		DrawFPS(GameInstance::GetInstance()->GetWindowProperties().ScreenWidth - 100, 20);
 #endif

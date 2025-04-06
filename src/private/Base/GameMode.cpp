@@ -52,6 +52,7 @@ void GameMode::CleanUpPendingKill()
 	{
 		DestroyObjectExplicitly(Object);
 	}
+
 	m_PendingKill.clear();
 }
 
