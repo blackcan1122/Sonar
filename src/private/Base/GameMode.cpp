@@ -69,9 +69,12 @@ void GameMode::UnregisterObject(IObject* inObject)
 	m_Objects.erase(inObject->GetName());
 }
 
-void GameMode::DestroyObjectExplicitly(std::shared_ptr<IObject> InObject)
+bool GameMode::DestroyObjectExplicitly(std::shared_ptr<IObject> InObject)
 {
-	m_Objects.erase(InObject->GetName());
-
-	InObject.reset();
+	if (m_Objects.erase(InObject->GetName()) != 0)
+	{
+		InObject.reset();
+		return true;
+	}
+	return false;
 }

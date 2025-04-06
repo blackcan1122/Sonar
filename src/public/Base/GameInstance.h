@@ -100,7 +100,7 @@ public:
 
 	std::string RegisterAsset(const std::string name);
 
-	void UnregisterAsset(const std::string name);
+	bool UnregisterAsset(const std::string name);
 
 	std::string GenerateNextAvaiableName(const std::string base_name);
 

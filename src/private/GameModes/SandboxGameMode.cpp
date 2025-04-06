@@ -38,10 +38,7 @@ void SandboxGameMode::Update()
 
 		if (IsKeyPressed(KEY_S))
 		{
-			if (auto player = PlayerOne.TryLoad())
-			{
-				player->MarkForDestruction();
-			}
+			DestroyObjectExplicitly(PlayerOne);
 		}
 		if (IsKeyPressed(KEY_N))
 		{

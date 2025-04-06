@@ -126,7 +126,7 @@ void Map::Init()
     }
     catch (const std::exception& e)
     {
-        LOG_ERROR("{}", e.what());
+        LOG_ERROR(l_RESOURCES, TEXT("{}", e.what()));
     }
     CameraWorldPosition = { 0.0f, 0.0f };
     ZoomLevel = 1.0f;

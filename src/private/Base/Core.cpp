@@ -55,11 +55,13 @@ void InitLogger()
             try 
             {
                 fs::remove(FileEntries[i].first);  // Delete oldest files first
-                LOG_INFO("Deleted: {}", FileEntries[i].first.string());
+                LOG_INFO(l_HOUSE_KEEPING, TEXT("Deleted: '{}'", FileEntries[i].first.string()));
             }
             catch (const fs::filesystem_error& e) 
             {
-                LOG_INFO("Failed to Delete: {}, Error Message: {}", FileEntries[i].first.string(), e.what());
+                LOG_ERROR(l_HOUSE_KEEPING, TEXT("Failed to Delete: '{}', Error Message: '{}'", 
+                    FileEntries[i].first.string(), 
+                    e.what()));
             }
         }
     }

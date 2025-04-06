@@ -24,12 +24,13 @@ public:
 				new T(std::forward<Args>(args)...),
 				[Outter = m_Outter](T* ptr) 
 				{
+					LOG_INFO(l_FACTORY, TEXT("Cleaned Up Object: '{}'", ptr->m_Name));
 					Outter->UnregisterObject(ptr);
 					GameInstance::GetInstance()->UnregisterAsset(ptr->m_Name);
 					delete ptr;
 				});
 		
-		LOG_INFO("Factory Created Object from Type {} with size: {} and Registred to Outter: {}", typeid(T).name(), sizeof(T), m_Outter->GetName());
+		LOG_INFO(l_FACTORY, TEXT("Created Object from Type '{}' with size: '{}' and Registred to Outter: '{}'", typeid(T).name(), sizeof(T), m_Outter->GetName()));
 
 
 		std::shared_ptr<IObject> CastedObj = std::dynamic_pointer_cast<IObject>(Obj);

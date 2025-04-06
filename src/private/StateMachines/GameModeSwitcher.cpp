@@ -8,18 +8,19 @@ void GameModeSwitcher::RegisterState(const std::string& StateName, std::function
 
 void GameModeSwitcher::ChangeState(const std::string& StateName)
 {
+	LOG_INFO(l_GAMEMODE, TEXT("GameMode: '{}' Requested Loading", StateName));
 	if (CurrentGameMode != nullptr)
 	{
 		LastGameMode = CurrentGameMode;
 		bPendingKillLastMode = true;
-		LOG_INFO("GameMode: {} Marked for Deletion", LastGameMode->GetName());
+		LOG_INFO(l_GAMEMODE, TEXT("GameMode: '{}' Marked for Deletion", LastGameMode->GetName()));
 
 	}
 	
-	LOG_INFO("GameMode: {} Requested Loading", StateName);
+
 	CurrentGameMode = StateFactory[StateName]();
-	LOG_INFO("GameMode: {} Successfully Loaded", StateName);
 	CurrentGameMode->BeginPlay();
+	LOG_INFO(l_GAMEMODE, TEXT("GameMode: '{}' Successfully Loaded and 'BeginPlay()' called", StateName));
 
 }
 
@@ -34,7 +35,7 @@ void GameModeSwitcher::KillLastGameMode()
 		{
 			bPendingKillLastMode = false;
 
-			LOG_INFO("GameMode: {} Deleted", LastName);
+			LOG_INFO(l_GAMEMODE, TEXT("Old GameMode: '{}' Deleted", LastName));
 
 		}
 	}

@@ -126,7 +126,45 @@ AUTOBODY(ClassName) \
 
 
 
+#define TEXT(text, ...) fmt::format(text, ##__VA_ARGS__)
+
+// Logging Categories
+#define l_DEFAULT "[DEFAULT] "
+#define l_GAMEMODE "[GAMEMODE] "
+#define l_ASSET_REGISTRY "[ASSET REGISTRY] "
+#define l_GAME_INSTANCE "[GAME INSTANCE] "
+#define l_FACTORY "[IOBJECT FACTORY] "
+#define l_DISPATCHER "[EVENT DISPATCHER] "
+#define l_HOUSE_KEEPING "[HOUSE KEEPING] "
+#define l_RESOURCES "[RESOURCES] "
+
+inline void LogInfo(const std::string& message) {
+    SPDLOG_LOGGER_INFO(g_logger, "{} {}", l_DEFAULT, message);
+}
+
+inline void LogInfo(const char* cat, const std::string& message) {
+    SPDLOG_LOGGER_INFO(g_logger, "{} {}", cat, message);
+}
+
+inline void LogWarn(const std::string& message) {
+    SPDLOG_LOGGER_WARN(g_logger, "{} {}", l_DEFAULT, message);
+}
+
+inline void LogWarn(const char* cat, const std::string& message) {
+    SPDLOG_LOGGER_WARN(g_logger, "{} {}", cat, message);
+}
+
+inline void LogError(const std::string& message) {
+    SPDLOG_LOGGER_ERROR(g_logger, "{} {}", l_DEFAULT, message);
+}
+
+inline void LogError(const char* cat, const std::string& message) {
+    SPDLOG_LOGGER_ERROR(g_logger, "{} {}", cat, message);
+}
+
+
 // Logging Macros
-#define LOG_INFO(...)  SPDLOG_LOGGER_INFO(g_logger, __VA_ARGS__)
-#define LOG_WARN(...)  SPDLOG_LOGGER_WARN(g_logger, __VA_ARGS__)
-#define LOG_ERROR(...) SPDLOG_LOGGER_ERROR(g_logger, __VA_ARGS__)
+#define LOG_INFO(...)  LogInfo(__VA_ARGS__)
+#define LOG_WARN(...)  LogWarn(__VA_ARGS__)
+#define LOG_ERROR(...) LogError(__VA_ARGS__)
+

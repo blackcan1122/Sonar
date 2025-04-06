@@ -39,8 +39,7 @@ GameInstance::GameInstance(WindowProperties Properties)
 {
 	InitLogger();
 	spdlog::flush_every(std::chrono::seconds(1));
-	LOG_INFO("GameInstace Initialized");
-
+	LOG_INFO(l_GAME_INSTANCE, TEXT("GameInstance Initialized"));
 }
 
 std::string GameInstance::RegisterAsset(const std::string name)
@@ -50,6 +49,7 @@ std::string GameInstance::RegisterAsset(const std::string name)
 	int num;
 	if (!ParseAssetName(FutureName, base, num))
 	{
+		LOG_ERROR(l_ASSET_REGISTRY, TEXT("Error Parsing AssetName: '{}'", FutureName));
 		return std::string("");
 	}
 
@@ -63,17 +63,26 @@ std::string GameInstance::RegisterAsset(const std::string name)
 		AssetRegistry[base].insert(num);
 	}
 
+	LOG_INFO(l_ASSET_REGISTRY, TEXT("'{}' Added to Asset Registry", FutureName));
 	return FutureName;
 }
 
-void GameInstance::UnregisterAsset(const std::string name)
+bool GameInstance::UnregisterAsset(const std::string name)
 {
 	std::string base;
 	int num;
-	if (!ParseAssetName(name, base, num)) return;
+	if (!ParseAssetName(name, base, num))
+	{
+		LOG_ERROR(l_ASSET_REGISTRY, TEXT("Problem with Unregistering Asset: '{}'", name));
+		return false;
+	}
 
 	auto it = AssetRegistry.find(base);
-	if (it == AssetRegistry.end()) return;
+	if (it == AssetRegistry.end())
+	{
+		LOG_ERROR(l_ASSET_REGISTRY, TEXT("Couldn't find Asset in AssetRegistry: '{}'", name));
+		return false;
+	}
 
 	if (num == -1) num = 0; // Handle base name removal
 
@@ -81,6 +90,7 @@ void GameInstance::UnregisterAsset(const std::string name)
 	if (it->second.empty()) {
 		AssetRegistry.erase(it);
 	}
+	LOG_INFO(l_ASSET_REGISTRY, TEXT("Successfully removed '{}' from Asset Registry", name));
 }
 
 std::string GameInstance::GenerateNextAvaiableName(const std::string base_name)
@@ -149,7 +159,7 @@ void GameInstance::InitGameInstance(WindowProperties Properties)
 {
 	if (Instance != nullptr)
 	{
-		std::cerr << "GameInstance was already initialized" << std::endl;
+		LOG_ERROR(l_GAME_INSTANCE, "It was tried to initialize a GameInstance, when GameInstace is already initialized");
 		return;
 	}
 
@@ -166,7 +176,8 @@ GameInstance* GameInstance::GetInstance()
 	{
 		return Instance;
 	}
-	std::cerr << "GameInstance was not Created, please Call InitGameInstance first" << std::endl;
+
+	LOG_ERROR(l_GAME_INSTANCE, "GameInstace not Initialized, please Call: 'GameInstance::InitGameInstance(WindowProperties Properties)' first");
 }
 
 GameMode* GameInstance::GetCurrentGameMode()
@@ -191,6 +202,11 @@ void GameInstance::CreateWindow()
 
 	InitWindow(Instance->m_WindowProperties.ScreenWidth, Instance->m_WindowProperties.ScreenHeight, "Sonar");
 	SetTargetFPS(Instance->m_WindowProperties.TargetFps);
+
+	LOG_INFO(l_GAME_INSTANCE, TEXT("Window Initialized with Properties, Size: {} x {}, TargetFPS: {}",
+		Instance->m_WindowProperties.ScreenWidth, 
+		Instance->m_WindowProperties.ScreenHeight, 
+		Instance->m_WindowProperties.TargetFps));
 }
 
 void GameInstance::GameLoop()
@@ -206,6 +222,8 @@ void GameInstance::GameLoop()
 
 	// Setting initial Start Mode
 	ActiveStateMachine.ChangeState("Menu");
+	LOG_INFO(l_GAMEMODE, TEXT("Startup GameMode loaded: '{}'", ActiveStateMachine.GetCurrentGameMode()->GetName()));
+
 
 	std::shared_ptr<AllPurposeEvent> WindowResizeEvent = std::make_shared<AllPurposeEvent>();
 	std::shared_ptr<WindowResizeData> CurrentWindowResizeData = std::make_shared<WindowResizeData>();
@@ -224,7 +242,6 @@ void GameInstance::GameLoop()
 		// Windows Resize Event
 		if (GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.ScreenHeight || GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.ScreenWidth)
 		{
-			std::cout << "Window Resize" << std::endl;
 			GameInstance::GetInstance()->m_WindowProperties.ScreenHeight = GetScreenHeight();
 			GameInstance::GetInstance()->m_WindowProperties.ScreenWidth = GetScreenWidth();
 
@@ -240,6 +257,7 @@ void GameInstance::GameLoop()
 			AllPurposeDispatcher.Dispatch(WindowResizeEvent);
 
 		}
+
 		// GameMode Independend UI Drawings
 
 
