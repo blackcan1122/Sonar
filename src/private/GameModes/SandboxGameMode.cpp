@@ -38,7 +38,10 @@ void SandboxGameMode::Update()
 
 		if (IsKeyPressed(KEY_S))
 		{
-			PlayerOne.TryLoad()->MarkForDestruction();
+			if (auto player = PlayerOne.TryLoad())
+			{
+				player->MarkForDestruction();
+			}
 		}
 		if (IsKeyPressed(KEY_N))
 		{
