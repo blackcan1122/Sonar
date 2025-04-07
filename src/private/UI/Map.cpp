@@ -37,7 +37,7 @@ void Map::Draw()
 
         std::weak_ptr<Entity> Object = std::dynamic_pointer_cast<Entity>(obj);
 
-        Vector2 screenPos = ConvertWorldToScreenPos(Object.lock()->Position);
+        Vector2 screenPos = ConvertWorldToScreenPos(Object.lock()->GetEntityLocation());
 
         // Frustum culling: skip off-screen objects
         if (screenPos.x < -100 || screenPos.x > DestinationRect.width + 100 ||
@@ -58,7 +58,7 @@ void Map::Draw()
                             PlayerIcon.width * ZoomLevel / 2,
                             PlayerIcon.height * ZoomLevel / 2
                             }),
-                        Object.lock()->Rotation,
+                        Object.lock()->GetEntityRotation(),
                         ZoomLevel,
                         ColorLookup[static_cast<int>(State)]
                     );

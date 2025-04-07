@@ -8,7 +8,7 @@ public:
 	// Methods
 
 	BaseUI() = default;
-	~BaseUI() = default;
+	virtual ~BaseUI() = default;
 
 
 private:

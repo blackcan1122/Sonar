@@ -27,12 +27,12 @@
 EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
-GameModeSwitcher GameInstance::ActiveStateMachine;
-std::string GameInstance::WorkingDirectory;
-std::unordered_map<std::string, std::set<int32_t>> GameInstance::AssetRegistry;
+GameModeSwitcher GameInstance::g_ActiveStateMachine;
+std::string GameInstance::g_WorkingDirectory;
+std::unordered_map<std::string, std::set<int32_t>> GameInstance::g_AssetRegistry;
 
 // Definition of the static member
-GameInstance* GameInstance::Instance = nullptr;
+GameInstance* GameInstance::g_Instance = nullptr;
 
 GameInstance::GameInstance(WindowProperties Properties)
 	: m_WindowProperties(Properties)
@@ -56,11 +56,11 @@ std::string GameInstance::RegisterAsset(const std::string name)
 	if (num == -1) 
 	{
 		// Base name without number (implicit 0)
-		AssetRegistry[base].insert(0);
+		g_AssetRegistry[base].insert(0);
 	}
 	else 
 	{
-		AssetRegistry[base].insert(num);
+		g_AssetRegistry[base].insert(num);
 	}
 
 	LOG_INFO(l_ASSET_REGISTRY, TEXT("'{}' Added to Asset Registry", FutureName));
@@ -77,8 +77,8 @@ bool GameInstance::UnregisterAsset(const std::string name)
 		return false;
 	}
 
-	auto it = AssetRegistry.find(base);
-	if (it == AssetRegistry.end())
+	auto it = g_AssetRegistry.find(base);
+	if (it == g_AssetRegistry.end())
 	{
 		LOG_ERROR(l_ASSET_REGISTRY, TEXT("Couldn't find Asset in AssetRegistry: '{}'", name));
 		return false;
@@ -88,14 +88,14 @@ bool GameInstance::UnregisterAsset(const std::string name)
 
 	it->second.erase(num);
 	if (it->second.empty()) {
-		AssetRegistry.erase(it);
+		g_AssetRegistry.erase(it);
 	}
 	LOG_INFO(l_ASSET_REGISTRY, TEXT("Successfully removed '{}' from Asset Registry", name));
 }
 
 std::string GameInstance::GenerateNextAvaiableName(const std::string base_name)
 {
-	const auto& numbers = AssetRegistry[base_name];
+	const auto& numbers = g_AssetRegistry[base_name];
 	if (numbers.empty()) {
 		return base_name; // Use base name first
 	}
@@ -157,24 +157,24 @@ bool GameInstance::ParseAssetName(const std::string& FullName, std::string& OutB
 
 void GameInstance::InitGameInstance(WindowProperties Properties)
 {
-	if (Instance != nullptr)
+	if (g_Instance != nullptr)
 	{
 		LOG_ERROR(l_GAME_INSTANCE, "It was tried to initialize a GameInstance, when GameInstace is already initialized");
 		return;
 	}
 
-	WorkingDirectory = GetWorkingDirectory();
+	g_WorkingDirectory = GetWorkingDirectory();
 
-	Instance = new GameInstance(Properties);
+	g_Instance = new GameInstance(Properties);
 	CreateWindow();
 	GameLoop();
 }
 
 GameInstance* GameInstance::GetInstance()
 {
-	if (Instance != nullptr)
+	if (g_Instance != nullptr)
 	{
-		return Instance;
+		return g_Instance;
 	}
 
 	LOG_ERROR(l_GAME_INSTANCE, "GameInstace not Initialized, please Call: 'GameInstance::InitGameInstance(WindowProperties Properties)' first");
@@ -182,7 +182,7 @@ GameInstance* GameInstance::GetInstance()
 
 GameMode* GameInstance::GetCurrentGameMode()
 {
-	return ActiveStateMachine.GetCurrentGameMode();
+	return g_ActiveStateMachine.GetCurrentGameMode();
 }
 
 EventDispatcher& GameInstance::GetUIEventDispatcher()
@@ -200,29 +200,29 @@ void GameInstance::CreateWindow()
 {
 	SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
 
-	InitWindow(Instance->m_WindowProperties.ScreenWidth, Instance->m_WindowProperties.ScreenHeight, "Sonar");
-	SetTargetFPS(Instance->m_WindowProperties.TargetFps);
+	InitWindow(g_Instance->m_WindowProperties.m_ScreenWidth, g_Instance->m_WindowProperties.m_ScreenHeight, "Sonar");
+	SetTargetFPS(g_Instance->m_WindowProperties.m_TargetFps);
 
 	LOG_INFO(l_GAME_INSTANCE, TEXT("Window Initialized with Properties, Size: {} x {}, TargetFPS: {}",
-		Instance->m_WindowProperties.ScreenWidth, 
-		Instance->m_WindowProperties.ScreenHeight, 
-		Instance->m_WindowProperties.TargetFps));
+		g_Instance->m_WindowProperties.m_ScreenWidth, 
+		g_Instance->m_WindowProperties.m_ScreenHeight, 
+		g_Instance->m_WindowProperties.m_TargetFps));
 }
 
 void GameInstance::GameLoop()
 {
 	
 
-	ActiveStateMachine.RegisterState("Menu", []() {return new MenuMode(); });
-	ActiveStateMachine.RegisterState("Sandbox", []() {return new SandboxGameMode(); });
-	ActiveStateMachine.RegisterState("Options", []() {return new OptionsMode(); });
+	g_ActiveStateMachine.RegisterState("Menu", []() {return new MenuMode(); });
+	g_ActiveStateMachine.RegisterState("Sandbox", []() {return new SandboxGameMode(); });
+	g_ActiveStateMachine.RegisterState("Options", []() {return new OptionsMode(); });
 	//ActiveStateMachine.RegisterState("Pong", []() {return new PongGameMod(); });
 	//ActiveStateMachine.RegisterState("Chat", []() {return new ChatTest(); });
 
 
 	// Setting initial Start Mode
-	ActiveStateMachine.ChangeState("Menu");
-	LOG_INFO(l_GAMEMODE, TEXT("Startup GameMode loaded: '{}'", ActiveStateMachine.GetCurrentGameMode()->GetName()));
+	g_ActiveStateMachine.ChangeState("Menu");
+	LOG_INFO(l_GAMEMODE, TEXT("Startup GameMode loaded: '{}'", g_ActiveStateMachine.GetCurrentGameMode()->GetName()));
 
 
 	std::shared_ptr<AllPurposeEvent> WindowResizeEvent = std::make_shared<AllPurposeEvent>();
@@ -233,17 +233,17 @@ void GameInstance::GameLoop()
 	while (!WindowShouldClose())
 	{
 		BeginDrawing();
-		if (ActiveStateMachine.isPendingKillLastMode())
+		if (g_ActiveStateMachine.isPendingKillLastMode())
 		{
-			ActiveStateMachine.KillLastGameMode();
+			g_ActiveStateMachine.KillLastGameMode();
 		}
-		ActiveStateMachine.UpdateGameMode();
+		g_ActiveStateMachine.UpdateGameMode();
 
 		// Windows Resize Event
-		if (GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.ScreenHeight || GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.ScreenWidth)
+		if (GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.m_ScreenHeight || GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.m_ScreenWidth)
 		{
-			GameInstance::GetInstance()->m_WindowProperties.ScreenHeight = GetScreenHeight();
-			GameInstance::GetInstance()->m_WindowProperties.ScreenWidth = GetScreenWidth();
+			GameInstance::GetInstance()->m_WindowProperties.m_ScreenHeight = GetScreenHeight();
+			GameInstance::GetInstance()->m_WindowProperties.m_ScreenWidth = GetScreenWidth();
 
 			// Dispatch Event
 

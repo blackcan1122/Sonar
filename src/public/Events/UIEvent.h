@@ -8,7 +8,7 @@ public:
 
 	BaseUI* ClickedUIElement = nullptr;
 
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override {};
 
 	std::string Payload;
 

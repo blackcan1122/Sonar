@@ -19,17 +19,17 @@ OptionsMode::OptionsMode()
 	SetName("Options");
 
 	UIDispatcher = std::make_shared<EventDispatcher>();
-	UIDispatcher->Name = "UIDispatcher Menu";
+	UIDispatcher->m_Name = "UIDispatcher Menu";
 
-	Image BackgroundImg = LoadImage((GameInstance::GetInstance()->WorkingDirectory + "\\resources\\imgs\\BackgroundMenu.jpg").c_str());
+	Image BackgroundImg = LoadImage((GameInstance::GetInstance()->g_WorkingDirectory + "\\resources\\imgs\\BackgroundMenu.jpg").c_str());
 	Background = LoadTextureFromImage(BackgroundImg);
 	UnloadImage(BackgroundImg);
 
 	WindowProperties CurrentProperties = GameInstance::GetInstance()->GetWindowProperties();
-	int CenterX = CurrentProperties.ScreenWidth / 2;
+	int CenterX = CurrentProperties.m_ScreenWidth / 2;
 
-	Background.width = CurrentProperties.ScreenWidth;
-	Background.height = CurrentProperties.ScreenHeight;
+	Background.width = CurrentProperties.m_ScreenWidth;
+	Background.height = CurrentProperties.m_ScreenHeight;
 
 
 	Rectangle ApplyRec = { GetScreenWidth() - (ButtonWidth + Padding), GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
@@ -125,7 +125,7 @@ void OptionsMode::SetUpEvents()
 			auto CastedEvent = std::dynamic_pointer_cast<UIEvent>(Event);
 			if (CastedEvent->Payload == "Back")
 			{
-				GameInstance::GetInstance()->ActiveStateMachine.ChangeState("Menu");
+				GameInstance::GetInstance()->g_ActiveStateMachine.ChangeState("Menu");
 			}
 		});
 }

@@ -7,12 +7,12 @@ class StateMachine
 {
 private:
 
-	std::map<std::string, std::function<GameMode*()>> StateFactory;
-	GameMode* CurrentGameMode;
+	std::map<std::string, std::function<GameMode*()>> m_StateFactory;
+	GameMode* m_CurrentGameMode;
 
 public:
 
-	StateMachine() : CurrentGameMode(nullptr) {};
+	StateMachine() : m_CurrentGameMode(nullptr) {};
 
 	virtual void RegisterState(const std::string& StateName, std::function<GameMode*()> FactoryFunction);
 

@@ -5,7 +5,7 @@
 
 GameMode* IObject::GetOutter()
 {
-	return GameInstance::ActiveStateMachine.GetCurrentGameMode();
+	return GameInstance::g_ActiveStateMachine.GetCurrentGameMode();
 	//return nullptr
 }
 

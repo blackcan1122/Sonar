@@ -9,21 +9,21 @@ SandboxGameMode::SandboxGameMode()
 
 void SandboxGameMode::BeginPlay()
 {
-	WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 300, 10);
+	WaterfallDisplay = m_ObjectFactory.NewObject<Waterfall>(360, 300, 10);
 	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
 
-	WaterfallDisplay2 = ObjectFactory.NewObject<Waterfall>(360, 300, 60);
+	WaterfallDisplay2 = m_ObjectFactory.NewObject<Waterfall>(360, 300, 60);
 	WaterfallDisplay2.TryLoad()->SetPosition(Vector2{ 0,310 });
 
-	MapDisplay = ObjectFactory.NewObject<Map>(400, 400);
+	MapDisplay = m_ObjectFactory.NewObject<Map>(400, 400);
 	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,100 });
 
-	PlayerOne = ObjectFactory.NewObject<Player>();
-	PlayerOne.TryLoad()->Position = Vector2{ 0,0 };
+	PlayerOne = m_ObjectFactory.NewObject<Player>();
+	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
 
-	PlayerTwo = ObjectFactory.NewObject<Player>();
-	PlayerTwo.TryLoad()->Position = Vector2{ 800,200 };
+	PlayerTwo = m_ObjectFactory.NewObject<Player>();
+	PlayerTwo.TryLoad()->SetEntityLocation(Vector2{ 800,200 });
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerTwo.TryLoad());
 }
 
@@ -42,7 +42,7 @@ void SandboxGameMode::Update()
 		}
 		if (IsKeyPressed(KEY_N))
 		{
-			WaterfallDisplay = ObjectFactory.NewObject<Waterfall>(360, 360, 30);
+			WaterfallDisplay = m_ObjectFactory.NewObject<Waterfall>(360, 360, 30);
 			WaterfallDisplay.TryLoad()->SetPosition(Vector2{0,0});
 		}
 
@@ -57,7 +57,7 @@ void SandboxGameMode::Update()
 		GameMode::Update();
 
 #if DEBUG
-		DrawFPS(GameInstance::GetInstance()->GetWindowProperties().ScreenWidth - 100, 20);
+		DrawFPS(GameInstance::GetInstance()->GetWindowProperties().m_ScreenWidth - 100, 20);
 #endif
 		
 }

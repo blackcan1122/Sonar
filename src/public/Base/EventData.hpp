@@ -3,26 +3,23 @@
 #include <typeindex>
 
 /**
-* 
+* This class can be used to be Attached to a AllPurpose Event, so one Event Class can be used for different kind of Payloads
 */
+
 class IEventData
 {
 public:
     
     
-    virtual std::type_index GetStaticClass() = 0;
+    virtual std::type_index GetStaticClass() { return typeid(*this); };
 
 };
 
 
-template<typename Derived>
-class EventData : public IEventData
-{
-public:
-    virtual std::type_index GetStaticClass() { return typeid(Derived); };
 
-    static std::type_index StaticClass() { return typeid(Derived); };
+DECLARE_CLASS(EventData, IEventData)
+
     
-};
+END_CLASS
 
 
