@@ -33,7 +33,7 @@
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
-inline std::shared_ptr<spdlog::logger> g_logger = nullptr;
+inline std::shared_ptr<spdlog::logger> GeneralLogger = nullptr;
 void InitLogger();
 #if defined(_WIN32)           // raylib uses these names as function parameters
 #undef near
@@ -42,7 +42,7 @@ void InitLogger();
 
 
 
-// Own
+// Own Class Forward
 class EventDispatcher;
 class StateMachine;
 class GameMode;
@@ -51,6 +51,7 @@ class TextInputBox;
 class Button;
 class IEvent;
 
+// Own Header includes, for very important headers
 #include "Base/Object.hpp"
 
 // Unsure if i should keep them away, as handling recursive includes suck
@@ -102,6 +103,7 @@ private:
 // MACROS
 
 
+// Autobody Macro for implementing a Static function in every IObject Derived Class, to make it possible to compare Static Classes against
 #define AUTOBODY(cls) \
 public: \
     static std::type_index StaticClass() { return typeid(cls); } \
@@ -116,16 +118,18 @@ class ClassName : public BaseName<Derived>
 #define DECLARE_CRTP_LEAF_CLASS(ClassName, BaseName) \
 class ClassName : public BaseName<ClassName>
 
+// Macro for all IObject Derived Classes, to correctly implement the Autobody
 #define DECLARE_CLASS(ClassName, BaseClass) \
 class ClassName : public BaseClass \
 { \
 public: \
 AUTOBODY(ClassName) \
 
+
 #define END_CLASS };
 
 
-
+// Text macro, to parse variadic arguments into a finished std::string
 #define TEXT(text, ...) fmt::format(text, ##__VA_ARGS__)
 
 // Logging Categories
@@ -138,28 +142,35 @@ AUTOBODY(ClassName) \
 #define l_HOUSE_KEEPING "[HOUSE KEEPING] "
 #define l_RESOURCES "[RESOURCES] "
 
-inline void LogInfo(const std::string& message) {
-    SPDLOG_LOGGER_INFO(g_logger, "{} {}", l_DEFAULT, message);
+// Log Functions
+inline void LogInfo(const std::string& Message) 
+{
+    SPDLOG_LOGGER_INFO(GeneralLogger, "{} {}", l_DEFAULT, Message);
 }
 
-inline void LogInfo(const char* cat, const std::string& message) {
-    SPDLOG_LOGGER_INFO(g_logger, "{} {}", cat, message);
+inline void LogInfo(const char* Category, const std::string& Message)
+{
+    SPDLOG_LOGGER_INFO(GeneralLogger, "{} {}", Category, Message);
 }
 
-inline void LogWarn(const std::string& message) {
-    SPDLOG_LOGGER_WARN(g_logger, "{} {}", l_DEFAULT, message);
+inline void LogWarn(const std::string& Message)
+{
+    SPDLOG_LOGGER_WARN(GeneralLogger, "{} {}", l_DEFAULT, Message);
 }
 
-inline void LogWarn(const char* cat, const std::string& message) {
-    SPDLOG_LOGGER_WARN(g_logger, "{} {}", cat, message);
+inline void LogWarn(const char* Category, const std::string& Message)
+{
+    SPDLOG_LOGGER_WARN(GeneralLogger, "{} {}", Category, Message);
 }
 
-inline void LogError(const std::string& message) {
-    SPDLOG_LOGGER_ERROR(g_logger, "{} {}", l_DEFAULT, message);
+inline void LogError(const std::string& Message)
+{
+    SPDLOG_LOGGER_ERROR(GeneralLogger, "{} {}", l_DEFAULT, Message);
 }
 
-inline void LogError(const char* cat, const std::string& message) {
-    SPDLOG_LOGGER_ERROR(g_logger, "{} {}", cat, message);
+inline void LogError(const char* Category, const std::string& Message)
+{
+    SPDLOG_LOGGER_ERROR(GeneralLogger, "{} {}", Category, Message);
 }
 
 

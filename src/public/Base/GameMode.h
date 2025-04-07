@@ -67,7 +67,7 @@ public:
 	virtual void SetName(std::string Name);
 	virtual void BeginPlay();
 	virtual std::string GetName();
-	Factory ObjectFactory = Factory(this);
+	Factory m_ObjectFactory = Factory(this);
 
 	virtual bool DestroyObjectExplicitly(std::shared_ptr<IObject> InObject);
 

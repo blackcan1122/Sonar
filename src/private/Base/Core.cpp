@@ -2,14 +2,12 @@
 
 void InitLogger() 
 {
-    namespace fs = std::filesystem;
     const std::string Log = "logs/Sonar.log";
     const std::string LogPath = "logs";
 
-    // Create logs directory if it doesn't exist
-    fs::create_directories(LogPath);
+    std::filesystem::create_directories(LogPath);
 
-    if (fs::exists(Log)) 
+    if (std::filesystem::exists(Log)) 
     {
         const auto Now = std::chrono::system_clock::now();
         const std::time_t Time = std::chrono::system_clock::to_time_t(Now);
@@ -18,33 +16,33 @@ void InitLogger()
         char NameBuffer[64];
         std::strftime(NameBuffer, sizeof(NameBuffer), "%Y%m%d_%H%M%S", &CurrentTime);
         const std::string NewName = fmt::format("logs/Sonar_{}.log", NameBuffer);
-        fs::rename(Log, NewName);
+        std::filesystem::rename(Log, NewName);
     }
 
-    // Initialize the global logger
-    g_logger = spdlog::basic_logger_mt("Basic", Log, true);
-    g_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
-    g_logger->set_level(spdlog::level::info);
+    // Logger Initialization
+    GeneralLogger = spdlog::basic_logger_mt("Basic", Log, true);
+    GeneralLogger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
+    GeneralLogger->set_level(spdlog::level::info);
 
-    std::vector<std::pair<fs::path, fs::file_time_type>> FileEntries;
+    std::vector<std::pair<std::filesystem::path, std::filesystem::file_time_type>> FileEntries;
 
-    // Collect files with timestamps
-    for (const auto& entry : fs::directory_iterator(LogPath))
+    // We Collect timestamps and files in Directory
+    for (const auto& entry : std::filesystem::directory_iterator(LogPath))
     {
         if (entry.is_regular_file()) 
 {
-            FileEntries.emplace_back(entry.path(), fs::last_write_time(entry));
+            FileEntries.emplace_back(entry.path(), std::filesystem::last_write_time(entry));
         }
     }
 
-    // Sort files from oldest to newest
+    // Then we delete all but the 5 most recent ones
     std::sort(FileEntries.begin(), FileEntries.end(),
         [](const auto& a, const auto& b) 
         {
-            return a.second < b.second; // We compare timeStamp against each other
+            return a.second < b.second;
         });
 
-    // Delete oldest files if we have more than 5 log files
+
     if (FileEntries.size() > 5) 
     {
 
@@ -54,10 +52,10 @@ void InitLogger()
         {
             try 
             {
-                fs::remove(FileEntries[i].first);  // Delete oldest files first
+                std::filesystem::remove(FileEntries[i].first);
                 LOG_INFO(l_HOUSE_KEEPING, TEXT("Deleted: '{}'", FileEntries[i].first.string()));
             }
-            catch (const fs::filesystem_error& e) 
+            catch (const std::filesystem::filesystem_error& e) 
             {
                 LOG_ERROR(l_HOUSE_KEEPING, TEXT("Failed to Delete: '{}', Error Message: '{}'", 
                     FileEntries[i].first.string(), 

@@ -3,36 +3,36 @@
 
 void StateMachine::RegisterState(const std::string& StateName, std::function<GameMode* ()> FactoryFunction)
 {
-	StateFactory[StateName] = FactoryFunction;
+	m_StateFactory[StateName] = FactoryFunction;
 }
 
 void StateMachine::ChangeState(const std::string& StateName)
 {
-	if (CurrentGameMode)
+	if (m_CurrentGameMode)
 	{
-		delete CurrentGameMode;
-		CurrentGameMode = nullptr;
-		if (CurrentGameMode == nullptr)
+		delete m_CurrentGameMode;
+		m_CurrentGameMode = nullptr;
+		if (m_CurrentGameMode == nullptr)
 		{
 			std::cout << "GameMode is now successfully Deleted" << std::endl;
 		}
 	}
 
 
-	CurrentGameMode = StateFactory[StateName]();
+	m_CurrentGameMode = m_StateFactory[StateName]();
 	std::cout << "GameMode is now : " << StateName << std::endl;
 
 }
 
 void StateMachine::UpdateGameMode() const
 {
-	if (CurrentGameMode != nullptr)
+	if (m_CurrentGameMode != nullptr)
 	{
-		CurrentGameMode->Update();
+		m_CurrentGameMode->Update();
 	}
 }
 
 GameMode* StateMachine::GetCurrentGameMode()
 {
-	return CurrentGameMode;
+	return m_CurrentGameMode;
 }

@@ -10,14 +10,15 @@
 struct WindowProperties
 {
 	WindowProperties(int ScreenWidth, int ScreenHeight, int TargetFps, bool Fullscreen, bool IsDebug)
-		: ScreenWidth(ScreenWidth), ScreenHeight(ScreenHeight), TargetFps(TargetFps), Fullscreen(Fullscreen), IsDebug(IsDebug)
+		: m_ScreenWidth(ScreenWidth), m_ScreenHeight(ScreenHeight), m_TargetFps(TargetFps), m_Fullscreen(Fullscreen), m_IsDebug(IsDebug)
 	{
 	}
-	int ScreenWidth;
-	int ScreenHeight;
-	int TargetFps;
-	bool Fullscreen;
-	bool IsDebug = false;
+
+	int m_ScreenWidth;
+	int m_ScreenHeight;
+	int m_TargetFps;
+	bool m_Fullscreen;
+	bool m_IsDebug = false;
 };
 
 class GameInstance
@@ -27,8 +28,8 @@ private:
 	GameInstance(WindowProperties Properties);
 	~GameInstance() = default;
 
-	static GameInstance* Instance;
-	static std::unordered_map<std::string, std::set<int32_t>> AssetRegistry;
+	static GameInstance* g_Instance;
+	static std::unordered_map<std::string, std::set<int32_t>> g_AssetRegistry;
 
 
 protected:
@@ -65,15 +66,16 @@ public:
 	*****************************
 	* Asset Registry
 	* INFO:
-	* This could be refactored to reside inside the GameMode, cause in the current Implemention, only one GameMode can be active at a time
+	* This could (and should) be refactored to its own Class
+	* also this could reside inside the GameMode, cause in the current Implemention, only one GameMode can be active at a time
 	* but for future use or expansion, i will let them here for now
-	* but then it also should be its own class
+	* but it still should be its own class
 	* 
 	*****************************
 	*/
 
 	template <typename T>
-	std::shared_ptr<T> LoadAssetFromSoftObjectPath(SoftObjectPath<T> Path)
+	inline std::shared_ptr<T> LoadAssetFromSoftObjectPath(SoftObjectPath<T> Path)
 	{
 		std::string FullPath = Path.ToString();
 		size_t Index = FullPath.find_first_of("/");
@@ -81,14 +83,14 @@ public:
 		std::string GameMode = FullPath.substr(0, Index);
 		std::string Object = FullPath.substr(Index + 1);
 
-		if (ActiveStateMachine.GetCurrentGameMode()->GetName() != GameMode)
+		if (g_ActiveStateMachine.GetCurrentGameMode()->GetName() != GameMode)
 		{
 			return nullptr;
 		}
 
-		auto MapIT = ActiveStateMachine.GetCurrentGameMode()->m_Objects.find(FullPath);
+		auto MapIT = g_ActiveStateMachine.GetCurrentGameMode()->m_Objects.find(FullPath);
 
-		if (MapIT == ActiveStateMachine.GetCurrentGameMode()->m_Objects.end())
+		if (MapIT == g_ActiveStateMachine.GetCurrentGameMode()->m_Objects.end())
 		{
 			return nullptr;
 		}
@@ -110,9 +112,9 @@ public:
 	*****************************
 	*/
 
-	static GameModeSwitcher ActiveStateMachine;
+	static GameModeSwitcher g_ActiveStateMachine;
 
-	static std::string WorkingDirectory;
+	static std::string g_WorkingDirectory;
 
 	static void InitGameInstance(WindowProperties Properties);
 	static GameInstance* GetInstance();

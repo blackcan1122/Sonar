@@ -2,7 +2,6 @@
 #include "Base/Core.h"
 #include <typeindex>
 
-// also maybe introduce a EvenType DataType which could also be used to identify different events, instead the need of creating a different event for each use case
 
 DECLARE_CLASS(IEvent, Object)
 

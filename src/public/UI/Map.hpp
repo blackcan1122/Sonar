@@ -49,8 +49,8 @@ private:
 
 	void LoadRessources();
 
-	const std::string PlayerIconPath = (GameInstance::GetInstance()->WorkingDirectory + "/resources/imgs/PlayerMap.png");
-	const std::string ShipIconPath = (GameInstance::GetInstance()->WorkingDirectory + "/resources/imgs/ShipIcon.png");
+	const std::string PlayerIconPath = (GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/PlayerMap.png");
+	const std::string ShipIconPath = (GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/ShipIcon.png");
 
 	Texture2D PlayerIcon;
 	Texture2D ShipIcon;

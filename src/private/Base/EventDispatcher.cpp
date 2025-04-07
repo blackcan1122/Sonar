@@ -6,15 +6,15 @@ void EventDispatcher::AddListener(const std::string& Identifier, std::type_index
 	m_Listener[EventClass][Identifier] = Callback;
 }
 
-void EventDispatcher::RemoveListener(const std::string& Identifier, std::type_index EventClass)
+bool EventDispatcher::RemoveListener(const std::string& Identifier, std::type_index EventClass)
 {
 	auto ClassIt = m_Listener.find(EventClass);
-	if (ClassIt == m_Listener.end()) return;
+	if (ClassIt == m_Listener.end()) return false;
 
 	auto& ListenerToFunctionMap = ClassIt->second;
 	auto FunctionEntryIt = ListenerToFunctionMap.find(Identifier);
 
-	if (FunctionEntryIt == ListenerToFunctionMap.end()) return;
+	if (FunctionEntryIt == ListenerToFunctionMap.end()) return false;
 
 	ListenerToFunctionMap.erase(FunctionEntryIt);
 
@@ -22,23 +22,32 @@ void EventDispatcher::RemoveListener(const std::string& Identifier, std::type_in
 	{
 		m_Listener.erase(ClassIt);
 	}
+
+	return true;
 }
 
 
-void EventDispatcher::Dispatch(std::shared_ptr<IEvent> EventToDispatch)
+void EventDispatcher::Dispatch(std::shared_ptr<IEvent> EventToDispatch, const std::string& Identifier, bool bUseIdentifier)
 {
-	// Holen uns den Name des Events
+	// Getting the Static Class of the Event
 	const auto& EventClass = EventToDispatch->GetStaticClass();
 	
-	// we check if we can find a std::function which has subscriped
 	if (m_Listener.find(EventClass) != m_Listener.end())
 	{
-		// Falls sich jemand für das Event Interessiert
-		// Dann Loopen wir durch alle Funktionen die sich für das Event Interessieren
-		for (const auto& listener : m_Listener[EventClass])
+		// Generall Dispatch, Dispatching All Event Subscriber from the Same Event Type
+		if (bUseIdentifier == false || Identifier.empty())
 		{
-			listener.second(EventToDispatch);
+			for (const auto& listener : m_Listener[EventClass])
+			{
+				listener.second(EventToDispatch);
+			}
 		}
+		// Specific Dispatch with Identifier
+		else
+		{
+			m_Listener[EventClass][Identifier](EventToDispatch);
+		}
+
 	}
 }
 

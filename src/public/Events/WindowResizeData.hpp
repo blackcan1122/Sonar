@@ -3,10 +3,10 @@
 #include "Base/Event.hpp"
 #include "Base/EventData.hpp"
 
-class WindowResizeData : public EventData<WindowResizeData>
-{
+DECLARE_CLASS(WindowResizeData, EventData)
 public:
 
 	int width = 0;
 	int height = 0;
-};
+
+END_CLASS
