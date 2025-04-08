@@ -121,26 +121,25 @@ void Waterfall::GenerateBearings()
 {
     int FontSize = 10;
 
-    int NumberOfLines = 8; // Total lines (minor + major)
-    int MajorBearingStep = 90; // Labels at every 90 degrees
-
+    int NumberOfLines = 8;
+    int MajorBearingStep = 90;
     for (int i = 0; i <= NumberOfLines; i++) 
     {
         // Calculate position for all lines
         int Pos = (FrontBuffer->m_Width / NumberOfLines) * i;
 
-        // Calculate bearing for this line
+
         int bearing = ((static_cast<int>((static_cast<float>(i) / NumberOfLines) * 360 - 180)) + 360) % 360;
         
         if (bearing % MajorBearingStep == 0)
         {
-            // Last One
+
             if (i == NumberOfLines)
             {
                 int TextLength = MeasureText(std::to_string(bearing).c_str(), FontSize);
                 DrawText(std::to_string(bearing).c_str(), Pos - TextLength, 20, FontSize, PURPLE);
             }
-            // First One
+
             else if (i == 0)
             {
                 DrawText(std::to_string(bearing).c_str(), Pos, 20, 10, PURPLE);
@@ -156,7 +155,7 @@ void Waterfall::GenerateBearings()
         else 
         {
             // Draw shorter line for minor bearings
-            DrawLine(Pos, 0, Pos, 5, PURPLE); // Short line for unlabeled bearings
+            DrawLine(Pos, 0, Pos, 5, PURPLE);
         }
     }
 }

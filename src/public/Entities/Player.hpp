@@ -1,16 +1,14 @@
 #include "Base/Core.h"
 #include "Base/Entity.hpp"
+#include "Entities/BaseSubmarine.hpp"
 
 class Waterfall;
 
-DECLARE_CLASS(Player, Entity)
+DECLARE_CLASS(Player, BaseSubmarine)
 
 public:
 	
 	virtual void Tick(float DeltaTime) override;
-	void Accel(float Amount);
-
-	
 
 	std::weak_ptr<Waterfall> WaterfallDisplay;
 
