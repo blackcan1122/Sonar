@@ -4,6 +4,7 @@
 #include "UI/WaterfallDisplay.hpp"
 #include "UI/Map.hpp"
 #include "Entities/Player.hpp"
+#include "Base/EventDispatcher.hpp"
 
 class SandboxGameMode : public GameMode
 {
@@ -16,6 +17,8 @@ public:
 	void Update() override;
 	void SetName(std::string Name) override;
 	void BeginPlay() override;
+	void OnMapClickedEvent(std::shared_ptr<IEvent> Event);
+
 	std::string GetName() override;
 
 protected:
@@ -27,7 +30,6 @@ protected:
 	SoftObjectPath<Map> MapDisplay;
 	SoftObjectPath<Player> PlayerOne;
 	SoftObjectPath<Player> PlayerTwo;
-
 
 
 };

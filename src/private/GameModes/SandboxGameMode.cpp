@@ -18,9 +18,14 @@ void SandboxGameMode::BeginPlay()
 	MapDisplay = m_ObjectFactory.NewObject<Map>(400, 400);
 	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,100 });
 
+	MapDisplay.TryLoad()->MapEventDispatcher->AddListener("GameMode", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
+		{
+			this->OnMapClickedEvent(Event);
+		});
+
 	PlayerOne = m_ObjectFactory.NewObject<Player>();
 	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
-	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
+	//MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
 
 	PlayerTwo = m_ObjectFactory.NewObject<Player>();
 	PlayerTwo.TryLoad()->SetEntityLocation(Vector2{ 800,200 });
@@ -72,4 +77,22 @@ void SandboxGameMode::SetName(std::string Name)
 std::string SandboxGameMode::GetName()
 {
 	return m_Name;
+}
+
+void SandboxGameMode::OnMapClickedEvent(std::shared_ptr<IEvent> Event)
+{
+	if (!Event && Event->GetStaticClass() != AllPurposeEvent::StaticClass())
+	{
+		return;
+	}
+
+	std::shared_ptr<AllPurposeEvent> CastedEvent = std::dynamic_pointer_cast<AllPurposeEvent>(Event);
+	if (CastedEvent->Payload->GetStaticClass() != MapClickEventData::StaticClass())
+	{
+		return;
+	}
+
+	std::shared_ptr<MapClickEventData> tempEventData = std::dynamic_pointer_cast<MapClickEventData>(CastedEvent->Payload);
+	
+	std::cout << tempEventData->ClickedObject.TryLoad()->GetName() << std::endl;
 }

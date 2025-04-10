@@ -2,6 +2,8 @@
 #include <cstdio>
 #include "Entities/Player.hpp"
 #include <iostream>
+#include <format>
+#include "Base/GameMode.h"
 
 Map::Map(std::string Name, Vector2 Pos)
     :Display(Pos.x, Pos.y)
@@ -24,10 +26,13 @@ void Map::Draw()
 
     for (size_t i = 0; i < ObjectsToDraw.size(); i++)
     {
-        auto ObjectPair = ObjectsToDraw[i];
+        auto& ObjectPair = ObjectsToDraw[i];
         auto Type = ObjectPair.second.first;
-        auto State = ObjectPair.second.second;
+        auto State = ObjectPair.second.second.first;
+        auto& InterActionState = ObjectPair.second.second.second;
         auto obj = ObjectPair.first.lock();
+
+        
 
         if (!obj)
         {
@@ -37,11 +42,31 @@ void Map::Draw()
 
         std::weak_ptr<Entity> Object = std::dynamic_pointer_cast<Entity>(obj);
 
+
+
         Vector2 screenPos = ConvertWorldToScreenPos(Object.lock()->GetEntityLocation());
+        Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(GetMousePosition());
+
+        if (CheckCollisionPointCircle(MousePos, screenPos, PlayerIcon.width * ZoomLevel / 2))
+        {
+            if (InterActionState != InteractionState::Active)
+            {
+                InterActionState = InteractionState::Hovered;
+            }
+            if (IsMouseButtonPressed(MouseButton::MOUSE_BUTTON_LEFT))
+            {
+                InterActionState = InteractionState::Active;
+                ClickDataPayload->ClickedObject = obj->GetName();
+                MapEventDispatcher->Dispatch(MapClickEvent);
+            }
+        }
 
         // Frustum culling: skip off-screen objects
-        if (screenPos.x < -100 || screenPos.x > DestinationRect.width + 100 ||
-            screenPos.y < -100 || screenPos.y > DestinationRect.height + 100) {
+        if (screenPos.x + (PlayerIcon.width / 2) < 0 
+            || screenPos.x - (PlayerIcon.width / 2) > DestinationRect.width
+            || screenPos.y + (PlayerIcon.height / 2) < 0
+            || screenPos.y - (PlayerIcon.height / 2) > DestinationRect.height) 
+        {
             continue;
         }
 
@@ -52,6 +77,9 @@ void Map::Draw()
                 auto player = std::dynamic_pointer_cast<Player>(obj);
                 if (player) 
                 {
+#if DEBUG
+                    DrawCircleLines(screenPos.x, screenPos.y, PlayerIcon.width * ZoomLevel / 2, ColorLookupInteractivity[static_cast<int>(InterActionState)]);
+#endif
                     DrawTextureEx(
                         PlayerIcon,
                         Vector2Subtract(screenPos, {
@@ -60,7 +88,7 @@ void Map::Draw()
                             }),
                         Object.lock()->GetEntityRotation(),
                         ZoomLevel,
-                        ColorLookup[static_cast<int>(State)]
+                        ColorLookupState[static_cast<int>(State)]
                     );
                 }
                 break;
@@ -128,6 +156,16 @@ void Map::Init()
     {
         LOG_ERROR(l_RESOURCES, TEXT("{}", e.what()));
     }
+
+    // Events
+    MapClickEvent = std::make_shared<AllPurposeEvent>();
+    MapEventDispatcher = std::make_shared<EventDispatcher>();
+    ClickDataPayload = std::make_shared<MapClickEventData>();
+
+    MapClickEvent->Payload = ClickDataPayload;
+
+
+
     CameraWorldPosition = { 0.0f, 0.0f };
     ZoomLevel = 1.0f;
 }
@@ -137,7 +175,7 @@ void Map::AddObjectToDraw(std::weak_ptr<IObject> Object)
     if (Object.lock()->GetStaticClass() == Player::StaticClass())
     {
         auto playerPtr = std::dynamic_pointer_cast<Player>(Object.lock());
-        ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, ObjectState::Enemy } });
+        ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, {ObjectState::Enemy, InteractionState::None } } });
     }
 }
 
@@ -186,4 +224,12 @@ void Map::LoadRessources()
     ShipIcon = LoadTextureFromImage(ImageShip);
     UnloadImage(ImageShip);
 
+}
+
+
+inline Vector2 Map::ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos)
+{
+    Vector2 DestinationVector = { DestinationRect.x, DestinationRect.y };
+    Vector2 DestinationVectorSize = { DestinationRect.width, DestinationRect.height };
+    return Vector2Clamp(Vector2Subtract(GetMousePosition(), DestinationVector), Vector2{ 0,0 }, DestinationVectorSize);
 }

@@ -1,6 +1,8 @@
 #include "Base/Core.h"
 #include "Base/GameInstance.h"
 #include "UI/Display.hpp"
+#include "Events/AllPurposeEvent.h"
+#include "Events/MapClickEventData.hpp"
 
 class Player;
 
@@ -20,6 +22,13 @@ enum ObjectState
 	Unknown
 };
 
+enum InteractionState
+{
+	None,
+	Hovered,
+	Active
+};
+
 
 
 DECLARE_CLASS(Map, Display)
@@ -35,6 +44,7 @@ public:
 
 	void AddObjectToDraw(std::weak_ptr<IObject> Object);
 
+	std::shared_ptr<EventDispatcher> MapEventDispatcher;
 
 
 	bool IsDragging = false;
@@ -55,9 +65,11 @@ private:
 	Texture2D PlayerIcon;
 	Texture2D ShipIcon;
 
-	Color ColorLookup[4] = { GREEN, RED, YELLOW, GRAY };
+	Color ColorLookupState[4] = { GREEN, RED, BLUE, GRAY };
+	Color ColorLookupInteractivity[3] = { BLANK, YELLOW, PURPLE};
 
-	std::vector<std::pair<std::weak_ptr<IObject>, std::pair<ObjectType, ObjectState>>> ObjectsToDraw;
+
+	std::vector<std::pair<std::weak_ptr<IObject>, std::pair<ObjectType, std::pair<ObjectState, InteractionState>>>> ObjectsToDraw;
 	std::vector<size_t> IndicesPendingKill;
 	float ZoomLevel = 1.f;
 
@@ -66,6 +78,11 @@ private:
 
 	Vector2 ConvertWorldToScreenPos(Vector2 VectorToConver) const;
 
+	// Like wtf think of a better name haha
+	Vector2 ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos);
+
+	std::shared_ptr<AllPurposeEvent> MapClickEvent;
+	std::shared_ptr<MapClickEventData> ClickDataPayload;
 
 
 END_CLASS
