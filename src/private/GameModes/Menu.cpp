@@ -51,7 +51,14 @@ MenuMode::MenuMode()
 
 	SetUpEvents();
 	
-	std::cout << UIEvent::StaticClass().name() << std::endl;
+	nPatchTexture = LoadTexture((GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/9PatchTile.png").c_str());
+
+	origin = { 0.0f, 0.0f };
+
+	// A 9-patch (NPATCH_NINE_PATCH) changes its sizes in both axis
+	ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
+
+	Destination = { 300,300, 256,128 };
 
 }
 
@@ -59,6 +66,7 @@ MenuMode::~MenuMode()
 {
 	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
 	UnloadTexture(Background);
+	UnloadTexture(nPatchTexture);
 }
 
 void MenuMode::Update()
@@ -75,6 +83,19 @@ void MenuMode::Update()
 	StartGame->Tick(DeltaTime);
 	Option->Tick(DeltaTime);
 	Exit->Tick(DeltaTime);
+
+	if (CheckCollisionPointRec(GetMousePosition(), Destination))
+	{
+		ninePatchInfo1 = { Rectangle { 128.0f, 0.f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
+
+	}
+	else
+	{
+		ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
+
+	}
+	
+	DrawTextureNPatch(nPatchTexture, ninePatchInfo1, Destination, origin, 0.0f, WHITE);
 }
 
 void MenuMode::SetName(std::string Name)

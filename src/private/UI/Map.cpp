@@ -24,12 +24,56 @@ void Map::Draw()
     BeginTextureMode(ActiveRenderTarget);
     ClearBackground(BLACK);
 
+    // Assume gridSpacing is in world units
+    const float gridSpacing = ZoomLevel < 0.01f ? 500000.f : 1000.f;
+
+    // Determine the world-space bounds of the viewport.
+    // If you don't have ConvertScreenToWorldPos, you must compute the inverse of your view matrix.
+    // For example, if you have this function defined, you could do:
+    Vector2 worldTopLeft = ConvertScreenPosToWorld({ 0, 0 });
+    Vector2 worldBottomRight = ConvertScreenPosToWorld({ DestinationRect.width, DestinationRect.height });
+
+    // Calculate starting and ending grid positions (round down/up to the nearest grid spacing)
+    float startX = std::floor(worldTopLeft.x / gridSpacing) * gridSpacing;
+    float endX = std::ceil(worldBottomRight.x / gridSpacing) * gridSpacing;
+    float startY = std::floor(worldTopLeft.y / gridSpacing) * gridSpacing;
+    float endY = std::ceil(worldBottomRight.y / gridSpacing) * gridSpacing;
+
+    // Draw vertical grid lines
+    for (float x = startX; x <= endX; x += gridSpacing)
+    {
+        // Create points in world space for the vertical line
+        Vector2 worldStart = { x, startY };
+        Vector2 worldEnd = { x, endY };
+
+        // Convert both endpoints to screen space
+        Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
+        Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
+
+        DrawLine(static_cast<int>(screenStart.x), static_cast<int>(screenStart.y),
+            static_cast<int>(screenEnd.x), static_cast<int>(screenEnd.y), GRAY);
+    }
+
+    // Draw horizontal grid lines
+    for (float y = startY; y <= endY; y += gridSpacing)
+    {
+        // Create points in world space for the horizontal line
+        Vector2 worldStart = { startX, y };
+        Vector2 worldEnd = { endX, y };
+
+        // Convert both endpoints to screen space
+        Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
+        Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
+
+        DrawLine(static_cast<int>(screenStart.x), static_cast<int>(screenStart.y),
+            static_cast<int>(screenEnd.x), static_cast<int>(screenEnd.y), GRAY);
+    }
+
     for (size_t i = 0; i < ObjectsToDraw.size(); i++)
     {
         auto& ObjectPair = ObjectsToDraw[i];
         auto Type = ObjectPair.second.first;
-        auto State = ObjectPair.second.second.first;
-        auto& InterActionState = ObjectPair.second.second.second;
+        auto State = ObjectPair.second.second;
         auto obj = ObjectPair.first.lock();
 
         
@@ -47,18 +91,34 @@ void Map::Draw()
         Vector2 screenPos = ConvertWorldToScreenPos(Object.lock()->GetEntityLocation());
         Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(GetMousePosition());
 
+        // Calculate scaled texture dimensions
+        float scaledWidth = PlayerIcon.width * std::fmax(ZoomLevel, 0.035f);
+        float scaledHeight = PlayerIcon.height * std::fmax(ZoomLevel, 0.035f);
+
+        // Define the destination rectangle (centered at screenPos)
+        Rectangle destRec = {
+            screenPos.x,  // Center horizontally
+            screenPos.y, // Center vertically
+            scaledWidth,
+            scaledHeight
+        };
+
+        // Define the rotation origin (center of the sprite)
+        Vector2 origin = { scaledWidth / 2, scaledHeight / 2 };
+
         if (CheckCollisionPointCircle(MousePos, screenPos, PlayerIcon.width * ZoomLevel / 2))
         {
-            if (InterActionState != InteractionState::Active)
-            {
-                InterActionState = InteractionState::Hovered;
-            }
+            HoveredUnit = obj;
             if (IsMouseButtonPressed(MouseButton::MOUSE_BUTTON_LEFT))
             {
-                InterActionState = InteractionState::Active;
+                FocusedUnit = obj;
                 ClickDataPayload->ClickedObject = obj->GetName();
                 MapEventDispatcher->Dispatch(MapClickEvent);
             }
+        }
+        else
+        {
+            HoveredUnit.reset();
         }
 
         // Frustum culling: skip off-screen objects
@@ -77,18 +137,30 @@ void Map::Draw()
                 auto player = std::dynamic_pointer_cast<Player>(obj);
                 if (player) 
                 {
-#if DEBUG
-                    DrawCircleLines(screenPos.x, screenPos.y, PlayerIcon.width * ZoomLevel / 2, ColorLookupInteractivity[static_cast<int>(InterActionState)]);
-#endif
-                    DrawTextureEx(
+                    // BoundingBox Drawing 
+                    // TODO use Lookup for color
+                    if (HoveredUnit.lock() == obj)
+                    {
+                        DrawCircleLinesV(screenPos, PlayerIcon.width * ZoomLevel / 2, YELLOW);
+                    }
+                    if (FocusedUnit.lock() == obj)
+                    {
+                        DrawCircleLinesV(screenPos, PlayerIcon.width * ZoomLevel / 2, PURPLE);
+                        std::string CourseString = std::to_string(player->GetEntityRotation());
+                        std::string SpeedString = std::to_string(player->GetCurrentSpeed());
+                        DrawText(("Course: " + CourseString).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y, 12, GREEN);
+                        DrawText(("Speed: " + SpeedString).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, GREEN);
+                    }
+                    
+                    DrawPixel(ConvertWorldToScreenPos({ 0,0 }).x, ConvertWorldToScreenPos({ 0,0 }).y, PURPLE);
+                    // Draw with rotation around the center
+                    DrawTexturePro(
                         PlayerIcon,
-                        Vector2Subtract(screenPos, {
-                            PlayerIcon.width * ZoomLevel / 2,
-                            PlayerIcon.height * ZoomLevel / 2
-                            }),
-                        Object.lock()->GetEntityRotation(),
-                        ZoomLevel,
-                        ColorLookupState[static_cast<int>(State)]
+                        { 0, 0, (float)PlayerIcon.width, (float)PlayerIcon.height }, // Source rectangle (entire texture)
+                        destRec,                                                      // Destination rectangle (position/size)
+                        origin,                                                       // Rotate around the center
+                        Object.lock()->GetEntityRotation(),                           // Rotation angle
+                        ColorLookupState[static_cast<int>(State)]                     // Tint color
                     );
                 }
                 break;
@@ -110,10 +182,15 @@ void Map::Draw()
 void Map::Tick(float DeltaTime)
 {
     // Handle input (same as before)
-    if (CheckCollisionPointRec(GetMousePosition(), DestinationRect)) {
-        // Zoom
-        ZoomLevel += GetMouseWheelMove() * 0.1f;
-        ZoomLevel = Clamp(ZoomLevel, 0.1f, 10.0f);
+    if (CheckCollisionPointRec(GetMousePosition(), DestinationRect)) 
+    {
+        int Multiply = 100.f;
+        if (IsKeyDown(KEY_LEFT_CONTROL))
+        {
+            Multiply = 10.f;
+        }
+        ZoomLevel += GetMouseWheelMove() * (0.001f * Multiply);
+        ZoomLevel = Clamp(ZoomLevel, 0.0001f, 10.0f);
 
         // Pan
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
@@ -175,7 +252,7 @@ void Map::AddObjectToDraw(std::weak_ptr<IObject> Object)
     if (Object.lock()->GetStaticClass() == Player::StaticClass())
     {
         auto playerPtr = std::dynamic_pointer_cast<Player>(Object.lock());
-        ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, {ObjectState::Enemy, InteractionState::None } } });
+        ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, ObjectState::Enemy} });
     }
 }
 
@@ -183,6 +260,18 @@ Vector2 Map::ConvertWorldToScreenPos(Vector2 worldPos) const
 {
     Matrix transform = GetViewProjectionMatrix();
     Vector3 transformed = Vector3Transform({ worldPos.x, worldPos.y, 0 }, transform);
+    return { transformed.x, transformed.y };
+}
+
+Vector2 Map::ConvertScreenPosToWorld(Vector2 VectorToConver) const
+{
+    // Get the view projection matrix (maps world -> screen)
+    Matrix viewProj = GetViewProjectionMatrix();
+    // Invert it so we get the transformation from screen -> world
+    Matrix invViewProj = MatrixInvert(viewProj);
+
+    // Transform the screen position (using z=0) into world space
+    Vector3 transformed = Vector3Transform({ VectorToConver.x, VectorToConver.y, 0 }, invViewProj);
     return { transformed.x, transformed.y };
 }
 

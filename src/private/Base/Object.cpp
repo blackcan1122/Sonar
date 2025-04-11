@@ -5,8 +5,10 @@
 
 GameMode* IObject::GetOutter()
 {
+	// This just temporary, since in the current State only one GameMode can be Active
+	// Will be replaced, when several gamemodes can run cocurrently
+	// Right now the GameMode will always be the Outter for every IObject Derived Class
 	return GameInstance::g_ActiveStateMachine.GetCurrentGameMode();
-	//return nullptr
 }
 
 void IObject::MarkForDestruction()

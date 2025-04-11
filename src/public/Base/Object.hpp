@@ -24,10 +24,13 @@ public:
 	virtual bool IsMarkedForDestruction();
 
 	virtual std::string GetName() const { return m_Name; };
+	virtual std::string GetDisplayName() const { return m_DisplayName; };
+	virtual void SetDisplayName(std::string NewName) { m_DisplayName = NewName; };
 
 protected:
 
 	std::string m_Name;
+	std::string m_DisplayName = "Unit";
 
 private:
 

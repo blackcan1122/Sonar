@@ -6,6 +6,7 @@
 #include <set>
 #include <sstream>
 #include <algorithm>
+#include "Base/GameMode.h"
 
 struct WindowProperties
 {
@@ -68,7 +69,7 @@ public:
 	* INFO:
 	* This could (and should) be refactored to its own Class
 	* also this could reside inside the GameMode, cause in the current Implemention, only one GameMode can be active at a time
-	* but for future use or expansion, i will let them here for now
+	* but for future use or expansion, i will let them seperate for now
 	* but it still should be its own class
 	* 
 	*****************************

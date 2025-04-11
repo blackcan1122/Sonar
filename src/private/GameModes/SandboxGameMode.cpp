@@ -18,18 +18,31 @@ void SandboxGameMode::BeginPlay()
 	MapDisplay = m_ObjectFactory.NewObject<Map>(400, 400);
 	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,100 });
 
-	MapDisplay.TryLoad()->MapEventDispatcher->AddListener("GameMode", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
+	MapDisplay.TryLoad()->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
 		{
 			this->OnMapClickedEvent(Event);
 		});
 
 	PlayerOne = m_ObjectFactory.NewObject<Player>();
 	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
-	//MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
+	PlayerOne.TryLoad()->SetDisplayName("U521");
+	PlayerOne.TryLoad()->SetEntityRotation(0);
+	PlayerOne.TryLoad()->ConvertAngleToVector();
+	PlayerOne.TryLoad()->SetInitialSpeed(5);
+
 
 	PlayerTwo = m_ObjectFactory.NewObject<Player>();
 	PlayerTwo.TryLoad()->SetEntityLocation(Vector2{ 800,200 });
+	PlayerTwo.TryLoad()->SetDisplayName("K-21");
+
+
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerTwo.TryLoad());
+	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
+
+	m_PlayerUI = m_ObjectFactory.NewObject<PlayerUI>(PlayerOne);
+	m_PlayerUI.TryLoad()->SetPosition({500, 0});
+
+
 }
 
 SandboxGameMode::~SandboxGameMode()
@@ -39,32 +52,45 @@ SandboxGameMode::~SandboxGameMode()
 void SandboxGameMode::Update()
 {
 		ClearBackground(RED);
+		GameMode::Update();
 
 
-		if (IsKeyPressed(KEY_S))
+		if (IsKeyPressed(KEY_D))
 		{
-			DestroyObjectExplicitly(PlayerOne);
+			PlayerOne.TryLoad()->MarkForDestruction();
 		}
 		if (IsKeyPressed(KEY_N))
 		{
 			WaterfallDisplay = m_ObjectFactory.NewObject<Waterfall>(360, 360, 30);
-			WaterfallDisplay.TryLoad()->SetPosition(Vector2{0,0});
+			WaterfallDisplay.TryLoad()->SetPosition(Vector2{ 0,0 });
 		}
 
-
-		if (auto tempPlayer = PlayerOne.TryLoad())
+		if (IsKeyPressed(KEY_R))
 		{
-			tempPlayer->Accel(0.2f);
+
+			if (auto tempPlayer = FocusedUnit.Cast<Player>().TryLoad())
+			{
+				tempPlayer->SetCourse(180.f);
+			}
 		}
 
-		DrawCircleLines(600, 600, 15, BLUE);
+		if (IsKeyDown(KEY_W))
+		{
 
-		GameMode::Update();
+			if (auto tempPlayer = FocusedUnit.Cast<Player>().TryLoad())
+			{
+				tempPlayer->SetSpeed(10);
+			}
+		}
+
+
+		DrawFocusPlayer();
+
 
 #if DEBUG
 		DrawFPS(GameInstance::GetInstance()->GetWindowProperties().m_ScreenWidth - 100, 20);
 #endif
-		
+
 }
 
 void SandboxGameMode::SetName(std::string Name)
@@ -93,6 +119,11 @@ void SandboxGameMode::OnMapClickedEvent(std::shared_ptr<IEvent> Event)
 	}
 
 	std::shared_ptr<MapClickEventData> tempEventData = std::dynamic_pointer_cast<MapClickEventData>(CastedEvent->Payload);
-	
-	std::cout << tempEventData->ClickedObject.TryLoad()->GetName() << std::endl;
+
+	m_PlayerUI.TryLoad()->AssignedPlayer = tempEventData->ClickedObject.Cast<Player>();
+	FocusedUnit = tempEventData->ClickedObject;
+}
+
+void SandboxGameMode::DrawFocusPlayer()
+{
 }
