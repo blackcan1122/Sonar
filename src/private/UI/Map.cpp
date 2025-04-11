@@ -101,8 +101,10 @@ void Map::Draw()
                     if (FocusedUnit.lock() == obj)
                     {
                         DrawCircleLinesV(screenPos, PlayerIcon.width * ZoomLevel / 2, PURPLE);
-                        DrawText(std::to_string(player->GetEntityRotation()).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y, 12, GREEN);
-                        DrawText(std::to_string(player->GetCurrentSpeed()).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, GREEN);
+                        std::string CourseString = std::to_string(player->GetEntityRotation());
+                        std::string SpeedString = std::to_string(player->GetCurrentSpeed());
+                        DrawText(("Course: " + CourseString).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y, 12, GREEN);
+                        DrawText(("Speed: " + SpeedString).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, GREEN);
                     }
                     
                     DrawPixel(ConvertWorldToScreenPos({ 0,0 }).x, ConvertWorldToScreenPos({ 0,0 }).y, PURPLE);
