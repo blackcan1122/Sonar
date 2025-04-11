@@ -2,6 +2,6 @@
 
 void Player::Tick(float Deltatime)
 {
-
+	BaseSubmarine::Tick(Deltatime);
 }
 

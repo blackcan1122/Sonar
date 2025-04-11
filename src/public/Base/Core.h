@@ -53,6 +53,7 @@ class IEvent;
 
 // Own Header includes, for very important headers
 #include "Base/Object.hpp"
+#include "Base/NavalTypedefs.h"
 
 // Unsure if i should keep them away, as handling recursive includes suck
 //#include "Base/TickableFactory.h"
@@ -77,8 +78,22 @@ class IEvent;
 template <typename T>
 struct SoftObjectPath
 {
+    SoftObjectPath<T>::SoftObjectPath() = default;
 
-    SoftObjectPath<T>::SoftObjectPath() {};
+
+    // Implicit upcast constructor (from derived to base)
+    template <typename U, typename = std::enable_if_t<std::is_base_of_v<T, U>>>
+    SoftObjectPath(const SoftObjectPath<U>& other) : Path(other.Path) {}
+
+    // Explicit cast method for related types
+    template <typename U>
+    SoftObjectPath<U> Cast() const 
+    {
+        static_assert(std::is_base_of_v<IObject, U>, "U must derive from IObject");
+        static_assert(std::is_base_of_v<U, T> || std::is_base_of_v<T, U>,
+            "Types must be related by inheritance");
+        return SoftObjectPath<U>(Path);
+    }
 
     SoftObjectPath(std::string SoftPath)
         :Path(SoftPath)

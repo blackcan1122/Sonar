@@ -5,6 +5,7 @@
 #include "UI/Map.hpp"
 #include "Entities/Player.hpp"
 #include "Base/EventDispatcher.hpp"
+#include "UI/PlayerUI.hpp"
 
 class SandboxGameMode : public GameMode
 {
@@ -19,6 +20,10 @@ public:
 	void BeginPlay() override;
 	void OnMapClickedEvent(std::shared_ptr<IEvent> Event);
 
+
+
+	void DrawFocusPlayer();
+
 	std::string GetName() override;
 
 protected:
@@ -31,5 +36,8 @@ protected:
 	SoftObjectPath<Player> PlayerOne;
 	SoftObjectPath<Player> PlayerTwo;
 
+	SoftObjectPath<Entity> FocusedUnit;
+
+	SoftObjectPath<PlayerUI> m_PlayerUI;
 
 };

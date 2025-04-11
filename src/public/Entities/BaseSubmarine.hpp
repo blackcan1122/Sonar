@@ -2,10 +2,22 @@
 #include "Base/Core.h"
 #include "Base/Entity.hpp"
 
-DECLARE_CLASS(BaseSubmarine, Entity)
+class BaseSubmarine : public Entity
+{
+	AUTOBODY(BaseSubmarine)
+
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual void Accel(float Amount);
+	virtual void SetSpeed(NavalUnits::Knot DesiredKnots);
 
 
-	END_CLASS
+protected:
+
+	const float AccelerationRate = 2.f;
+	const float DampeningRate = 0.01f;
+
+	float SpeedChangeDelay = 0.2f;
+	float SpeedChangeTimer = 0.0f;
+
+	virtual void Accel();
+};

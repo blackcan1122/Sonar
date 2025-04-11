@@ -28,8 +28,7 @@ void Map::Draw()
     {
         auto& ObjectPair = ObjectsToDraw[i];
         auto Type = ObjectPair.second.first;
-        auto State = ObjectPair.second.second.first;
-        auto& InterActionState = ObjectPair.second.second.second;
+        auto State = ObjectPair.second.second;
         auto obj = ObjectPair.first.lock();
 
         
@@ -47,18 +46,34 @@ void Map::Draw()
         Vector2 screenPos = ConvertWorldToScreenPos(Object.lock()->GetEntityLocation());
         Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(GetMousePosition());
 
+        // Calculate scaled texture dimensions
+        float scaledWidth = PlayerIcon.width * ZoomLevel;
+        float scaledHeight = PlayerIcon.height * ZoomLevel;
+
+        // Define the destination rectangle (centered at screenPos)
+        Rectangle destRec = {
+            screenPos.x,  // Center horizontally
+            screenPos.y, // Center vertically
+            scaledWidth,
+            scaledHeight
+        };
+
+        // Define the rotation origin (center of the sprite)
+        Vector2 origin = { scaledWidth / 2, scaledHeight / 2 };
+
         if (CheckCollisionPointCircle(MousePos, screenPos, PlayerIcon.width * ZoomLevel / 2))
         {
-            if (InterActionState != InteractionState::Active)
-            {
-                InterActionState = InteractionState::Hovered;
-            }
+            HoveredUnit = obj;
             if (IsMouseButtonPressed(MouseButton::MOUSE_BUTTON_LEFT))
             {
-                InterActionState = InteractionState::Active;
+                FocusedUnit = obj;
                 ClickDataPayload->ClickedObject = obj->GetName();
                 MapEventDispatcher->Dispatch(MapClickEvent);
             }
+        }
+        else
+        {
+            HoveredUnit.reset();
         }
 
         // Frustum culling: skip off-screen objects
@@ -77,18 +92,28 @@ void Map::Draw()
                 auto player = std::dynamic_pointer_cast<Player>(obj);
                 if (player) 
                 {
-#if DEBUG
-                    DrawCircleLines(screenPos.x, screenPos.y, PlayerIcon.width * ZoomLevel / 2, ColorLookupInteractivity[static_cast<int>(InterActionState)]);
-#endif
-                    DrawTextureEx(
+                    // BoundingBox Drawing 
+                    // TODO use Lookup for color
+                    if (HoveredUnit.lock() == obj)
+                    {
+                        DrawCircleLinesV(screenPos, PlayerIcon.width * ZoomLevel / 2, YELLOW);
+                    }
+                    if (FocusedUnit.lock() == obj)
+                    {
+                        DrawCircleLinesV(screenPos, PlayerIcon.width * ZoomLevel / 2, PURPLE);
+                        DrawText(std::to_string(player->GetEntityRotation()).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y, 12, GREEN);
+                        DrawText(std::to_string(player->GetCurrentSpeed()).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, GREEN);
+                    }
+                    
+                    DrawPixel(ConvertWorldToScreenPos({ 0,0 }).x, ConvertWorldToScreenPos({ 0,0 }).y, PURPLE);
+                    // Draw with rotation around the center
+                    DrawTexturePro(
                         PlayerIcon,
-                        Vector2Subtract(screenPos, {
-                            PlayerIcon.width * ZoomLevel / 2,
-                            PlayerIcon.height * ZoomLevel / 2
-                            }),
-                        Object.lock()->GetEntityRotation(),
-                        ZoomLevel,
-                        ColorLookupState[static_cast<int>(State)]
+                        { 0, 0, (float)PlayerIcon.width, (float)PlayerIcon.height }, // Source rectangle (entire texture)
+                        destRec,                                                      // Destination rectangle (position/size)
+                        origin,                                                       // Rotate around the center
+                        Object.lock()->GetEntityRotation(),                           // Rotation angle
+                        ColorLookupState[static_cast<int>(State)]                     // Tint color
                     );
                 }
                 break;
@@ -175,7 +200,7 @@ void Map::AddObjectToDraw(std::weak_ptr<IObject> Object)
     if (Object.lock()->GetStaticClass() == Player::StaticClass())
     {
         auto playerPtr = std::dynamic_pointer_cast<Player>(Object.lock());
-        ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, {ObjectState::Enemy, InteractionState::None } } });
+        ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, ObjectState::Enemy} });
     }
 }
 
