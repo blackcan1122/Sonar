@@ -9,15 +9,24 @@ class BaseSubmarine : public Entity
 public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetSpeed(NavalUnits::Knot DesiredKnots);
+	virtual void SetInitialSpeed(NavalUnits::Knot DesiredKnots);
+	virtual void SetCourse(int Course);
 
 
 protected:
+
+	virtual void CalculateSpeed(float Deltatime);
+	virtual void CalculateRotation(float Deltatime);
 
 	const float AccelerationRate = 2.f;
 	const float DampeningRate = 0.01f;
 
 	float SpeedChangeDelay = 0.2f;
 	float SpeedChangeTimer = 0.0f;
+	float RotationChangeTimer = 0.0f;
 
-	virtual void Accel();
+	float BaseTurningRate = 6.f;
+
+	virtual void Accel(float Deltatime);
+	virtual void Turning();
 };

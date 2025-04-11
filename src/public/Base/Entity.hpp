@@ -6,7 +6,7 @@ DECLARE_CLASS(Entity, Object)
 public:
 	void SetEntityLocation(Vector2 NewLocation) { m_Position = NewLocation; };
 	void SetEntityVelocity(Vector2 NewVelocity) { m_Velocity = NewVelocity; };
-	void SetEntityRotation(int Angle) { m_Rotation = Angle % 360; };
+	void SetEntityRotation(float Angle) { m_Rotation = std::fmod(Angle, 360.f); };
 	// TODO More
 
 	virtual void ConvertAngleToVector();
@@ -18,8 +18,10 @@ public:
 protected:
 	Vector2 m_Position = { 0,0 };
 	Vector2 m_Velocity = { 0,0 };
-	NavalUnits::Knot m_CurrentKnots;
-	NavalUnits::Knot m_DesiredKnots;
+	NavalUnits::Knot m_CurrentKnots = 0.f;
+	NavalUnits::Knot m_DesiredKnots = 0.f;
+	float m_DesiredCourse = 0.f;
+	float m_CurrentCourse = 0.f;
 	Vector2 m_FacingVector = { 0, -1 };
 	float m_Rotation = 0.f;
 	float m_Scale = 1.f;

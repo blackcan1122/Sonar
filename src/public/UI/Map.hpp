@@ -30,8 +30,9 @@ enum InteractionState
 };
 
 
-
-DECLARE_CLASS(Map, Display)
+class Map : public Display
+{
+	AUTOBODY(Map)
 
 public:
 
@@ -71,7 +72,7 @@ private:
 
 	std::vector<std::pair<std::weak_ptr<IObject>, std::pair<ObjectType, ObjectState>>> ObjectsToDraw;
 	std::vector<size_t> IndicesPendingKill;
-	float ZoomLevel = 1.f;
+	double ZoomLevel = 1.f;
 
 	Vector2 MapOffset = { 0, 0 };			// World-space offset
 	Vector2 CameraWorldPosition = { 0, 0 };			// World Space Position of The Map
@@ -80,6 +81,7 @@ private:
 	std::weak_ptr<IObject> HoveredUnit;
 
 	Vector2 ConvertWorldToScreenPos(Vector2 VectorToConver) const;
+	Vector2 ConvertScreenPosToWorld(Vector2 VectorToConver) const;
 
 	// Like wtf think of a better name haha
 	Vector2 ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos);
@@ -88,4 +90,4 @@ private:
 	std::shared_ptr<MapClickEventData> ClickDataPayload;
 
 
-END_CLASS
+};

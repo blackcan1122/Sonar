@@ -28,6 +28,7 @@ void SandboxGameMode::BeginPlay()
 	PlayerOne.TryLoad()->SetDisplayName("U521");
 	PlayerOne.TryLoad()->SetEntityRotation(0);
 	PlayerOne.TryLoad()->ConvertAngleToVector();
+	PlayerOne.TryLoad()->SetInitialSpeed(5);
 
 
 	PlayerTwo = m_ObjectFactory.NewObject<Player>();
@@ -40,6 +41,8 @@ void SandboxGameMode::BeginPlay()
 
 	m_PlayerUI = m_ObjectFactory.NewObject<PlayerUI>(PlayerOne);
 	m_PlayerUI.TryLoad()->SetPosition({500, 0});
+
+
 }
 
 SandboxGameMode::~SandboxGameMode()
@@ -51,25 +54,25 @@ void SandboxGameMode::Update()
 		ClearBackground(RED);
 		GameMode::Update();
 
+
 		if (IsKeyPressed(KEY_D))
 		{
 			PlayerOne.TryLoad()->MarkForDestruction();
 		}
+		if (IsKeyPressed(KEY_N))
+		{
+			WaterfallDisplay = m_ObjectFactory.NewObject<Waterfall>(360, 360, 30);
+			WaterfallDisplay.TryLoad()->SetPosition(Vector2{ 0,0 });
+		}
+
 		if (IsKeyPressed(KEY_R))
 		{
 
 			if (auto tempPlayer = FocusedUnit.Cast<Player>().TryLoad())
 			{
-				tempPlayer->SetEntityRotation(tempPlayer->GetEntityRotation() + 5);
-				tempPlayer->ConvertAngleToVector();
+				tempPlayer->SetCourse(180.f);
 			}
 		}
-		if (IsKeyPressed(KEY_N))
-		{
-			WaterfallDisplay = m_ObjectFactory.NewObject<Waterfall>(360, 360, 30);
-			WaterfallDisplay.TryLoad()->SetPosition(Vector2{0,0});
-		}
-
 
 		if (IsKeyDown(KEY_W))
 		{
@@ -87,7 +90,7 @@ void SandboxGameMode::Update()
 #if DEBUG
 		DrawFPS(GameInstance::GetInstance()->GetWindowProperties().m_ScreenWidth - 100, 20);
 #endif
-		
+
 }
 
 void SandboxGameMode::SetName(std::string Name)
@@ -123,20 +126,4 @@ void SandboxGameMode::OnMapClickedEvent(std::shared_ptr<IEvent> Event)
 
 void SandboxGameMode::DrawFocusPlayer()
 {
-	std::string Name;
-	std::string Location;
-	if (auto FocusedUnitObj = FocusedUnit.TryLoad())
-	{
-		// Need to have a Display name as a member
-		Name = "Name: " + FocusedUnitObj->GetDisplayName();
-		Location = "X: " + std::to_string(FocusedUnitObj->GetEntityLocation().x) + ", Y: " + std::to_string(FocusedUnitObj->GetEntityLocation().y);
-	}
-	else
-	{
-		Name = "Name: None";
-		Location = "X:?, Y: ?";
-	}
-
-	DrawText(Name.c_str(), 600, 600, 24, GREEN);
-	DrawText(Location.c_str(), 600, 620, 24, GREEN);
 }
