@@ -25,7 +25,7 @@ MenuMode::MenuMode()
 	UnloadImage(BackgroundImg);
 
 	TextureResource* ButtonResource = GameInstance::GetInstance()->GetResource("ButtonImage");
-	Texture2D nPatchTexture = LoadTextureFromImage(ButtonResource->ImageTexture);
+	auto SpriteButton = ButtonResource->LoadTexture();
 	NPatchInfo ninePatchInfo1 = ButtonResource->nPatchInfo.value();
 
 	WindowProperties CurrentProperties = GameInstance::GetInstance()->GetWindowProperties();
@@ -41,7 +41,7 @@ MenuMode::MenuMode()
 	Sandbox->Construct(SandboxRec, "Sandbox", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Sandbox");
 
 	
-	Sandbox->SetTexture(nPatchTexture)
+	Sandbox->SetTexture(SpriteButton)
 		.UseNPatchFeature(true)
 		.UpdateTextColor(RED)
 		.UseTexture(true)
@@ -61,7 +61,7 @@ MenuMode::MenuMode()
 	StartGame = std::make_shared<Button>();
 	StartGame->Construct(StartGameRec, "Start Game", RED).CenterText()
 		.UpdateTextColor(RED)
-		.SetTexture(nPatchTexture)
+		.SetTexture(SpriteButton)
 		.UseNPatchFeature(true)
 		.UseTexture(true)
 		.SetNPatchInfo(ninePatchInfo1)
@@ -80,7 +80,7 @@ MenuMode::MenuMode()
 	Option = std::make_shared<Button>();
 	Option->Construct(OptionRec, "Option", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Option")
 		.UpdateTextColor(RED)
-		.SetTexture(nPatchTexture)
+		.SetTexture(SpriteButton)
 		.UseNPatchFeature(true)
 		.UseTexture(true)
 		.SetNPatchInfo(ninePatchInfo1)
@@ -99,7 +99,7 @@ MenuMode::MenuMode()
 	Exit = std::make_shared<Button>();
 	Exit->Construct(ExitRec, "Exit", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Exit")
 		.UpdateTextColor(RED)
-		.SetTexture(nPatchTexture)
+		.SetTexture(SpriteButton)
 		.UseNPatchFeature(true)
 		.UseTexture(true)
 		.SetNPatchInfo(ninePatchInfo1)

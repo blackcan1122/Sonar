@@ -2,6 +2,7 @@
 #include "Base/Core.h"
 #include "json.hpp"
 #include <fstream>
+#include "Texture2DWrap.hpp"
 
 using json = nlohmann::json;
 
@@ -27,8 +28,9 @@ struct TextureNPatchInfo
 
 struct TextureResource 
 {
+    friend Texture2DWrap;
+
     std::string name;
-    Image ImageTexture;
     int textureID;
     std::string textureKind;
     std::optional<TextureNPatchInfo> nPatchInfo;
@@ -38,26 +40,37 @@ struct TextureResource
     std::string format;
     std::string wrapMode;
 
+    Texture2DWrap LoadTexture()
+    {
+        if (LoadedTexture.id == 0)
+        {
+            LoadedTexture = RAYLIB_H::LoadTexture(path.c_str());
+
+        }
+        return Texture2DWrap (&LoadedTexture, this);
+        
+    }
+
 private:
-    Texture2D LoadedTexture;
+
+    Texture2D LoadedTexture = {};
     int RefCount = 0;
 
-    Texture2D LoadTexture()
+    void AddRef()
     {
-        // TODO: Own Texture Handle with:
-        // Custom Constructor
-        // Custom Move Constructor / operator
-        // Custom Copy operator
-        // Custom Desturctor
-        // Should be passed a pointer to its outter
-        LoadedTexture = RAYLIB_H::LoadTexture(path.c_str());
         RefCount++;
-        return LoadedTexture;
+    }
+
+    void RemoveRef()
+    {
+        RefCount--;
     }
 
     bool UnloadTexture()
     {
         RAYLIB_H::UnloadTexture(LoadedTexture);
+        LoadedTexture = {};
+        return true;
     }
 };
 

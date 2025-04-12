@@ -27,7 +27,6 @@ void ResourceManager::ParseJson()
         resource.textureID = resourceEntry.value("TextureID", 0);
         resource.textureKind = resourceEntry.value("TextureKind", "");
         resource.path = GameInstance::GetInstance()->g_WorkingDirectory + "\\resources\\" + resourceEntry.value("Path", "");
-        resource.ImageTexture = LoadImage(resource.path.c_str());
 
         // Parse additional properties if they exist
         if (resourceEntry.contains("Properties"))

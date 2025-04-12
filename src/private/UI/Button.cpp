@@ -133,7 +133,7 @@ Button& Button::OnHover(std::function<void(Button* ButtonClass)> callback)
     return *this;
 }
 
-Button& Button::SetTexture(Texture2D& Texture)
+Button& Button::SetTexture(Texture2DWrap Texture)
 {
     m_Texture = Texture;
     return *this;
@@ -222,7 +222,7 @@ void Button::Tick(float DeltaTime)
     {
         if (m_UseNpatch)
         {
-            DrawTextureNPatch(m_Texture, m_NpatchTextureInfo, ButtonDim, { 0,0 }, 0, WHITE);
+            DrawTextureNPatch(m_Texture, m_NpatchTextureInfo, ButtonDim, {0,0}, 0, WHITE);
         }
         else
         {

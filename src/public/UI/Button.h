@@ -1,6 +1,7 @@
 #pragma once
 #include "Base/Core.h"
 #include "Base/BaseUI.h"
+#include "Base/Texture2DWrap.hpp"
 
 class UIEvent;
 class EventDispatcher;
@@ -34,7 +35,7 @@ public:
 
 	virtual Button& OnHover(std::function<void(Button* ButtonClass)> callback);
 
-	virtual Button& SetTexture(Texture2D& Texture);
+	virtual Button& SetTexture(Texture2DWrap Texture);
 	virtual Button& SetNPatchInfo(NPatchInfo NPatchInfo);
 	virtual Button& UseNPatchFeature(bool bUseNpatch);
 	virtual Button& UseTexture(bool bUseTexture);
@@ -67,7 +68,7 @@ private:
 	Color m_TextColor = BLACK;
 
 	NPatchInfo m_NpatchTextureInfo;
-	Texture2D m_Texture;
+	Texture2DWrap m_Texture;
 	bool m_UseNpatch = false;
 	bool m_UseTexture = false;
 

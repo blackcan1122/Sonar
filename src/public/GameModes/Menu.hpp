@@ -2,6 +2,7 @@
 #include "Base/Core.h"
 #include "Base/GameMode.h"
 #include "UI/Button.h"
+#include "Base/Texture2DWrap.hpp"
 
 class MenuMode : public GameMode
 {
@@ -30,6 +31,5 @@ protected:
 	std::shared_ptr<Button> StartGame;
 	std::shared_ptr<Button> Option;
 	std::shared_ptr<Button> Exit;
-	
 
 };
