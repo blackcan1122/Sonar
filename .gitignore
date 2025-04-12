@@ -4,6 +4,7 @@
 *.o
 *.obj
 
+WorkingFiles/*
 build/external/*
 build/build_files/*
 bin/*

@@ -30,11 +30,6 @@ protected:
 	std::shared_ptr<Button> StartGame;
 	std::shared_ptr<Button> Option;
 	std::shared_ptr<Button> Exit;
-
-	NPatchInfo ninePatchInfo1;
-	Texture2D nPatchTexture;
-	Vector2 origin;
-	Rectangle Destination;
 	
 
 };

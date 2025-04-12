@@ -5,7 +5,9 @@
 class UIEvent;
 class EventDispatcher;
 
-DECLARE_CLASS(Button, BaseUI)
+class Button : public BaseUI
+{
+	AUTOBODY(Button)
 
 public:
 	Button() = default;
@@ -31,6 +33,11 @@ public:
 	virtual Button& UpdateFontSize(int NewFontSize);
 
 	virtual Button& OnHover(std::function<void(Button* ButtonClass)> callback);
+
+	virtual Button& SetTexture(Texture2D& Texture);
+	virtual Button& SetNPatchInfo(NPatchInfo& NPatchInfo);
+	virtual Button& UseNPatchFeature(bool bUseNpatch);
+	virtual Button& UseTexture(bool bUseTexture);
 
 	// TODO: Refactor this out, this is just a workaround, as the Button Class right now doesn't really save its own State
 	// or atleast make it optional
@@ -59,4 +66,9 @@ private:
 	Color m_BackgroundColor;
 	Color m_TextColor = BLACK;
 
-END_CLASS
+	NPatchInfo m_NpatchTextureInfo;
+	Texture2D m_Texture;
+	bool m_UseNpatch = false;
+	bool m_UseTexture = false;
+
+};
