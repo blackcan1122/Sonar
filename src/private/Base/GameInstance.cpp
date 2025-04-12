@@ -40,6 +40,7 @@ GameInstance::GameInstance(WindowProperties Properties)
 	InitLogger();
 	spdlog::flush_every(std::chrono::seconds(1));
 	LOG_INFO(l_GAME_INSTANCE, TEXT("GameInstance Initialized"));
+	m_ResourceManager.ParseJson();
 }
 
 std::string GameInstance::RegisterAsset(const std::string name)
@@ -153,6 +154,20 @@ bool GameInstance::ParseAssetName(const std::string& FullName, std::string& OutB
 	{
 		return false;
 	}
+}
+
+TextureResource* GameInstance::GetResource(std::string Name)
+{
+	try
+	{
+		return &(m_ResourceManager.AllResources.at(Name));
+	}
+	catch (std::out_of_range e)
+	{
+		std::cerr << e.what() << std::endl;
+		return nullptr;
+	}
+
 }
 
 void GameInstance::InitGameInstance(WindowProperties Properties)

@@ -24,8 +24,9 @@ MenuMode::MenuMode()
 	Background = LoadTextureFromImage(BackgroundImg);
 	UnloadImage(BackgroundImg);
 
-	Texture2D nPatchTexture = LoadTexture((GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/9PatchTile.png").c_str());
-	NPatchInfo ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
+	TextureResource* ButtonResource = GameInstance::GetInstance()->GetResource("ButtonImage");
+	Texture2D nPatchTexture = LoadTextureFromImage(ButtonResource->ImageTexture);
+	NPatchInfo ninePatchInfo1 = ButtonResource->nPatchInfo.value();
 
 	WindowProperties CurrentProperties = GameInstance::GetInstance()->GetWindowProperties();
 	int CenterX = CurrentProperties.m_ScreenWidth / 2;
@@ -45,15 +46,13 @@ MenuMode::MenuMode()
 		.UpdateTextColor(RED)
 		.UseTexture(true)
 		.SetNPatchInfo(ninePatchInfo1)
-		.OnHover([this](Button* ButtonClass)
+		.OnHover([this, ButtonResource](Button* ButtonClass)
 			{
-				NPatchInfo ninePatchInfo1 = { Rectangle { 128.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
-				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo->GetUpdatedNPatchInfo());
 			})
-		.OnHoverLeave([this](Button* ButtonClass)
+		.OnHoverLeave([this, ButtonResource](Button* ButtonClass)
 			{
-				NPatchInfo ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
-				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo.value());
 			});
 
 #endif

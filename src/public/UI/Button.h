@@ -35,7 +35,7 @@ public:
 	virtual Button& OnHover(std::function<void(Button* ButtonClass)> callback);
 
 	virtual Button& SetTexture(Texture2D& Texture);
-	virtual Button& SetNPatchInfo(NPatchInfo& NPatchInfo);
+	virtual Button& SetNPatchInfo(NPatchInfo NPatchInfo);
 	virtual Button& UseNPatchFeature(bool bUseNpatch);
 	virtual Button& UseTexture(bool bUseTexture);
 

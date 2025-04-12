@@ -139,7 +139,7 @@ Button& Button::SetTexture(Texture2D& Texture)
     return *this;
 }
 
-Button& Button::SetNPatchInfo(NPatchInfo& NPatchInfo)
+Button& Button::SetNPatchInfo(NPatchInfo NPatchInfo)
 {
     m_NpatchTextureInfo = NPatchInfo;
     return *this;

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <algorithm>
 #include "Base/GameMode.h"
+#include "Base/ResourceManager.hpp"
 
 struct WindowProperties
 {
@@ -49,6 +50,8 @@ protected:
 	*****************************
 	*/
 
+	ResourceManager m_ResourceManager;
+
 	static void CreateWindow();
 	static void GameLoop();
 
@@ -62,6 +65,8 @@ public:
 	static EventDispatcher UIEventDispatcher;
 	static EventDispatcher SaveStateDispatcher;
 	static EventDispatcher AllPurposeDispatcher;
+
+	TextureResource* GetResource(std::string Name);
 
 	/*
 	*****************************
