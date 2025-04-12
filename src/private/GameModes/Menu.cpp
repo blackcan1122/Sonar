@@ -48,7 +48,7 @@ MenuMode::MenuMode()
 		.SetNPatchInfo(ninePatchInfo1)
 		.OnHover([this, ButtonResource](Button* ButtonClass)
 			{
-				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo->GetUpdatedNPatchInfo());
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo->GetOfsettedNPatchInfo());
 			})
 		.OnHoverLeave([this, ButtonResource](Button* ButtonClass)
 			{

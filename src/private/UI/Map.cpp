@@ -5,6 +5,9 @@
 #include <format>
 #include "Base/GameMode.h"
 
+
+#define GridColor {5,18,36,255}
+
 Map::Map(std::string Name, Vector2 Pos)
     :Display(Pos.x, Pos.y)
 {
@@ -23,6 +26,8 @@ void Map::Draw()
 {
     BeginTextureMode(ActiveRenderTarget);
     ClearBackground(BLACK);
+
+    
 
     // Assume gridSpacing is in world units
     const float gridSpacing = ZoomLevel < 0.01f ? 500000.f : 1000.f;
@@ -50,8 +55,8 @@ void Map::Draw()
         Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
         Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
-        DrawLine(static_cast<int>(screenStart.x), static_cast<int>(screenStart.y),
-            static_cast<int>(screenEnd.x), static_cast<int>(screenEnd.y), GRAY);
+        DrawLineEx(screenStart, screenEnd, 2, GridColor);
+
     }
 
     // Draw horizontal grid lines
@@ -65,8 +70,7 @@ void Map::Draw()
         Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
         Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
-        DrawLine(static_cast<int>(screenStart.x), static_cast<int>(screenStart.y),
-            static_cast<int>(screenEnd.x), static_cast<int>(screenEnd.y), GRAY);
+        DrawLineEx(screenStart, screenEnd, 2, GridColor);
     }
 
     for (size_t i = 0; i < ObjectsToDraw.size(); i++)
@@ -122,10 +126,10 @@ void Map::Draw()
         }
 
         // Frustum culling: skip off-screen objects
-        if (screenPos.x + (PlayerIcon.width / 2) < 0 
-            || screenPos.x - (PlayerIcon.width / 2) > DestinationRect.width
-            || screenPos.y + (PlayerIcon.height / 2) < 0
-            || screenPos.y - (PlayerIcon.height / 2) > DestinationRect.height) 
+        if (screenPos.x + (PlayerIcon.width * ZoomLevel / 2) < 0
+            || screenPos.x - (PlayerIcon.width * ZoomLevel / 2) > DestinationRect.width
+            || screenPos.y + (PlayerIcon.height * ZoomLevel / 2) < 0
+            || screenPos.y - (PlayerIcon.height * ZoomLevel / 2) > DestinationRect.height)
         {
             continue;
         }
@@ -137,8 +141,7 @@ void Map::Draw()
                 auto player = std::dynamic_pointer_cast<Player>(obj);
                 if (player) 
                 {
-                    // BoundingBox Drawing 
-                    // TODO use Lookup for color
+                    // BoundingBox Drawing for hover and focused
                     if (HoveredUnit.lock() == obj)
                     {
                         DrawCircleLinesV(screenPos, PlayerIcon.width * ZoomLevel / 2, YELLOW);
@@ -152,8 +155,6 @@ void Map::Draw()
                         DrawText(("Speed: " + SpeedString).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, GREEN);
                     }
                     
-                    DrawPixel(ConvertWorldToScreenPos({ 0,0 }).x, ConvertWorldToScreenPos({ 0,0 }).y, PURPLE);
-                    // Draw with rotation around the center
                     DrawTexturePro(
                         PlayerIcon,
                         { 0, 0, (float)PlayerIcon.width, (float)PlayerIcon.height }, // Source rectangle (entire texture)
@@ -299,7 +300,9 @@ void Map::LoadRessources()
         UnloadImage(ImageSubmarine);
         throw std::runtime_error("Failed To Load Player Icon: " + PlayerIconPath);
     }
+    ImageMipmaps(&ImageSubmarine);
     PlayerIcon = LoadTextureFromImage(ImageSubmarine);
+    SetTextureFilter(PlayerIcon, TextureFilter::TEXTURE_FILTER_TRILINEAR);
     UnloadImage(ImageSubmarine);
 
     // Ship Icon

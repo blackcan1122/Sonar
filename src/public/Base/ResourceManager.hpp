@@ -12,21 +12,21 @@ struct TextureNPatchInfo
     int HoverOffsetX, HoverOffsetY;
     std::string layout;
 
+    // Conversion Operator to return a NPatchInfo implicitly
     operator NPatchInfo()
     {
-        
         return NPatchInfo { Rectangle {(float)sourceX, (float)sourceY, (float)sourceWidth, (float)sourceHeight }, padLeft, padTop, padRight, padBottom };
-        
     }
 
-    NPatchInfo GetUpdatedNPatchInfo()
+    NPatchInfo GetOfsettedNPatchInfo()
     {
         return NPatchInfo{ Rectangle {(float)sourceX + HoverOffsetX, (float)sourceY + HoverOffsetY, (float)sourceWidth, (float)sourceHeight }, padLeft, padTop, padRight, padBottom };
 
     }
 };
 
-struct TextureResource {
+struct TextureResource 
+{
     std::string name;
     Image ImageTexture;
     int textureID;
@@ -37,6 +37,28 @@ struct TextureResource {
     int height;
     std::string format;
     std::string wrapMode;
+
+private:
+    Texture2D LoadedTexture;
+    int RefCount = 0;
+
+    Texture2D LoadTexture()
+    {
+        // TODO: Own Texture Handle with:
+        // Custom Constructor
+        // Custom Move Constructor / operator
+        // Custom Copy operator
+        // Custom Desturctor
+        // Should be passed a pointer to its outter
+        LoadedTexture = RAYLIB_H::LoadTexture(path.c_str());
+        RefCount++;
+        return LoadedTexture;
+    }
+
+    bool UnloadTexture()
+    {
+        RAYLIB_H::UnloadTexture(LoadedTexture);
+    }
 };
 
 class ResourceManager
