@@ -72,8 +72,6 @@ void ResourceManager::ParseJson()
         #pragma omp critical
         AllResources.emplace(resource.name, std::move(resource));
     }
-
-    std::cout << "finished" << std::endl;
 }
 
 Texture2DWrap TextureResource::LoadTexture()
@@ -102,7 +100,7 @@ void TextureResource::RemoveRef()
                 WorkerDone.store(false);
                 auto StartTime = std::chrono::system_clock::now();
                 auto CurrentTime = StartTime;
-                bool bStillZero = true;
+                bool StillZero = true;
                 size_t ResetCounter = 0;
                 while (StartTime + std::chrono::seconds(300) > CurrentTime)
                 {
@@ -116,19 +114,21 @@ void TextureResource::RemoveRef()
                             // if a Ref should appear a single time and get deleted immediatly again
                             // we handle it like it shouldn't be loaded in the first place and just reset the timer
                             // but we only do this for a given amount
-                            std::cout << "Resetting Time" << std::endl;
+                            LOG_INFO(l_RESOURCES, TEXT("Ref Count Raised, Resetting Timer for GC for the {}", ResetCounter));
                             ResetCounter++;
                             StartTime = std::chrono::system_clock::now();
                         }
                         else
                         {
-                            bStillZero = false;
+                            LOG_INFO(l_RESOURCES, TEXT("Reset Counter exceed Max Reset Times, GC will be postponed"));
+                            StillZero = false;
+                            break;
                         }
 
                     }
                 }
 
-                if (bStillZero)
+                if (StillZero)
                 {
                     LOG_INFO(l_RESOURCES, TEXT("Enqueing unloading for Texture: '{}' from Vram", name));
                     GameInstance::GetInstance()->MainQueue.Enqueue([this]()
