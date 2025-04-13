@@ -70,7 +70,7 @@ void ResourceManager::ParseJson()
         }
 
         #pragma omp critical
-        AllResources[resource.name] = resource;
+        AllResources.emplace(resource.name, std::move(resource));
     }
 
     std::cout << "finished" << std::endl;
