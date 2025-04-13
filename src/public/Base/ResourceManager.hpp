@@ -9,6 +9,7 @@
 #include "Base/EventDispatcher.hpp"
 #include "Events/AllPurposeEvent.h"
 #include "Events/StringEventData.hpp"
+#include "Base/GameThreadQueue.hpp"
 
 using json = nlohmann::json;
 
@@ -38,12 +39,7 @@ struct TextureResource
 
     TextureResource()
         :WorkerDone(true)
-    {
-        UnloadDispatcher.AddListener("Unload Texture", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
-            {
-                UnloadTexture();
-            });
-    }
+    {}
 
     TextureResource(TextureResource&& Other) noexcept
         : name(std::move(Other.name)),
@@ -55,33 +51,22 @@ struct TextureResource
         height(Other.height),
         format(std::move(Other.format)),
         wrapMode(std::move(Other.wrapMode)),
-        LoadedTexture(Other.LoadedTexture),  // Transfer texture handle
+        LoadedTexture(Other.LoadedTexture),
         RefCount(Other.RefCount),
-        WorkerDone(Other.WorkerDone.load()),  // Atomic load
+        WorkerDone(Other.WorkerDone.load()),
         WorkerFuture(std::move(Other.WorkerFuture))
     {
-        // Invalidate source object
+
         Other.textureID = -1;
-        Other.LoadedTexture = {};  // Reset texture to empty
+        Other.LoadedTexture = {};
         Other.RefCount = 0;
         Other.WorkerDone.store(true);
-
-        Other.UnloadDispatcher.RemoveListener("Unload Texture", AllPurposeEvent::StaticClass());
-        UnloadDispatcher.AddListener("Unload Texture", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
-            {
-                UnloadTexture();
-            });
-
-        // CAUTION: Any existing Texture2DWrap pointing to 'Other' 
-        // will now have dangling pointers!
     }
 
-    TextureResource& operator=(TextureResource&& Other) noexcept {
+    TextureResource& operator=(TextureResource&& Other) noexcept 
+    {
         if (this != &Other) 
         {
-            // Cleanup existing resources only if not self-assignment
-
-            // Transfer members
             name = std::move(Other.name);
             textureID = Other.textureID;
             textureKind = std::move(Other.textureKind);
@@ -96,17 +81,12 @@ struct TextureResource
             WorkerDone.store(Other.WorkerDone.load());
             WorkerFuture = std::move(Other.WorkerFuture);
 
-            // Invalidate source
+
             Other.textureID = -1;
             Other.LoadedTexture = {};
             Other.RefCount = 0;
             Other.WorkerDone.store(true);
         }
-        Other.UnloadDispatcher.RemoveListener("Unload Texture", AllPurposeEvent::StaticClass());
-        UnloadDispatcher.AddListener("Unload Texture", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
-            {
-                UnloadTexture();
-            });
         return *this;
     }
 
@@ -123,16 +103,7 @@ struct TextureResource
     std::string format;
     std::string wrapMode;
 
-    Texture2DWrap LoadTexture()
-    {
-        if (LoadedTexture.id == 0)
-        {
-            LoadedTexture = RAYLIB_H::LoadTexture(path.c_str());
-
-        }
-        return Texture2DWrap (&LoadedTexture, this);
-        
-    }
+    Texture2DWrap LoadTexture();
 
 private:
 
@@ -141,64 +112,14 @@ private:
     std::atomic<bool> WorkerDone;
     std::future<void> WorkerFuture;
 
-    EventDispatcher UnloadDispatcher;
-
     void AddRef()
     {
         RefCount++;
     }
 
-    void RemoveRef()
-    {
-        RefCount--;
+    void RemoveRef();
 
-        if (RefCount == 0 && WorkerDone.load())
-        {
-            WorkerFuture = std::async(std::launch::async, [this]()
-                {
-                    WorkerDone.store(false);
-                    auto StartTime = std::chrono::system_clock::now();
-                    auto CurrentTime = StartTime;
-                    bool bStillZero = true;
-                    while (StartTime + std::chrono::seconds(2) > CurrentTime)
-                    {
-                        CurrentTime = std::chrono::system_clock::now();
-                        if (RefCount != 0)
-                        {
-                            bStillZero = false;
-                        }
-                    }
-
-                    if (bStillZero)
-                    {
-                        std::shared_ptr<AllPurposeEvent> UnloadEvent = std::make_shared<AllPurposeEvent>();
-                        std::shared_ptr<StringEventData> mStringEventData = std::make_shared<StringEventData>();
-
-                        mStringEventData->String = "Unload";
-                        UnloadEvent->Payload = std::dynamic_pointer_cast<IEventData>(mStringEventData);
-
-                        UnloadDispatcher.Dispatch(UnloadEvent);
-                        WorkerDone.store(true);
-                        return;
-                    }
-                  
-                    WorkerDone.store(true);
-                    return;
-                });
-        }
-    }
-
-    bool UnloadTexture()
-    {
-        if (LoadedTexture.id != 0)
-        {
-            RAYLIB_H::UnloadTexture(LoadedTexture); // Somehow openGL throws an exception here
-            std::cout << "Unloaded Textures from Vram yaay" << std::endl;
-            LoadedTexture = {};
-            return true;
-        }
-        return false;
-    }
+    bool UnloadTexture();
 };
 
 class ResourceManager

@@ -75,3 +75,71 @@ void ResourceManager::ParseJson()
 
     std::cout << "finished" << std::endl;
 }
+
+Texture2DWrap TextureResource::LoadTexture()
+{
+    LOG_INFO(l_RESOURCES, TEXT("Requesting Load for : '{}'", name));
+
+    if (LoadedTexture.id == 0)
+    {
+        LOG_INFO(l_RESOURCES, TEXT("Loading: '{}' into VRAM", name));
+        LoadedTexture = RAYLIB_H::LoadTexture(path.c_str());
+
+    }
+    LOG_INFO(l_RESOURCES, TEXT("Texture '{}' already Loaded, will be reused", name));
+    return Texture2DWrap(&LoadedTexture, this);
+}
+
+void TextureResource::RemoveRef()
+{
+    RefCount--;
+
+    if (RefCount == 0 && WorkerDone.load())
+    {
+        WorkerFuture = std::async(std::launch::async, [this]()
+            {
+                LOG_INFO(l_RESOURCES, TEXT("Starting GC Collection for: '{}'", name));
+                WorkerDone.store(false);
+                auto StartTime = std::chrono::system_clock::now();
+                auto CurrentTime = StartTime;
+                bool bStillZero = true;
+                while (StartTime + std::chrono::seconds(10) > CurrentTime)
+                {
+                    CurrentTime = std::chrono::system_clock::now();
+                    if (RefCount != 0)
+                    {
+                        bStillZero = false;
+                    }
+                }
+
+                if (bStillZero)
+                {
+                    LOG_INFO(l_RESOURCES, TEXT("Enqueing unloading for Texture: '{}' from Vram", name));
+                    GameInstance::GetInstance()->MainQueue.Enqueue([this]()
+                        {
+                            this->UnloadTexture();
+                        });
+
+                    WorkerDone.store(true);
+                    return;
+                }
+
+                LOG_INFO(l_RESOURCES, TEXT("Aborting Cleaning '{}' as still used", name));
+                WorkerDone.store(true);
+                return;
+            });
+    }
+}
+
+bool TextureResource::UnloadTexture()
+{
+    if (LoadedTexture.id != 0)
+    {
+        RAYLIB_H::UnloadTexture(LoadedTexture);
+        LoadedTexture = {};
+        LOG_INFO(l_RESOURCES, TEXT("'{}' was Cleaned from Vram", name));
+        return true;
+    }
+
+    return false;
+}

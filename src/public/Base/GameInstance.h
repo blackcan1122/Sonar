@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "Base/GameMode.h"
 #include "Base/ResourceManager.hpp"
+#include "Base/GameThreadQueue.hpp"
 
 struct WindowProperties
 {
@@ -65,6 +66,8 @@ public:
 	static EventDispatcher UIEventDispatcher;
 	static EventDispatcher SaveStateDispatcher;
 	static EventDispatcher AllPurposeDispatcher;
+
+	static GameThreadQueue MainQueue;
 
 	TextureResource* GetResource(std::string Name);
 

@@ -28,6 +28,7 @@ EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
 GameModeSwitcher GameInstance::g_ActiveStateMachine;
+GameThreadQueue GameInstance::MainQueue;
 std::string GameInstance::g_WorkingDirectory;
 std::unordered_map<std::string, std::set<int32_t>> GameInstance::g_AssetRegistry;
 
@@ -247,6 +248,7 @@ void GameInstance::GameLoop()
 	// GAMELOOP //
 	while (!WindowShouldClose())
 	{
+		MainQueue.ProcessTasks();
 		BeginDrawing();
 		if (g_ActiveStateMachine.isPendingKillLastMode())
 		{
