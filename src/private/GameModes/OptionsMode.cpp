@@ -17,36 +17,11 @@
 OptionsMode::OptionsMode()
 {
 	SetName("Options");
-
-	UIDispatcher = std::make_shared<EventDispatcher>();
-	UIDispatcher->m_Name = "UIDispatcher Menu";
-
-	Image BackgroundImg = LoadImage((GameInstance::GetInstance()->g_WorkingDirectory + "\\resources\\imgs\\BackgroundMenu.jpg").c_str());
-	Background = LoadTextureFromImage(BackgroundImg);
-	UnloadImage(BackgroundImg);
-
-	WindowProperties CurrentProperties = GameInstance::GetInstance()->GetWindowProperties();
-	int CenterX = CurrentProperties.m_ScreenWidth / 2;
-
-	Background.width = CurrentProperties.m_ScreenWidth;
-	Background.height = CurrentProperties.m_ScreenHeight;
-
-
-	Rectangle ApplyRec = { GetScreenWidth() - (ButtonWidth + Padding), GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
-	Apply = std::make_shared<Button>();
-	Apply->Construct(ApplyRec, "Apply", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Apply");
-
-	Rectangle BackRec = { Padding, GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
-	Back = std::make_shared<Button>();
-	Back->Construct(BackRec, "Back", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Back");
-
-	SetUpEvents();
 }
 
 OptionsMode::~OptionsMode()
 {
 	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Option", AllPurposeEvent::StaticClass());
-	UnloadTexture(Background);
 }
 
 void OptionsMode::Update()
@@ -59,6 +34,28 @@ void OptionsMode::Update()
 
 	Back->Tick(DeltaTime);
 	Apply->Tick(DeltaTime);
+}
+
+void OptionsMode::BeginPlay()
+{
+	UIDispatcher = std::make_shared<EventDispatcher>();
+	UIDispatcher->m_Name = "UIDispatcher Menu";
+
+	TextureResource* BackgroundResource = GameInstance::GetInstance()->GetResource("BackgroundMenu");
+	Background = BackgroundResource->LoadTexture();
+
+	WindowProperties CurrentProperties = GameInstance::GetInstance()->GetWindowProperties();
+	int CenterX = CurrentProperties.m_ScreenWidth / 2;
+
+	Rectangle ApplyRec = { GetScreenWidth() - (ButtonWidth + Padding), GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
+	Apply = std::make_shared<Button>();
+	Apply->Construct(ApplyRec, "Apply", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Apply");
+
+	Rectangle BackRec = { Padding, GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
+	Back = std::make_shared<Button>();
+	Back->Construct(BackRec, "Back", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Back");
+
+	SetUpEvents();
 }
 
 void OptionsMode::SetName(std::string Name)
@@ -91,9 +88,6 @@ void OptionsMode::SetUpEvents()
 
 			Height = CurrentProperties->height;
 			Width = CurrentProperties->width;
-
-			Background.height = CurrentProperties->height;
-			Background.width = CurrentProperties->width;
 
 			Back->UpdateButtonPosition(Padding, Height - (ButtonHeight + Padding));
 			Apply->UpdateButtonPosition(Width - (ButtonWidth + Padding), Height - (ButtonHeight + Padding));

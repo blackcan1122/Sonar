@@ -133,7 +133,7 @@ Button& Button::OnHover(std::function<void(Button* ButtonClass)> callback)
     return *this;
 }
 
-Button& Button::SetTexture(Texture2DWrap Texture)
+Button& Button::SetTexture(SharedTexture2D Texture)
 {
     m_Texture = Texture;
     return *this;

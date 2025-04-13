@@ -74,7 +74,7 @@ void ResourceManager::ParseJson()
     }
 }
 
-Texture2DWrap TextureResource::LoadTexture()
+SharedTexture2D TextureResource::LoadTexture()
 {
     LOG_INFO(l_RESOURCES, TEXT("Requesting Load for : '{}'", name));
 
@@ -85,7 +85,7 @@ Texture2DWrap TextureResource::LoadTexture()
 
     }
     LOG_INFO(l_RESOURCES, TEXT("Texture '{}' already Loaded, will be reused", name));
-    return Texture2DWrap(&LoadedTexture, this);
+    return SharedTexture2D(&LoadedTexture, this);
 }
 
 void TextureResource::RemoveRef()

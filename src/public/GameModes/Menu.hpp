@@ -15,7 +15,7 @@ public:
 	void SetUpEvents();
 	std::string GetName() override;
 
-	Texture2D Background;
+	SharedTexture2D Background;
 
 protected:
 	float m_DeltaTime = 0;

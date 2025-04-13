@@ -20,19 +20,15 @@ MenuMode::MenuMode()
 	UIDispatcher = std::make_shared<EventDispatcher>();
 	UIDispatcher->m_Name = "UIDispatcher Menu";
 
-	Image BackgroundImg = LoadImage((GameInstance::GetInstance()->g_WorkingDirectory + "\\resources\\imgs\\BackgroundMenu.jpg").c_str());
-	Background = LoadTextureFromImage(BackgroundImg);
-	UnloadImage(BackgroundImg);
+	TextureResource* BackgroundResource = GameInstance::GetInstance()->GetResource("BackgroundMenu");
+	Background = BackgroundResource->LoadTexture();
 
 	TextureResource* ButtonResource = GameInstance::GetInstance()->GetResource("ButtonImage");
-	auto SpriteButton = ButtonResource->LoadTexture();
+	SharedTexture2D SpriteButton = ButtonResource->LoadTexture();
 	NPatchInfo ninePatchInfo1 = ButtonResource->nPatchInfo.value();
 
 	WindowProperties CurrentProperties = GameInstance::GetInstance()->GetWindowProperties();
 	int CenterX = CurrentProperties.m_ScreenWidth / 2;
-
-	Background.width = CurrentProperties.m_ScreenWidth;
-	Background.height = CurrentProperties.m_ScreenHeight;
 
 #if DEBUG
 
@@ -120,7 +116,6 @@ MenuMode::MenuMode()
 MenuMode::~MenuMode()
 {
 	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
-	UnloadTexture(Background);
 }
 
 void MenuMode::Update()
@@ -172,8 +167,6 @@ void MenuMode::SetUpEvents()
 			Height = CurrentProperties->height;
 			Width = CurrentProperties->width;
 
-			Background.height = CurrentProperties->height;
-			Background.width = CurrentProperties->width;
 #if DEBUG
 			Sandbox->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 100);
 #endif

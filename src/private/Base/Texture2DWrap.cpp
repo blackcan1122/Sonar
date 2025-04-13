@@ -3,7 +3,7 @@
 #include <utility>
 #include <iomanip>
 
-Texture2DWrap::Texture2DWrap(Texture2D* TextureHandle, TextureResource* Outter)
+SharedTexture2D::SharedTexture2D(Texture2D* TextureHandle, TextureResource* Outter)
 	:m_Texture(TextureHandle), m_Outter(Outter)
 {
 	m_IsInitialized = true;
@@ -11,7 +11,7 @@ Texture2DWrap::Texture2DWrap(Texture2D* TextureHandle, TextureResource* Outter)
 	std::cout << m_Outter->name << ": " << m_Outter->RefCount << std::endl;
 }
 
-Texture2DWrap::Texture2DWrap(const Texture2DWrap& Other)
+SharedTexture2D::SharedTexture2D(const SharedTexture2D& Other)
 	:m_Outter(Other.m_Outter), m_Texture(Other.m_Texture)
 {
 	if (this != &Other)
@@ -22,15 +22,16 @@ Texture2DWrap::Texture2DWrap(const Texture2DWrap& Other)
 	}
 }
 
-Texture2DWrap::Texture2DWrap(Texture2DWrap&& Other) noexcept
+SharedTexture2D::SharedTexture2D(SharedTexture2D&& Other) noexcept
 	:m_Outter(Other.m_Outter), m_Texture(Other.m_Texture)
 {
 	m_IsInitialized = true;
+	Other.m_IsInitialized = false;
 	Other.m_Outter = nullptr;
 	Other.m_Texture = nullptr;
 }
 
-Texture2DWrap::~Texture2DWrap()
+SharedTexture2D::~SharedTexture2D()
 {
 	if (m_IsInitialized)
 	{
@@ -39,7 +40,7 @@ Texture2DWrap::~Texture2DWrap()
 	}
 }
 
-Texture2DWrap& Texture2DWrap::operator=(const Texture2DWrap& Other)
+SharedTexture2D& SharedTexture2D::operator=(const SharedTexture2D& Other)
 {
 	if (this == &Other)
 	{
@@ -52,7 +53,7 @@ Texture2DWrap& Texture2DWrap::operator=(const Texture2DWrap& Other)
 	return *this;
 }
 
-Texture2DWrap& Texture2DWrap::operator=(Texture2DWrap& Other)
+SharedTexture2D& SharedTexture2D::operator=(SharedTexture2D& Other)
 {
 	if (this == &Other)
 	{
@@ -65,7 +66,7 @@ Texture2DWrap& Texture2DWrap::operator=(Texture2DWrap& Other)
 	return *this;
 }
 
-Texture2DWrap& Texture2DWrap::operator=(Texture2DWrap&& Other)
+SharedTexture2D& SharedTexture2D::operator=(SharedTexture2D&& Other)
 {
 	if (this != &Other) 
 	{
@@ -88,7 +89,12 @@ Texture2DWrap& Texture2DWrap::operator=(Texture2DWrap&& Other)
 	return *this;
 }
 
-Texture2DWrap::operator Texture2D()
+SharedTexture2D::operator Texture2D()
 {
 	return *m_Texture;
+}
+
+SharedTexture2D::operator Texture2D* ()
+{
+	return m_Texture;
 }
