@@ -160,7 +160,7 @@ private:
                     auto StartTime = std::chrono::system_clock::now();
                     auto CurrentTime = StartTime;
                     bool bStillZero = true;
-                    while (StartTime + std::chrono::seconds(30) > CurrentTime)
+                    while (StartTime + std::chrono::seconds(2) > CurrentTime)
                     {
                         CurrentTime = std::chrono::system_clock::now();
                         if (RefCount != 0)
@@ -190,10 +190,14 @@ private:
 
     bool UnloadTexture()
     {
-        RAYLIB_H::UnloadTexture(LoadedTexture);
-        std::cout << "Unloaded Textures from Vram yaay" << std::endl;
-        LoadedTexture = {};
-        return true;
+        if (LoadedTexture.id != 0)
+        {
+            RAYLIB_H::UnloadTexture(LoadedTexture); // Somehow openGL throws an exception here
+            std::cout << "Unloaded Textures from Vram yaay" << std::endl;
+            LoadedTexture = {};
+            return true;
+        }
+        return false;
     }
 };
 
