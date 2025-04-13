@@ -32,7 +32,7 @@
 <h3 align="center">Sonar</h3>
 
   <p align="center">
-  This is a Mix of a Raylib c++ Framework and a Pixel Art Submarine Cold War Simulator. This Project will be splitted into 2 different ones, one for the Engine / Framework and one for the Game. 
+  This is a Mix of a Raylib c++ Framework and a Pixel Art Submarine Cold War Simulator. This Project will be splitted into 2 different ones, one for the Engine / Framework and one for the Game. At a later Point, Raylib will be replaced my a custom OpenGL / Vulkan implementation.
     <br />
     <a href="https://github.com/blackcan1122/Sonar"><strong>Explore the docs »</strong></a>
     <br />
