@@ -29,6 +29,8 @@ EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
 GameModeSwitcher GameInstance::g_ActiveStateMachine;
 GameThreadQueue GameInstance::MainQueue;
+ResourceManager GameInstance::m_ResourceManager;
+
 std::string GameInstance::g_WorkingDirectory;
 std::unordered_map<std::string, std::set<int32_t>> GameInstance::g_AssetRegistry;
 
@@ -41,7 +43,6 @@ GameInstance::GameInstance(WindowProperties Properties)
 	InitLogger();
 	spdlog::flush_every(std::chrono::seconds(1));
 	LOG_INFO(l_GAME_INSTANCE, TEXT("GameInstance Initialized"));
-	m_ResourceManager.ParseJson();
 }
 
 std::string GameInstance::RegisterAsset(const std::string name)
@@ -228,7 +229,7 @@ void GameInstance::CreateWindow()
 void GameInstance::GameLoop()
 {
 	
-
+	m_ResourceManager.ParseJson();
 	g_ActiveStateMachine.RegisterState("Menu", []() {return new MenuMode(); });
 	g_ActiveStateMachine.RegisterState("Sandbox", []() {return new SandboxGameMode(); });
 	g_ActiveStateMachine.RegisterState("Options", []() {return new OptionsMode(); });
@@ -243,6 +244,7 @@ void GameInstance::GameLoop()
 
 	std::shared_ptr<AllPurposeEvent> WindowResizeEvent = std::make_shared<AllPurposeEvent>();
 	std::shared_ptr<WindowResizeData> CurrentWindowResizeData = std::make_shared<WindowResizeData>();
+
 
 
 	// GAMELOOP //

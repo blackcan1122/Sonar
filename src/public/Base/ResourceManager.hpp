@@ -35,7 +35,7 @@ struct TextureNPatchInfo
 
 struct TextureResource 
 {
-    friend Texture2DWrap;
+    friend SharedTexture2D;
 
     TextureResource()
         :WorkerDone(true)
@@ -103,7 +103,7 @@ struct TextureResource
     std::string format;
     std::string wrapMode;
 
-    Texture2DWrap LoadTexture();
+    SharedTexture2D LoadTexture();
 
 private:
 

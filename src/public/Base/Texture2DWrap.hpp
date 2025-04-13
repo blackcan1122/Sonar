@@ -5,26 +5,27 @@ class ResourceManager;
 struct TextureResource;
 
 
-class Texture2DWrap
+class SharedTexture2D
 {
 public:
 	
-	Texture2DWrap() = default;
-	Texture2DWrap(Texture2D* TextureHandle, TextureResource* Outter);
-	Texture2DWrap(const Texture2DWrap& other);
-	Texture2DWrap(Texture2DWrap&& Other) noexcept;
+	SharedTexture2D() = default;
+	SharedTexture2D(Texture2D* TextureHandle, TextureResource* Outter);
+	SharedTexture2D(const SharedTexture2D& other);
+	SharedTexture2D(SharedTexture2D&& Other) noexcept;
 
-	~Texture2DWrap();
+	~SharedTexture2D();
 
 	// Copy Assignment
-	Texture2DWrap& operator=(const Texture2DWrap& Other);
-	Texture2DWrap& operator=(Texture2DWrap& Other);
+	SharedTexture2D& operator=(const SharedTexture2D& Other);
+	SharedTexture2D& operator=(SharedTexture2D& Other);
 
 	// Move Assignment
-	Texture2DWrap& operator=(Texture2DWrap&& Other);
+	SharedTexture2D& operator=(SharedTexture2D&& Other);
 
 	// Conversion Operator to Texture2D
 	operator Texture2D();
+	operator Texture2D* ();
 
 
 private:

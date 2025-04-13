@@ -1,14 +1,14 @@
 {
     "Resources": [
         {
-            "Name": "BrickWall",
+            "Name": "BackgroundMenu",
             "TextureID": 101,
             "TextureKind": "Texture2D", 
             "TextureNPatchInfo": null,
-            "Path": "imgs\\brick_wall.png",
+            "Path": "imgs\\BackgroundMenu.jpg",
             "Properties": {
-                "Width": 1024,
-                "Height": 768,
+                "Width": 3072,
+                "Height": 2048,
                 "Format": "RGBA",
                 "WrapMode": "Repeat"
             }
@@ -23,7 +23,7 @@
                 "HoverOffset": {"width" : 128, "height": 0},
                 "Layout": "stretch"
             },
-            "Path": "imgs/9PatchTile.png",
+            "Path": "imgs\\9PatchTile.png",
             "Properties": {
                 "Width": 256,
                 "Height": 128,

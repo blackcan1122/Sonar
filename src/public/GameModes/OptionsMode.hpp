@@ -2,6 +2,7 @@
 #include "Base/Core.h"
 #include "Base/GameMode.h"
 #include "UI/Button.h"
+#include "Base/Texture2DWrap.hpp"
 
 class OptionsMode : public GameMode
 {
@@ -10,11 +11,12 @@ public:
 	~OptionsMode();
 
 	void Update() override;
+	virtual void BeginPlay() override;
 	void SetName(std::string Name) override;
 	void SetUpEvents();
 	std::string GetName() override;
 
-	Texture2D Background;
+	SharedTexture2D Background;
 
 protected:
 	float m_DeltaTime = 0;

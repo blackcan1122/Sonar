@@ -35,7 +35,7 @@ public:
 
 	virtual Button& OnHover(std::function<void(Button* ButtonClass)> callback);
 
-	virtual Button& SetTexture(Texture2DWrap Texture);
+	virtual Button& SetTexture(SharedTexture2D Texture);
 	virtual Button& SetNPatchInfo(NPatchInfo NPatchInfo);
 	virtual Button& UseNPatchFeature(bool bUseNpatch);
 	virtual Button& UseTexture(bool bUseTexture);
@@ -68,7 +68,7 @@ private:
 	Color m_TextColor = BLACK;
 
 	NPatchInfo m_NpatchTextureInfo;
-	Texture2DWrap m_Texture;
+	SharedTexture2D m_Texture;
 	bool m_UseNpatch = false;
 	bool m_UseTexture = false;
 

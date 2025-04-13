@@ -51,7 +51,7 @@ protected:
 	*****************************
 	*/
 
-	ResourceManager m_ResourceManager;
+	static ResourceManager m_ResourceManager;
 
 	static void CreateWindow();
 	static void GameLoop();
