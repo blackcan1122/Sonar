@@ -30,7 +30,6 @@ void SandboxGameMode::BeginPlay()
 	PlayerOne.TryLoad()->ConvertAngleToVector();
 	PlayerOne.TryLoad()->SetInitialSpeed(5);
 
-
 	PlayerTwo = m_ObjectFactory.NewObject<Player>();
 	PlayerTwo.TryLoad()->SetEntityLocation(Vector2{ 800,200 });
 	PlayerTwo.TryLoad()->SetDisplayName("K-21");

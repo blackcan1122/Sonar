@@ -1,6 +1,6 @@
 #pragma once
 #include "Base/Core.h"
-#include "json.hpp"
+#include "single_include/nlohmann/json.hpp"
 #include <fstream>
 #include <atomic>
 #include <thread>

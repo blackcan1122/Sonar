@@ -55,10 +55,28 @@ function checkspdlog()
     os.chdir("../")
 end
 
+function CheckNlohmann()
+    os.chdir("external")
+    if(os.isdir("nlohmann") == false) then
+        if(not os.isfile("include.zip")) then
+            print("NLohmann not found, downloading from github")
+            local result_str, response_code = http.download("https://github.com/nlohmann/json/releases/download/v3.12.0/include.zip", "include.zip", {
+                progress = download_progress,
+                headers = { "From: Premake", "Referer: Premake" }
+            })
+        end
+        print("Unzipping to " ..  os.getcwd())
+        zip.extract("include.zip", os.getcwd() .. "/nlohmann")
+        os.remove("include.zip")
+    end
+    os.chdir("../")
+end
+
 function build_externals()
      print("calling externals")
      check_raylib()
      checkspdlog()
+     CheckNlohmann()
 end
 
 function platform_defines()
@@ -304,7 +322,8 @@ if (downloadRaylib) then
         -- Include spdlog headers and source files
         includedirs { json_dir }
         files { 
-            json_dir .. "/**.hpp", 
+            json_dir .. "/**.hpp",
+            json_dir .. "/include/single_include/nlohmann/**.hpp"
         }
     
         -- Required for static library compilation

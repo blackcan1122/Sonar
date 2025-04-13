@@ -7,7 +7,7 @@
 *
 * Acts as the central authority for:
 * - Object creation/destruction via embedded Factory
-* - Frame-based Tick() execution hierarchy
+* - Frame-based Tick(float Deltatime) execution hierarchy
 * - Safe deferred object cleanup
 * - Game-specific rule implementation foundation
 *
