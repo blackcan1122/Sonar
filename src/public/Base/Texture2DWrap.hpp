@@ -16,9 +16,14 @@ public:
 
 	~Texture2DWrap();
 
+	// Copy Assignment
 	Texture2DWrap& operator=(const Texture2DWrap& Other);
 	Texture2DWrap& operator=(Texture2DWrap& Other);
 
+	// Move Assignment
+	Texture2DWrap& operator=(Texture2DWrap&& Other);
+
+	// Conversion Operator to Texture2D
 	operator Texture2D();
 
 

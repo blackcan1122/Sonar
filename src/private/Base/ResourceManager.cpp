@@ -103,12 +103,28 @@ void TextureResource::RemoveRef()
                 auto StartTime = std::chrono::system_clock::now();
                 auto CurrentTime = StartTime;
                 bool bStillZero = true;
-                while (StartTime + std::chrono::seconds(10) > CurrentTime)
+                size_t ResetCounter = 0;
+                while (StartTime + std::chrono::seconds(300) > CurrentTime)
                 {
+                    std::this_thread::sleep_for(std::chrono::seconds(5));
                     CurrentTime = std::chrono::system_clock::now();
                     if (RefCount != 0)
                     {
-                        bStillZero = false;
+                        if (ResetCounter < 5)
+                        {
+                            // Reset Counter for a total of 5 Times
+                            // if a Ref should appear a single time and get deleted immediatly again
+                            // we handle it like it shouldn't be loaded in the first place and just reset the timer
+                            // but we only do this for a given amount
+                            std::cout << "Resetting Time" << std::endl;
+                            ResetCounter++;
+                            StartTime = std::chrono::system_clock::now();
+                        }
+                        else
+                        {
+                            bStillZero = false;
+                        }
+
                     }
                 }
 

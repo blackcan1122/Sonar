@@ -65,6 +65,29 @@ Texture2DWrap& Texture2DWrap::operator=(Texture2DWrap& Other)
 	return *this;
 }
 
+Texture2DWrap& Texture2DWrap::operator=(Texture2DWrap&& Other)
+{
+	if (this != &Other) 
+	{
+		// Release current resource if initialized
+		if (m_IsInitialized && m_Outter) 
+		{
+			m_Outter->RemoveRef();
+		}
+
+		// Transfer ownership
+		m_IsInitialized = true;
+		m_Outter = Other.m_Outter;
+		m_Texture = Other.m_Texture;
+
+		// Reset the source object
+		Other.m_Outter = nullptr;
+		Other.m_Texture = nullptr;
+		Other.m_IsInitialized = false;
+	}
+	return *this;
+}
+
 Texture2DWrap::operator Texture2D()
 {
 	return *m_Texture;
