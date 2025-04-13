@@ -28,6 +28,7 @@ EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
 GameModeSwitcher GameInstance::g_ActiveStateMachine;
+GameThreadQueue GameInstance::MainQueue;
 std::string GameInstance::g_WorkingDirectory;
 std::unordered_map<std::string, std::set<int32_t>> GameInstance::g_AssetRegistry;
 
@@ -40,6 +41,7 @@ GameInstance::GameInstance(WindowProperties Properties)
 	InitLogger();
 	spdlog::flush_every(std::chrono::seconds(1));
 	LOG_INFO(l_GAME_INSTANCE, TEXT("GameInstance Initialized"));
+	m_ResourceManager.ParseJson();
 }
 
 std::string GameInstance::RegisterAsset(const std::string name)
@@ -155,6 +157,20 @@ bool GameInstance::ParseAssetName(const std::string& FullName, std::string& OutB
 	}
 }
 
+TextureResource* GameInstance::GetResource(std::string Name)
+{
+	try
+	{
+		return &(m_ResourceManager.AllResources.at(Name));
+	}
+	catch (std::out_of_range e)
+	{
+		std::cerr << e.what() << std::endl;
+		return nullptr;
+	}
+
+}
+
 void GameInstance::InitGameInstance(WindowProperties Properties)
 {
 	if (g_Instance != nullptr)
@@ -232,6 +248,7 @@ void GameInstance::GameLoop()
 	// GAMELOOP //
 	while (!WindowShouldClose())
 	{
+		MainQueue.ProcessTasks();
 		BeginDrawing();
 		if (g_ActiveStateMachine.isPendingKillLastMode())
 		{

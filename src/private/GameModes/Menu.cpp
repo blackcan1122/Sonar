@@ -11,6 +11,7 @@
 #include "Events/WindowResizeData.hpp"
 
 #define ButtonWidth 200
+#define ButtonHeight 75
 
 MenuMode::MenuMode()
 {
@@ -23,6 +24,10 @@ MenuMode::MenuMode()
 	Background = LoadTextureFromImage(BackgroundImg);
 	UnloadImage(BackgroundImg);
 
+	TextureResource* ButtonResource = GameInstance::GetInstance()->GetResource("ButtonImage");
+	auto SpriteButton = ButtonResource->LoadTexture();
+	NPatchInfo ninePatchInfo1 = ButtonResource->nPatchInfo.value();
+
 	WindowProperties CurrentProperties = GameInstance::GetInstance()->GetWindowProperties();
 	int CenterX = CurrentProperties.m_ScreenWidth / 2;
 
@@ -31,42 +36,91 @@ MenuMode::MenuMode()
 
 #if DEBUG
 
-	Rectangle SandboxRec = { CenterX - ButtonWidth / 2, 100, ButtonWidth, 50 };
+	Rectangle SandboxRec = { CenterX - ButtonWidth / 2, 100, ButtonWidth, ButtonHeight };
 	Sandbox = std::make_shared<Button>();
 	Sandbox->Construct(SandboxRec, "Sandbox", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Sandbox");
 
+	
+	Sandbox->SetTexture(SpriteButton)
+		.UseNPatchFeature(true)
+		.UpdateTextColor(RED)
+		.UseTexture(true)
+		.SetNPatchInfo(ninePatchInfo1)
+		.OnHover([this, ButtonResource](Button* ButtonClass)
+			{
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo->GetOfsettedNPatchInfo());
+			})
+		.OnHoverLeave([this, ButtonResource](Button* ButtonClass)
+			{
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo.value());
+			});
+
 #endif
 	
-	Rectangle StartGameRec = { CenterX - ButtonWidth / 2, 200, ButtonWidth, 50 };
+	Rectangle StartGameRec = { CenterX - ButtonWidth / 2, 200, ButtonWidth, ButtonHeight };
 	StartGame = std::make_shared<Button>();
-	StartGame->Construct(StartGameRec, "Start Game", RED).CenterText();
+	StartGame->Construct(StartGameRec, "Start Game", RED).CenterText()
+		.UpdateTextColor(RED)
+		.SetTexture(SpriteButton)
+		.UseNPatchFeature(true)
+		.UseTexture(true)
+		.SetNPatchInfo(ninePatchInfo1)
+		.OnHover([this](Button* ButtonClass)
+			{
+				NPatchInfo ninePatchInfo1 = { Rectangle { 128.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
+				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+			})
+		.OnHoverLeave([this](Button* ButtonClass)
+			{
+				NPatchInfo ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
+				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+			});
 
-	Rectangle OptionRec = { CenterX - ButtonWidth / 2, 300, ButtonWidth, 50 };
+	Rectangle OptionRec = { CenterX - ButtonWidth / 2, 300, ButtonWidth, ButtonHeight };
 	Option = std::make_shared<Button>();
-	Option->Construct(OptionRec, "Option", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Option");
+	Option->Construct(OptionRec, "Option", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Option")
+		.UpdateTextColor(RED)
+		.SetTexture(SpriteButton)
+		.UseNPatchFeature(true)
+		.UseTexture(true)
+		.SetNPatchInfo(ninePatchInfo1)
+		.OnHover([this](Button* ButtonClass)
+			{
+				NPatchInfo ninePatchInfo1 = { Rectangle { 128.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
+				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+			})
+		.OnHoverLeave([this](Button* ButtonClass)
+			{
+				NPatchInfo ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
+				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+			});
 
-	Rectangle ExitRec = { CenterX - ButtonWidth / 2, 400, ButtonWidth, 50 };
+	Rectangle ExitRec = { CenterX - ButtonWidth / 2, 400, ButtonWidth, ButtonHeight };
 	Exit = std::make_shared<Button>();
-	Exit->Construct(ExitRec, "Exit", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Exit");
+	Exit->Construct(ExitRec, "Exit", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Exit")
+		.UpdateTextColor(RED)
+		.SetTexture(SpriteButton)
+		.UseNPatchFeature(true)
+		.UseTexture(true)
+		.SetNPatchInfo(ninePatchInfo1)
+		.OnHover([this](Button* ButtonClass)
+			{
+				NPatchInfo ninePatchInfo1 = { Rectangle { 128.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
+				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+			})
+		.OnHoverLeave([this](Button* ButtonClass)
+			{
+				NPatchInfo ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
+				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+			});
 
 	SetUpEvents();
-	
-	nPatchTexture = LoadTexture((GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/9PatchTile.png").c_str());
-
-	origin = { 0.0f, 0.0f };
-
-	// A 9-patch (NPATCH_NINE_PATCH) changes its sizes in both axis
-	ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
-
-	Destination = { 300,300, 256,128 };
-
 }
 
 MenuMode::~MenuMode()
 {
 	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
 	UnloadTexture(Background);
-	UnloadTexture(nPatchTexture);
 }
 
 void MenuMode::Update()
@@ -84,18 +138,7 @@ void MenuMode::Update()
 	Option->Tick(DeltaTime);
 	Exit->Tick(DeltaTime);
 
-	if (CheckCollisionPointRec(GetMousePosition(), Destination))
-	{
-		ninePatchInfo1 = { Rectangle { 128.0f, 0.f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
 
-	}
-	else
-	{
-		ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
-
-	}
-	
-	DrawTextureNPatch(nPatchTexture, ninePatchInfo1, Destination, origin, 0.0f, WHITE);
 }
 
 void MenuMode::SetName(std::string Name)

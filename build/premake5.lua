@@ -108,6 +108,7 @@ end
 downloadRaylib = true
 raylib_dir = "external/raylib-master"
 spdlog_dir = "external/spdlog-1.x"
+json_dir = "external/nlohmann"
 
 workspaceName = 'Sonar'
 baseName = path.getbasename(path.getdirectory(os.getcwd()));
@@ -196,6 +197,7 @@ if (downloadRaylib) then
         includedirs { raylib_dir .."/src/external/glfw/include" }
 
         includedirs {spdlog_dir .. "/include" }
+        includedirs {json_dir}
         
         defines { "SPDLOG_COMPILED_LIB" }
 
@@ -205,7 +207,7 @@ if (downloadRaylib) then
 
         filter "action:vs*"
             defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS"}
-            dependson {"raylib", "spdlog"}
+            dependson {"raylib", "spdlog", "nlohmann"}
             links {"raylib.lib", "spdlog.lib"}
             libdirs { "../bin/%{cfg.buildcfg}" }  -- Tell linker where to find .lib files
             characterset ("Unicode")
@@ -277,6 +279,36 @@ if (downloadRaylib) then
     
         -- Required for static library compilation
         defines { "SPDLOG_COMPILED_LIB" }
+    
+        -- Platform-specific configurations
+        filter { "system:windows" }
+            defines { "_CRT_SECURE_NO_WARNINGS" }
+            characterset "Unicode"
+    
+        filter { "configurations:Debug" }
+            symbols "On"
+    
+        filter { "configurations:Release" }
+            optimize "On"
+        
+        filter "action:vs*"
+            buildoptions { "/Zc:__cplusplus", "/utf-8" }
+
+
+    project "nlohmann"
+        kind "none"
+        language "C++"
+        location "build_files/"
+        targetdir "../bin/%{cfg.buildcfg}"  -- Match raylib's output directory
+    
+        -- Include spdlog headers and source files
+        includedirs { json_dir }
+        files { 
+            json_dir .. "/**.hpp", 
+        }
+    
+        -- Required for static library compilation
+        defines { "Json_LIB" }
     
         -- Platform-specific configurations
         filter { "system:windows" }

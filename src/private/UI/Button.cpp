@@ -133,6 +133,30 @@ Button& Button::OnHover(std::function<void(Button* ButtonClass)> callback)
     return *this;
 }
 
+Button& Button::SetTexture(Texture2DWrap Texture)
+{
+    m_Texture = Texture;
+    return *this;
+}
+
+Button& Button::SetNPatchInfo(NPatchInfo NPatchInfo)
+{
+    m_NpatchTextureInfo = NPatchInfo;
+    return *this;
+}
+
+Button& Button::UseNPatchFeature(bool bUseNpatch)
+{
+    m_UseNpatch = bUseNpatch;
+    return *this;
+}
+
+Button& Button::UseTexture(bool bUseTexture)
+{
+    m_UseTexture = bUseTexture;
+    return *this;
+}
+
 Button& Button::OnHoverLeave(std::function<void(Button* ButtonClass)> callback)
 {
     HoverEndCallback = callback;
@@ -183,14 +207,30 @@ void Button::Tick(float DeltaTime)
         }
 
     }
-    if (m_IsRounded)
+    if (!m_UseTexture)
     {
-        DrawRectangleRounded(ButtonDim, m_Roundness, 32, m_BackgroundColor);
+        if (m_IsRounded)
+        {
+            DrawRectangleRounded(ButtonDim, m_Roundness, 32, m_BackgroundColor);
+        }
+        else
+        {
+            DrawRectangle(ButtonDim.x, ButtonDim.y, ButtonDim.width, ButtonDim.height, m_BackgroundColor);
+        }
     }
     else
     {
-        DrawRectangle(ButtonDim.x, ButtonDim.y, ButtonDim.width, ButtonDim.height, m_BackgroundColor);
+        if (m_UseNpatch)
+        {
+            DrawTextureNPatch(m_Texture, m_NpatchTextureInfo, ButtonDim, {0,0}, 0, WHITE);
+        }
+        else
+        {
+            DrawTexture(m_Texture, ButtonDim.x, ButtonDim.y, WHITE);
+        }
     }
-
+    
+    
+   
     DrawText(m_Text.c_str(), ButtonDim.x + TextPosition.x, ButtonDim.y + TextPosition.y, FontSize, m_TextColor);
 }
