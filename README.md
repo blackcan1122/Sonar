@@ -63,7 +63,7 @@ The framework includes basic UI components such as Button, which can be construc
 * ##### Game Thread Queue
 The GameThreadQueue class provides a thread-safe queue for enqueuing and processing tasks on the main game thread, ensuring that tasks are executed in a synchronized manner.
 
-#### Examples:
+### <ins>Examples:</ins>
 ##### Custom GameMode:
 To create a custom game mode, inherit from the GameMode class and implement game-specific logic:
 ```cpp
