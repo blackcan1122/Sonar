@@ -32,7 +32,10 @@
 <h3 align="center">Sonar</h3>
 
   <p align="center">
-  This is a Mix of a Raylib c++ Framework and a Pixel Art Submarine Cold War Simulator. This Project will be splitted into 2 different ones, one for the Engine / Framework and one for the Game. At a later Point, Raylib will be replaced my a custom OpenGL / Vulkan implementation.
+  Sonar is a C++ project that merges a Raylib-based engine with a Pixel Art Submarine Cold War Simulator. The project will eventually split into two separate repositories: one dedicated to the engine (SonarEngine) and another for the game (SonarGame).
+  Raylib is mainly used for Window Managment and Rendering and will be replaced in later versions of SonarEngine with a direct OpenGL / Vulkan backend
+
+This README is structured to cover both aspects of the project, including technical details, examples, and usage instructions.
     <br />
     <a href="https://github.com/blackcan1122/Sonar"><strong>Explore the docs »</strong></a>
     <br />
@@ -47,6 +50,7 @@
 ## About The Project
 
 ### <ins>SonarEngine</ins>:
+SonarEngine serves as the foundation for building game projects. It provides a highly modular, lightweight architecture with core components such as lifecycle management, resource handling, and event-driven systems. Below is a comprehensive breakdown:
 #### Core Components:
 * ##### GameInstance
 The GameInstance class acts as the central authority for the game, managing the window properties, resource manager, event dispatchers, and the main game loop. It is responsible for initializing the game and handling the asset registry.
