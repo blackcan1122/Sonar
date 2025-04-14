@@ -46,7 +46,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-### SonarEngine:
+### <ins>SonarEngine</ins>:
 #### Core Components:
 * ##### GameInstance
 The GameInstance class acts as the central authority for the game, managing the window properties, resource manager, event dispatchers, and the main game loop. It is responsible for initializing the game and handling the asset registry.
@@ -226,7 +226,7 @@ SharedTexture2D Background = BackgroundResource->LoadTexture();
 DrawTexture(Background,0,0,WHITE);
 ```
 
-### SonarGame:
+### <ins>SonarGame</ins>:
 The Game is not much implemented yet. At this point there exist a basic Waterfall Sonar Display, a Map and some Icons, as Moveable Submarines.
 At this point, you need to build the Debug version to see the Sandbox GameMode to test stuff out
 
