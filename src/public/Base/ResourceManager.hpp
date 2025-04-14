@@ -13,6 +13,39 @@
 
 using json = nlohmann::json;
 
+/**
+ * @class ResourceManager
+ * @brief Manages the loading, parsing, and lifecycle of game resources.
+ *
+ * Purpose:
+ * - Provides a centralized manager for all game resources, such as textures.
+ * - Parses resource data from JSON and tracks resource metadata.
+ *
+ * Usage:
+ * - Call `ParseJson()` to load resources from a predefined JSON file.
+ * - Access resources through GameInstance::GetInstance()->GetResource(std::string Name);
+ *
+ * Notes:
+ * - Ensure JSON files are correctly formatted according to the expected schema.
+ * - Resources are managed using `TextureResource` for metadata and loading/unloading logic.
+ */
+
+ /**
+  * @struct TextureResource
+  * @brief Represents individual texture metadata and handles texture loading.
+  *
+  * Purpose:
+  * - Encapsulates metadata about textures (e.g., dimensions, format).
+  * - Provides mechanisms for loading and unloading textures safely.
+  *
+  * Usage:
+  * - Use `LoadTexture()` to load the texture into memory.
+  * - Call `UnloadTexture()` to release the texture when it is no longer needed.
+  *
+  * Notes:
+  * - Textures are reference-counted; ensure proper usage to avoid resource leaks.
+  * - Supports `NPatchInfo` for advanced texture configurations.
+  */
 struct TextureNPatchInfo 
 {
     int sourceX, sourceY, sourceWidth, sourceHeight;

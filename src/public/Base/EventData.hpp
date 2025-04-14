@@ -3,8 +3,21 @@
 #include <typeindex>
 
 /**
-* This class can be used to be Attached to a AllPurpose Event, so one Event Class can be used for different kind of Payloads
-*/
+ * @class IEventData
+ * @brief Base interface for event payload data.
+ *
+ * Purpose:
+ * - Enables events to carry custom payloads of various types.
+ * - Provides a type-safe mechanism for handling event-specific data.
+ *
+ * Usage:
+ * - Inherit from `IEventData` to define custom event payloads.
+ * - Implement the `GetStaticClass()` method for type identification.
+ *
+ * Notes:
+ * - Use with event dispatchers to decouple systems and pass data.
+ * - Ensure derived classes define meaningful payload structures.
+ */
 
 class IEventData
 {

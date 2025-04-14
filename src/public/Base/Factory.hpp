@@ -2,6 +2,22 @@
 #include "Base/Core.h"
 #include "Base/GameMode.h"
 
+/**
+ * @class Factory
+ * @brief Handles the creation and lifecycle management of objects within a game mode.
+ *
+ * Purpose:
+ * - Provides a type-safe way to create and manage objects.
+ * - Registers created objects with the owning `GameMode`.
+ *
+ * Usage:
+ * - Use `NewObject<T>(args...)` to create objects.
+ * - Objects are automatically registered and cleaned up via custom deleters.
+ *
+ * Notes:
+ * - Ensure that the factory is properly associated with a `GameMode`.
+ * - Use `SoftObjectPath` for referencing created objects.
+ */
 class Factory
 {
 public:
