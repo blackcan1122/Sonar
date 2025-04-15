@@ -22,6 +22,7 @@ public:
 	void Dispatch(std::shared_ptr<IEvent> EventToDispatch, const std::string& Identifier = "", bool bUseIdentifier = false);
 
 	int AmountOfListener(std::shared_ptr<IEvent> EventToDispatch);
+	int AmountOfListener(std::type_index ClassID);
 
 	std::string m_Name;
 

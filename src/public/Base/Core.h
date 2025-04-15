@@ -147,6 +147,10 @@ AUTOBODY(ClassName) \
 // Text macro, to parse variadic arguments into a finished std::string
 #define TEXT(text, ...) fmt::format(text, ##__VA_ARGS__)
 
+#define FORMAT_VA(buffer, fmt, args) \
+    do { va_list _copy; va_copy(_copy, args); vsnprintf(buffer, sizeof(buffer), fmt, _copy); va_end(_copy); } while(0)
+
+
 // Logging Categories
 #define l_DEFAULT "[DEFAULT] "
 #define l_GAMEMODE "[GAMEMODE] "
@@ -156,6 +160,7 @@ AUTOBODY(ClassName) \
 #define l_DISPATCHER "[EVENT DISPATCHER] "
 #define l_HOUSE_KEEPING "[HOUSE KEEPING] "
 #define l_RESOURCES "[RESOURCES] "
+#define l_RAYLIB "[RAYLIB] "
 
 // Log Functions
 inline void LogInfo(const std::string& Message) 

@@ -62,3 +62,13 @@ int EventDispatcher::AmountOfListener(std::shared_ptr<IEvent> EventToDispatch)
 
 	return m_Listener[EventClass].size();
 }
+
+int EventDispatcher::AmountOfListener(std::type_index ClassID)
+{
+	if (m_Listener.find(ClassID) == m_Listener.end())
+	{
+		return 0;
+	}
+
+	return m_Listener[ClassID].size();
+}

@@ -21,6 +21,7 @@ MenuMode::MenuMode()
 MenuMode::~MenuMode()
 {
 	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
+	CloseAudioDevice();
 }
 
 void MenuMode::Update()
@@ -34,9 +35,11 @@ void MenuMode::Update()
 void MenuMode::BeginPlay()
 {
 	InitAudioDevice();
+	
 	MenuMusic = LoadMusicStream((GameInstance::GetInstance()->g_WorkingDirectory + "\\resources\\music\\Untitled.mp3").c_str());
 	MenuMusic.looping = true;
 	PlayMusicStream(MenuMusic);
+	SetMusicVolume(MenuMusic, 0.02f);
 
 	UIDispatcher = std::make_shared<EventDispatcher>();
 	UIDispatcher->m_Name = "UIDispatcher Menu";

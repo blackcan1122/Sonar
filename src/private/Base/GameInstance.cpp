@@ -24,6 +24,7 @@
 #include "Base/EventData.hpp"
 #include "Events/WindowResizeData.hpp"
 
+// Definition of the static member
 EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
@@ -34,15 +35,17 @@ ResourceManager GameInstance::m_ResourceManager;
 std::string GameInstance::g_WorkingDirectory;
 std::unordered_map<std::string, std::set<int32_t>> GameInstance::g_AssetRegistry;
 
-// Definition of the static member
+
 GameInstance* GameInstance::g_Instance = nullptr;
 
 GameInstance::GameInstance(WindowProperties Properties)
 	: m_WindowProperties(Properties)
 {
 	InitLogger();
-	spdlog::flush_every(std::chrono::seconds(1));
+	spdlog::flush_every(std::chrono::milliseconds(10));
 	LOG_INFO(l_GAME_INSTANCE, TEXT("GameInstance Initialized"));
+	
+	SetTraceLogCallback(&GameInstance::RedirectTraceLog);
 }
 
 std::string GameInstance::RegisterAsset(const std::string name)
@@ -212,6 +215,27 @@ EventDispatcher& GameInstance::GetSaveStateEventDispatcher()
 	return SaveStateDispatcher;
 }
 
+void GameInstance::RedirectTraceLog(int logLevel, const char* text, va_list args)
+{
+	char buffer[1024];
+	FORMAT_VA(buffer, text, args);
+
+	if (logLevel <= 3)
+	{
+
+		LOG_INFO(l_RAYLIB, buffer);
+	}
+	else if (logLevel == 4)
+	{
+		LOG_WARN(l_RAYLIB, buffer);
+	}
+	else
+	{
+		LOG_ERROR(l_RAYLIB, buffer);
+	}
+	
+}
+
 
 void GameInstance::CreateWindow()
 {
@@ -278,8 +302,6 @@ void GameInstance::GameLoop()
 		}
 
 		// GameMode Independend UI Drawings
-
-
 
 		EndDrawing();
 	}

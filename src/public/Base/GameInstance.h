@@ -201,5 +201,7 @@ public:
 	static EventDispatcher& GetUIEventDispatcher();
 	static EventDispatcher& GetSaveStateEventDispatcher();
 
+	static void RedirectTraceLog(int logLevel, const char* text, va_list args);
+
 
 };
