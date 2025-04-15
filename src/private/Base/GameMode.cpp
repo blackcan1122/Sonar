@@ -5,6 +5,17 @@ GameMode::GameMode()
 
 }
 
+GameMode::~GameMode()
+{
+	for (auto& Objects : m_Objects)
+	{
+		Objects.second->MarkForDestruction();
+	}
+
+	CollectPendingDestruction();
+	CleanUpPendingKill();
+}
+
 
 void GameMode::Update()
 {
@@ -48,9 +59,9 @@ void GameMode::CollectPendingDestruction()
 
 void GameMode::CleanUpPendingKill()
 {
-	for (auto& Object : m_PendingKill)
+	for (int i = 0; i < m_PendingKill.size(); i++)
 	{
-		DestroyObjectExplicitly(Object);
+		DestroyObjectExplicitly(m_PendingKill[i]);
 	}
 
 	m_PendingKill.clear();

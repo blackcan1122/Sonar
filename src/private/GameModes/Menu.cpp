@@ -16,11 +16,35 @@
 MenuMode::MenuMode()
 {
 	SetName("Menu");
+}
+
+MenuMode::~MenuMode()
+{
+	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
+}
+
+void MenuMode::Update()
+{
+	ClearBackground(GREEN);
+	DrawTexture(Background,0,0,WHITE);
+	GameMode::Update();
+	UpdateMusicStream(MenuMusic);
+}
+
+void MenuMode::BeginPlay()
+{
+	InitAudioDevice();
+	MenuMusic = LoadMusicStream((GameInstance::GetInstance()->g_WorkingDirectory + "\\resources\\music\\Untitled.mp3").c_str());
+	MenuMusic.looping = true;
+	PlayMusicStream(MenuMusic);
 
 	UIDispatcher = std::make_shared<EventDispatcher>();
 	UIDispatcher->m_Name = "UIDispatcher Menu";
 
-	TextureResource* BackgroundResource = GameInstance::GetInstance()->GetResource("BackgroundMenu");
+	BackgroundResource = GameInstance::GetInstance()->GetResource("BackgroundMenu");
+	BackgroundResource->SetHeight(GetScreenHeight());
+	BackgroundResource->SetWidth(GetScreenWidth());
+	BackgroundResource->SetWidth(GetScreenWidth());
 	Background = BackgroundResource->LoadTexture();
 
 	TextureResource* ButtonResource = GameInstance::GetInstance()->GetResource("ButtonImage");
@@ -33,11 +57,12 @@ MenuMode::MenuMode()
 #if DEBUG
 
 	Rectangle SandboxRec = { CenterX - ButtonWidth / 2, 100, ButtonWidth, ButtonHeight };
-	Sandbox = std::make_shared<Button>();
-	Sandbox->Construct(SandboxRec, "Sandbox", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Sandbox");
-
-	
-	Sandbox->SetTexture(SpriteButton)
+	Sandbox = m_ObjectFactory.NewObject<Button>();
+	Sandbox.TryLoad()->Construct(SandboxRec, "Sandbox", RED)
+		.SetTexture(SpriteButton)
+		.CenterText()
+		.SetEventDispatcher(UIDispatcher)
+		.SetEventPayload("Sandbox")
 		.UseNPatchFeature(true)
 		.UpdateTextColor(RED)
 		.UseTexture(true)
@@ -52,88 +77,65 @@ MenuMode::MenuMode()
 			});
 
 #endif
-	
+
 	Rectangle StartGameRec = { CenterX - ButtonWidth / 2, 200, ButtonWidth, ButtonHeight };
-	StartGame = std::make_shared<Button>();
-	StartGame->Construct(StartGameRec, "Start Game", RED).CenterText()
+	StartGame = m_ObjectFactory.NewObject<Button>();
+	StartGame.TryLoad()->Construct(StartGameRec, "Start Game", RED)
+		.CenterText()
 		.UpdateTextColor(RED)
 		.SetTexture(SpriteButton)
 		.UseNPatchFeature(true)
 		.UseTexture(true)
 		.SetNPatchInfo(ninePatchInfo1)
-		.OnHover([this](Button* ButtonClass)
+		.OnHover([this, ButtonResource](Button* ButtonClass)
 			{
-				NPatchInfo ninePatchInfo1 = { Rectangle { 128.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
-				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo->GetOfsettedNPatchInfo());
 			})
-		.OnHoverLeave([this](Button* ButtonClass)
+		.OnHoverLeave([this, ButtonResource](Button* ButtonClass)
 			{
-				NPatchInfo ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
-				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo.value());
 			});
 
 	Rectangle OptionRec = { CenterX - ButtonWidth / 2, 300, ButtonWidth, ButtonHeight };
-	Option = std::make_shared<Button>();
-	Option->Construct(OptionRec, "Option", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Option")
+	Option = m_ObjectFactory.NewObject<Button>();
+	Option.TryLoad()->Construct(OptionRec, "Option", RED)
+		.CenterText()
+		.SetEventDispatcher(UIDispatcher)
+		.SetEventPayload("Option")
 		.UpdateTextColor(RED)
 		.SetTexture(SpriteButton)
 		.UseNPatchFeature(true)
 		.UseTexture(true)
 		.SetNPatchInfo(ninePatchInfo1)
-		.OnHover([this](Button* ButtonClass)
+		.OnHover([this, ButtonResource](Button* ButtonClass)
 			{
-				NPatchInfo ninePatchInfo1 = { Rectangle { 128.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
-				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo->GetOfsettedNPatchInfo());
 			})
-		.OnHoverLeave([this](Button* ButtonClass)
+		.OnHoverLeave([this, ButtonResource](Button* ButtonClass)
 			{
-				NPatchInfo ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
-				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo.value());
 			});
 
 	Rectangle ExitRec = { CenterX - ButtonWidth / 2, 400, ButtonWidth, ButtonHeight };
-	Exit = std::make_shared<Button>();
-	Exit->Construct(ExitRec, "Exit", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Exit")
+	Exit = m_ObjectFactory.NewObject<Button>();
+	Exit.TryLoad()->Construct(ExitRec, "Exit", RED).CenterText()
+		.SetEventDispatcher(UIDispatcher)
+		.SetEventPayload("Exit")
 		.UpdateTextColor(RED)
 		.SetTexture(SpriteButton)
 		.UseNPatchFeature(true)
 		.UseTexture(true)
 		.SetNPatchInfo(ninePatchInfo1)
-		.OnHover([this](Button* ButtonClass)
+		.OnHover([this, ButtonResource](Button* ButtonClass)
 			{
-				NPatchInfo ninePatchInfo1 = { Rectangle { 128.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
-				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo->GetOfsettedNPatchInfo());
 			})
-		.OnHoverLeave([this](Button* ButtonClass)
+		.OnHoverLeave([this, ButtonResource](Button* ButtonClass)
 			{
-				NPatchInfo ninePatchInfo1 = { Rectangle { 0.0f, 0.0f, 128.0f, 128.0f }, 32, 32, 32, 32, NPATCH_NINE_PATCH };
-				ButtonClass->SetNPatchInfo(ninePatchInfo1);
+				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo.value());
 			});
 
 	SetUpEvents();
-}
-
-MenuMode::~MenuMode()
-{
-	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
-}
-
-void MenuMode::Update()
-{
-	ClearBackground(GREEN);
-	DrawTexture(Background,0,0,WHITE);
-
-	float DeltaTime = GetFrameTime();
-	
-#if DEBUG
-	Sandbox->Tick(DeltaTime);
-#endif
-
-	StartGame->Tick(DeltaTime);
-	Option->Tick(DeltaTime);
-	Exit->Tick(DeltaTime);
-
-
 }
 
 void MenuMode::SetName(std::string Name)
@@ -166,13 +168,15 @@ void MenuMode::SetUpEvents()
 
 			Height = CurrentProperties->height;
 			Width = CurrentProperties->width;
+			BackgroundResource->SetHeight(CurrentProperties->height);
+			BackgroundResource->SetWidth(CurrentProperties->width);
 
 #if DEBUG
-			Sandbox->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 100);
+			Sandbox.TryLoad()->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 100);
 #endif
-			StartGame->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 200);
-			Option->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 300);
-			Exit->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 400);
+			StartGame.TryLoad()->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 200);
+			Option.TryLoad()->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 300);
+			Exit.TryLoad()->UpdateButtonPosition((CurrentProperties->width / 2) - (ButtonWidth / 2), 400);
 
 		});
 

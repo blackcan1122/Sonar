@@ -33,9 +33,10 @@ class GameMode
 friend IObject;
 friend Factory;
 friend GameInstance;
+
 public:
 	GameMode();
-	virtual ~GameMode() = default;
+	virtual ~GameMode();
 
 	virtual void Update();
 	virtual void SetName(std::string Name);

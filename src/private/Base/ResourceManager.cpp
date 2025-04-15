@@ -83,9 +83,38 @@ SharedTexture2D TextureResource::LoadTexture()
         LOG_INFO(l_RESOURCES, TEXT("Loading: '{}' into VRAM", name));
         LoadedTexture = RAYLIB_H::LoadTexture(path.c_str());
 
+        LoadedTexture.height = height;
+        LoadedTexture.width = width;
+
     }
     LOG_INFO(l_RESOURCES, TEXT("Texture '{}' already Loaded, will be reused", name));
     return SharedTexture2D(&LoadedTexture, this);
+}
+
+void TextureResource::SetHeight(int Height)
+{
+    if (LoadedTexture.id != 0)
+    {
+        LoadedTexture.height = Height;
+    }
+    height = Height;
+}
+
+void TextureResource::SetWidth(int Width)
+{
+    if (LoadedTexture.id != 0)
+    {
+        LoadedTexture.width = width;
+    }
+    width = Width;
+}
+
+void TextureResource::GenerateMipMaps()
+{
+    if (LoadedTexture.id != 0)
+    {
+        GenTextureMipmaps(&LoadedTexture);
+    }
 }
 
 void TextureResource::RemoveRef()

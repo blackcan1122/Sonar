@@ -138,6 +138,13 @@ struct TextureResource
 
     SharedTexture2D LoadTexture();
 
+    // Properties
+
+    void SetHeight(int Height);
+    void SetWidth(int Width);
+    void GenerateMipMaps();
+    
+
 private:
 
     Texture2D LoadedTexture = {};

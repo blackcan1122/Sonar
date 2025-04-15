@@ -91,10 +91,14 @@ SharedTexture2D& SharedTexture2D::operator=(SharedTexture2D&& Other)
 
 SharedTexture2D::operator Texture2D()
 {
+	m_Texture->height = m_Outter->height;
+	m_Texture->width = m_Outter->width;
 	return *m_Texture;
 }
 
 SharedTexture2D::operator Texture2D* ()
 {
+	m_Texture->height = m_Outter->height;
+	m_Texture->width = m_Outter->width;
 	return m_Texture;
 }

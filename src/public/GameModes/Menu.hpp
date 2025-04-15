@@ -11,6 +11,7 @@ public:
 	~MenuMode();
 
 	void Update() override;
+	void BeginPlay() override;
 	void SetName(std::string Name) override;
 	void SetUpEvents();
 	std::string GetName() override;
@@ -20,16 +21,19 @@ public:
 protected:
 	float m_DeltaTime = 0;
 
+	TextureResource* BackgroundResource = nullptr;
+
 	std::shared_ptr<EventDispatcher> UIDispatcher;
 
+	Music MenuMusic;
 	int Height;
 	int Width;
 
 #if DEBUG
-	std::shared_ptr<Button> Sandbox;
+	SoftObjectPath<Button> Sandbox;
 #endif
-	std::shared_ptr<Button> StartGame;
-	std::shared_ptr<Button> Option;
-	std::shared_ptr<Button> Exit;
+	SoftObjectPath<Button> StartGame;
+	SoftObjectPath<Button> Option;
+	SoftObjectPath<Button> Exit;
 
 };
