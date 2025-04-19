@@ -17,14 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Download and Install Premake5 for Windows
-      - name: Install Premake5
-        run: |
-          curl -LO https://github.com/premake/premake-core/releases/download/v5.0.0-alpha16/premake-5.0.0-alpha16-windows.zip
-          tar -xf premake-5.0.0-alpha16-windows.zip
-          move premake5.exe .\build\premake5.exe
-
-      # Step 3: Generate Visual Studio 2022 project files with Premake
+      # Step 32 Generate Visual Studio 2022 project files with Premake
       - name: Generate VS2022 project files
         run: |
           cd build
