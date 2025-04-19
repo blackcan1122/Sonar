@@ -37,8 +37,7 @@ jobs:
 
       # Step 5: Build Release
       - name: Build Release Configuration
-        run: make config=release -j$(nproc)
-
+        run: make config=release_x64
       # Step 6: Build Debug
       - name: Build Debug Configuration
-        run: make config=debug -j$(nproc)
+        run: make config=debug_x64
