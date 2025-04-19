@@ -78,7 +78,7 @@ class IEvent;
 template <typename T>
 struct SoftObjectPath
 {
-    SoftObjectPath<T>::SoftObjectPath() = default;
+    SoftObjectPath() = default;
 
 
     // Implicit upcast constructor (from derived to base)
