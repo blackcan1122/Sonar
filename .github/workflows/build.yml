@@ -1,0 +1,42 @@
+name: Premake CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Install Premake5
+      - name: Install Premake5
+        run: |
+          wget https://github.com/premake/premake-core/releases/download/v5.0.0-alpha16/premake-5.0.0-alpha16-linux.tar.gz
+          tar -xvf premake-5.0.0-alpha16-linux.tar.gz
+          sudo mv premake5 /usr/local/bin
+          premake5 --version
+
+      # Step 3: Run Premake to generate build files
+      - name: Generate build files with Premake
+        run: premake5 gmake2
+
+      # Step 4: Build the project
+      - name: Build the project
+        run: |
+          cd build
+          make config=release
+
+      # Step 5: Run tests (if applicable)
+      - name: Run tests
+        run: |
+          cd bin/release
+          ./SonarTests # Replace with actual test executable
