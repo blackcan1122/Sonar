@@ -110,6 +110,7 @@ function platform_defines()
     filter {"system:linux"}
         defines {"_GLFW_X11"}
         defines {"_GNU_SOURCE"}
+
 -- This is necessary, otherwise compilation will fail since
 -- there is no CLOCK_MONOTOMIC. raylib claims to have a workaround
 -- to compile under c99 without -D_GNU_SOURCE, but it didn't seem
@@ -150,6 +151,15 @@ workspace (workspaceName)
     platforms { "x64", "x86", "ARM64"}
 
     defaultplatform ("x64")
+
+    -- Apply global settings for Linux
+    filter { "system:linux" }
+        architecture "x86_64"       -- 64‑bit Linux only runners 
+        pic          "On"           -- PIC for static libs on x86_64 :contentReference[oaicite:4]{index=4}
+        defines      { "_GLFW_X11", "_GNU_SOURCE" }  -- Enable X11 and GNU extensions :contentReference[oaicite:5]{index=5}
+        links        { "pthread", "m", "dl", "rt", "X11" }  -- System libs for raylib on Linux :contentReference[oaicite:6]{index=6}
+
+    filter {}  -- Clear filters so subsequent settings apply globally
 
     filter "configurations:Debug"
         defines { "DEBUG" }
@@ -236,8 +246,10 @@ if (downloadRaylib) then
             links {"winmm", "gdi32", "opengl32"}
             libdirs {"../bin/%{cfg.buildcfg}"}
 
+
         filter "system:linux"
             links {"pthread", "m", "dl", "rt", "X11"}
+            kind   "ConsoleApp"
 
         filter "system:macosx"
             links {"OpenGL.framework", "Cocoa.framework", "IOKit.framework", "CoreFoundation.framework", "CoreAudio.framework", "CoreVideo.framework", "AudioToolbox.framework"}
@@ -278,6 +290,9 @@ if (downloadRaylib) then
 
         filter { "system:macosx", "files:" .. raylib_dir .. "/src/rglfw.c" }
             compileas "Objective-C"
+
+        filter { "system:linux" }
+            pic "On"
 
         filter{}
 
