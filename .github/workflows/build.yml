@@ -33,4 +33,4 @@ jobs:
       - name: Build the project
         run: |
           cd ..
-          make config=release
+          make config=release_x64
