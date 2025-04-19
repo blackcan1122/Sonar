@@ -23,12 +23,10 @@ jobs:
           cd build
           .\premake5.exe vs2022
 
-      # Step 4: Build Release Configuration
       - name: Build Release Configuration
         run: |
-          MSBuild.exe build/YourSolution.sln /p:Configuration=Release
+          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" build/YourSolution.sln /p:Configuration=Release
 
-      # Step 5: Build Debug Configuration
       - name: Build Debug Configuration
         run: |
-          MSBuild.exe build/YourSolution.sln /p:Configuration=Debug
+          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" build/YourSolution.sln /p:Configuration=Debug
