@@ -27,7 +27,7 @@ jobs:
 
       # Step 3: Run Premake to generate build files
       - name: Generate build files with Premake
-        run: premake5 gmake2
+        run: premake5 --file=build/premake5.lua gmake2
 
       # Step 4: Build the project
       - name: Build the project
