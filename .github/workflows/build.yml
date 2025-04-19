@@ -26,7 +26,11 @@ jobs:
 
       # Step 3: Generate Visual Studio project files with Premake
       - name: Generate Visual Studio Project Files
-        run: premake5 vs2022
+        run: | 
+          cd build
+          premake5 vs2022
+          cd ../
+          
 
       # Step 4: Build the solution using MSVC
       - name: Build Solution
