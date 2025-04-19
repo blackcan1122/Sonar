@@ -1,0 +1,37 @@
+name: Premake Windows CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: setup-msbuild
+        uses: microsoft/setup-msbuild@v2
+
+      # Step 2: Generate Visual Studio 2022 project files with Premake
+      - name: Generate VS2022 project files
+        run: |
+          cd build
+          .\premake5.exe vs2022
+
+      # Step 3: Build Release Configuration
+      - name: Build Release Configuration
+        run: |
+          msbuild Sonar.sln /p:Configuration=Release
+
+      # Step 4: Build Debug Configuration
+      - name: Build Debug Configuration
+        run: |
+          msbuild Sonar.sln /p:Configuration=Debug
