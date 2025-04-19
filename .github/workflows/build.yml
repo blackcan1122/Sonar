@@ -25,8 +25,8 @@ jobs:
 
       - name: Build Release Configuration
         run: |
-          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" build/YourSolution.sln /p:Configuration=Release
+          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" Sonar.sln /p:Configuration=Release
 
       - name: Build Debug Configuration
         run: |
-          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" build/YourSolution.sln /p:Configuration=Debug
+          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" Sonar.sln /p:Configuration=Debug
