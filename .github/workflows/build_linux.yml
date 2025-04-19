@@ -1,0 +1,42 @@
+name: Premake Linux CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Install C/C++ build tools
+      - name: Install build-essential
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      # Step 3: Setup Premake5
+      - name: Setup Premake
+        uses: abel0b/setup-premake@v2.4
+        with:
+          version: "5.0.0-beta6"
+
+      # Step 4: Generate Makefiles
+      - name: Generate GNU Makefiles
+        run: premake5 gmake2
+
+      # Step 5: Build Release
+      - name: Build Release Configuration
+        run: make config=release -j$(nproc)
+
+      # Step 6: Build Debug
+      - name: Build Debug Configuration
+        run: make config=debug -j$(nproc)
