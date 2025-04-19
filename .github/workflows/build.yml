@@ -1,4 +1,4 @@
-name: Premake CI
+name: Windows Build
 
 on:
   push:
@@ -9,8 +9,8 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest
 
     steps:
       # Step 1: Checkout the code
@@ -20,16 +20,15 @@ jobs:
       # Step 2: Install Premake5
       - name: Install Premake5
         run: |
-          wget https://github.com/premake/premake-core/releases/download/v5.0.0-alpha16/premake-5.0.0-alpha16-linux.tar.gz
-          tar -xvf premake-5.0.0-alpha16-linux.tar.gz
-          sudo mv premake5 /usr/local/bin
-          premake5 --version
+          curl -LO https://github.com/premake/premake-core/releases/download/v5.0.0-alpha16/premake-5.0.0-alpha16-windows.zip
+          tar -xf premake-5.0.0-alpha16-windows.zip
+          move premake5.exe C:\Windows\System32
 
-      # Step 3: Run Premake to generate build files
-      - name: Generate build files with Premake
-        run: premake5 --file=build/premake5.lua gmake2
+      # Step 3: Generate Visual Studio project files with Premake
+      - name: Generate Visual Studio Project Files
+        run: premake5 vs2022
 
-      # Step 4: Build the project
-      - name: Build the project
+      # Step 4: Build the solution using MSVC
+      - name: Build Solution
         run: |
-          make config=release_x64
+          msbuild build/Sonar.sln /p:Configuration=Release /m
