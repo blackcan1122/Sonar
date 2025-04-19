@@ -32,5 +32,4 @@ jobs:
       # Step 4: Build the project
       - name: Build the project
         run: |
-          cd ..
           make config=release_x64
