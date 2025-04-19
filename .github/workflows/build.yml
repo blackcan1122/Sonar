@@ -17,16 +17,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 32 Generate Visual Studio 2022 project files with Premake
+      # Step 2: Generate Visual Studio 2022 project files with Premake
       - name: Generate VS2022 project files
         run: |
           cd build
           .\premake5.exe vs2022
 
+      # Step 3: Build Release Configuration
       - name: Build Release Configuration
         run: |
-          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" Sonar.sln /p:Configuration=Release
+          'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe' Sonar.sln /p:Configuration=Release
 
+      # Step 4: Build Debug Configuration
       - name: Build Debug Configuration
         run: |
-          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" Sonar.sln /p:Configuration=Debug
+          'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe' Sonar.sln /p:Configuration=Debug
