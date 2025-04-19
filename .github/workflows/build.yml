@@ -17,6 +17,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: setup-msbuild
+        uses: microsoft/setup-msbuild@v2
+
       # Step 2: Generate Visual Studio 2022 project files with Premake
       - name: Generate VS2022 project files
         run: |
