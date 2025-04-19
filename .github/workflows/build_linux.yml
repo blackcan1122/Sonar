@@ -31,7 +31,9 @@ jobs:
 
       # Step 4: Generate Makefiles
       - name: Generate GNU Makefiles
-        run: premake5 gmake2
+        run: |
+          cd build
+          premake5 gmake2
 
       # Step 5: Build Release
       - name: Build Release Configuration
