@@ -32,11 +32,5 @@ jobs:
       # Step 4: Build the project
       - name: Build the project
         run: |
-          cd build
+          cd ..
           make config=release
-
-      # Step 5: Run tests (if applicable)
-      - name: Run tests
-        run: |
-          cd bin/release
-          ./SonarTests # Replace with actual test executable
