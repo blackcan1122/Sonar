@@ -1,14 +1,14 @@
 #pragma once
 #include "Base/Core.h"
-#include "Base/EventDispatcher.hpp"
-#include "Base/StateMachine.h"
-#include "StateMachines/GameModeSwitcher.h"
 #include <set>
 #include <sstream>
 #include <algorithm>
-#include "Base/GameMode.h"
+#include "Base/EventDispatcher.hpp"
 #include "Base/ResourceManager.hpp"
+#include "Base/StateMachine.h"
+#include "StateMachines/GameModeSwitcher.h"
 #include "Base/GameThreadQueue.hpp"
+#include "Base/GameMode.h"
 
 struct WindowProperties
 {
@@ -172,6 +172,13 @@ public:
 		std::shared_ptr<T> CastedOBJ = std::dynamic_pointer_cast<T>(MapIT->second);
 
 		return CastedOBJ;
+	}
+
+	// Static helper function
+	template <typename T>
+	static std::shared_ptr<T> LoadFromSoftObjectPath(const SoftObjectPath<T>& path)
+	{
+		return GetInstance()->LoadAssetFromSoftObjectPath(path);
 	}
 
 	std::string RegisterAsset(const std::string name);

@@ -1,24 +1,30 @@
 #ifndef RAYGUI_IMPLEMENTATION
 #define RAYGUI_IMPLEMENTATION
 #endif // !RAYGUI_IMPLEMENTATION
+
+
+// GameInstance Specific
 #include "Base/GameInstance.h"
-#include "Base/Core.h"
 #include "Base/StateMachine.h"
-#include "Base/GameMode.h"
-#include "UI/TextBox.h"
-#include "Events/SaveGameEvent.h"
-#include "Events/LoadGameEvent.h"
-#include "Base/EventDispatcher.hpp"
+
+// UI
 #include "UI/Button.h"
+#include "UI/TextBox.h"
 
 // GameModes
+#include "Base/GameMode.h"
 #include "GameModes/SandboxGameMode.hpp"
 #include "GameModes/Menu.hpp"
 #include "GameModes/OptionsMode.hpp"
 
+// Event System
+#include "Base/EventDispatcher.hpp"
+
 // Events
 #include "Events/AllPurposeEvent.h"
 #include "Events/UIEvent.h"
+#include "Events/SaveGameEvent.h"
+#include "Events/LoadGameEvent.h"
 
 // EventData
 #include "Base/EventData.hpp"

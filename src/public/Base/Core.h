@@ -102,7 +102,7 @@ struct SoftObjectPath
 
     std::shared_ptr<T> TryLoad()
     {
-        return GameInstance::GetInstance()->LoadAssetFromSoftObjectPath(*this);
+        return GameInstance::LoadFromSoftObjectPath(*this);
     }
 
     std::string ToString()
