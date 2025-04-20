@@ -327,6 +327,12 @@ if (downloadRaylib) then
         filter "action:vs*"
             buildoptions { "/Zc:__cplusplus", "/utf-8" }
 
+        filter { "system:linux" }
+            defines { "PLATFORM_LINUX" }
+        
+        filter { "system:windows" }
+            defines { "PLATFORM_WINDOWS" }
+
 
     project "nlohmann"
         kind "none"
