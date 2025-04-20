@@ -212,3 +212,5 @@ public:
 
 
 };
+
+#include "Base/CoreInline.hpp" // Provides TryLoad() implementation
