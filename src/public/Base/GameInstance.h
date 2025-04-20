@@ -149,7 +149,7 @@ public:
 	*/
 
 	template <typename T>
-	inline std::shared_ptr<T> LoadAssetFromSoftObjectPath(SoftObjectPath<T> Path)
+	std::shared_ptr<T> LoadAssetFromSoftObjectPath(SoftObjectPath<T> Path)
 	{
 		std::string FullPath = Path.ToString();
 		size_t Index = FullPath.find_first_of("/");
