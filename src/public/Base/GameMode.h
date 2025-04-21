@@ -33,6 +33,7 @@ class GameMode
 friend IObject;
 friend Factory;
 friend GameInstance;
+friend AssetRegistry;
 
 public:
 	GameMode();

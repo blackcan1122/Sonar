@@ -50,6 +50,8 @@ class GameInstance;
 class TextInputBox;
 class Button;
 class IEvent;
+class AssetRegistry;
+
 
 // Own Header includes, for very important headers
 #include "Base/Object.hpp"
@@ -102,7 +104,7 @@ struct SoftObjectPath
 
     std::shared_ptr<T> TryLoad() 
     {
-        return GameInstance::GetInstance()->LoadAssetFromSoftObjectPath(*this);
+        return GameInstance::GetAssetRegistry()->LoadAssetFromSoftObjectPath(*this);
     }
 
     std::string ToString()

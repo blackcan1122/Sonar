@@ -44,7 +44,7 @@ public:
 				{
 					LOG_INFO(l_FACTORY, TEXT("Cleaned Up Object: '{}'", ptr->m_Name));
 					Outter->UnregisterObject(ptr);
-					GameInstance::GetInstance()->UnregisterAsset(ptr->m_Name);
+					GameInstance::GetAssetRegistry()->UnregisterAsset(ptr->m_Name);
 					delete ptr;
 				});
 
@@ -59,7 +59,7 @@ public:
 
 		// Creating a Unique Name in the Asset Registry here
 		std::string GeneralName = m_Outter->GetName() + "/" + ClassName;
-		CastedObj->m_Name = GameInstance::GetInstance()->RegisterAsset(GeneralName);
+		CastedObj->m_Name = GameInstance::GetAssetRegistry()->RegisterAsset(GeneralName);
 
 		// Registering the created Obj to the GameMode
 		m_Outter->RegisterObject(Obj);
