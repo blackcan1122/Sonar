@@ -7,6 +7,9 @@
 
 std::string AssetRegistry::RegisterAsset(const std::string name)
 {
+	std::string TimerName = "RegisterTimer " + name;
+	Timer<std::chrono::microseconds> RegisterTimer(TimerName);
+
 	std::string FutureName = GenerateNextAvaiableName(name);
 	std::string base;
 	int num;
@@ -32,6 +35,9 @@ std::string AssetRegistry::RegisterAsset(const std::string name)
 
 bool AssetRegistry::UnregisterAsset(const std::string name)
 {
+	std::string TimerName = "Unregister Timer " + name;
+	Timer<std::chrono::microseconds> RegisterTimer(TimerName);
+
 	std::string base;
 	int num;
 	if (!ParseAssetName(name, base, num))
