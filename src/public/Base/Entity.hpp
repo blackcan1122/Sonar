@@ -1,7 +1,9 @@
 #pragma once
 #include "Base/Core.h"
 
-DECLARE_CLASS(Entity, Object)
+class Entity : public Object
+{
+	AUTOBODY(Entity, Object)
 
 public:
 	void SetEntityLocation(Vector2 NewLocation) { m_Position = NewLocation; };
@@ -32,4 +34,4 @@ protected:
 
 	Texture2D Texture; // don't know about this, since we should need a way to cicyle through a tileset maybe
 
-END_CLASS
+};

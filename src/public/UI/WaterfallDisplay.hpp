@@ -94,7 +94,9 @@ struct PixelBuffer
 	}
 };
 
-DECLARE_CLASS(Waterfall, Display)
+class Waterfall : public Display
+{
+	AUTOBODY(Waterfall, Display)
 public:
 	Waterfall(int Width, int Height, int TimeFrameInSec);
 	virtual ~Waterfall() override;
@@ -124,4 +126,4 @@ private:
 	std::weak_ptr<Entity> Listener;
 
 	float TimestepPerPixel();
-	END_CLASS
+};

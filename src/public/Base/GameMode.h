@@ -1,6 +1,5 @@
 #pragma once
 #include "Base/Core.h"
-#include "Base/Factory.hpp"
 
 /**
  * @class GameMode
@@ -43,7 +42,7 @@ public:
 	virtual void SetName(std::string Name);
 	virtual void BeginPlay();
 	virtual std::string GetName();
-	Factory m_ObjectFactory = Factory(this);
+	std::shared_ptr<Factory> m_ObjectFactory;
 
 	virtual bool DestroyObjectExplicitly(std::shared_ptr<IObject> InObject);
 

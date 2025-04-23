@@ -8,7 +8,7 @@ class EventDispatcher;
 
 class Button : public BaseUI
 {
-	AUTOBODY(Button)
+	AUTOBODY(Button, BaseUI)
 
 public:
 	Button() = default;

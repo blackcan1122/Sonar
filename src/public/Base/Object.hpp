@@ -1,6 +1,7 @@
 #pragma once
 #include <typeindex>
 #include <string>
+#include "Base/SClass.hpp"
 
 class GameMode;
 class Factory;
@@ -24,12 +25,15 @@ class Factory;
 class IObject
 {
 	friend class Factory;
+private:
+	static inline SClass m_SClass = SClass(nullptr, "IObject");
+
 public:
 
 	IObject() = default;
 
-	virtual std::type_index GetStaticClass() const { return typeid(*this); };
-	std::type_index StaticClass() { return typeid(IObject); };
+	virtual SClass* GetStaticClass() { return &m_SClass; };
+	static SClass* StaticClass() { return  &m_SClass; };
 
 	virtual void Tick(float DeltaTime) = 0;
 
@@ -56,7 +60,13 @@ private:
 
 };
 
+
 class Object : public IObject
 {
-
+private:
+	static inline SClass m_SClass = SClass(IObject::StaticClass(), "Object");
+public:
+	virtual SClass* GetStaticClass() override { return &m_SClass; }
+	static SClass* StaticClass() { return  &m_SClass; }
+private:
 };

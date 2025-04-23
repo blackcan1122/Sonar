@@ -3,9 +3,12 @@
 #include "Base/EventData.hpp"
 #include "Base/Entity.hpp"
 
-DECLARE_CLASS(MapClickEventData, EventData)
+
+class MapClickEventData : public EventData
+{
+	AUTOBODY(MapClickEventData, EventData)
 public:
 	// TODO: Should be changed to use SoftObjectPath
 	SoftObjectPath<Entity> ClickedObject;
 
-END_CLASS
+};

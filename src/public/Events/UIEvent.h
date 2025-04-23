@@ -3,7 +3,10 @@
 #include "Base/Event.hpp"
 #include "UI/TextBox.h"
 
-DECLARE_CLASS(UIEvent, Event)
+
+class UIEvent : public Event
+{
+	AUTOBODY(UIEvent, Event)
 public:
 
 	BaseUI* ClickedUIElement = nullptr;
@@ -12,5 +15,5 @@ public:
 
 	std::string Payload;
 
-END_CLASS
+};
 

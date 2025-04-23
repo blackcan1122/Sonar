@@ -1,12 +1,12 @@
 #include "Base/EventDispatcher.hpp"
 #include "Base/Event.hpp"
 
-void EventDispatcher::AddListener(const std::string& Identifier, std::type_index EventClass, EventCallback Callback)
+void EventDispatcher::AddListener(const std::string& Identifier, SClass* EventClass, EventCallback Callback)
 {
 	m_Listener[EventClass][Identifier] = Callback;
 }
 
-bool EventDispatcher::RemoveListener(const std::string& Identifier, std::type_index EventClass)
+bool EventDispatcher::RemoveListener(const std::string& Identifier, SClass* EventClass)
 {
 	auto ClassIt = m_Listener.find(EventClass);
 	if (ClassIt == m_Listener.end()) return false;
@@ -63,7 +63,7 @@ int EventDispatcher::AmountOfListener(std::shared_ptr<IEvent> EventToDispatch)
 	return m_Listener[EventClass].size();
 }
 
-int EventDispatcher::AmountOfListener(std::type_index ClassID)
+int EventDispatcher::AmountOfListener(SClass* ClassID)
 {
 	if (m_Listener.find(ClassID) == m_Listener.end())
 	{

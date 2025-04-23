@@ -4,7 +4,9 @@
 
 class Waterfall;
 
-DECLARE_CLASS(Player, BaseSubmarine)
+class Player : public BaseSubmarine
+{
+	AUTOBODY(Player, BaseSubmarine)
 
 public:
 	
@@ -12,4 +14,4 @@ public:
 
 	std::weak_ptr<Waterfall> WaterfallDisplay;
 
-END_CLASS
+};

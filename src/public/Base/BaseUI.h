@@ -1,7 +1,9 @@
 #pragma once
 #include "Base/Core.h"
 
-DECLARE_CLASS(BaseUI, Object)
+class BaseUI : public Object
+{
+	AUTOBODY(BaseUI, Object)
 
 public:
 
@@ -13,5 +15,5 @@ public:
 
 private:
 
-END_CLASS
+};
 

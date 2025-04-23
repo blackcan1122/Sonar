@@ -21,18 +21,14 @@
 
 class IEventData
 {
-public:
-    
-    
-    virtual std::type_index GetStaticClass() { return typeid(*this); };
-
+    ROOTBODY(IEventData)
 };
 
 
 
-DECLARE_CLASS(EventData, IEventData)
-
-    
-END_CLASS
+class EventData : public IEventData
+{
+    AUTOBODY(EventData, IEventData)
+};
 
 

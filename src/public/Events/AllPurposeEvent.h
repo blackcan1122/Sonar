@@ -5,7 +5,9 @@
 #include "Base/EventData.hpp"
 #include "Events/WindowResizeData.hpp"
 
-DECLARE_CLASS(AllPurposeEvent, Event)
+class AllPurposeEvent : public Event
+{
+	AUTOBODY(AllPurposeEvent, Event)
 
 public:
 
@@ -13,5 +15,5 @@ public:
 
 	std::shared_ptr<IEventData> Payload = nullptr;
 
-END_CLASS
+};
 
