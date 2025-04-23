@@ -1,8 +1,9 @@
 #include "Base/GameMode.h"
+#include "Base/Factory.hpp"
 
 GameMode::GameMode()
 {
-
+	m_ObjectFactory = std::make_shared<Factory>(this);
 }
 
 GameMode::~GameMode()

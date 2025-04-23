@@ -2,8 +2,10 @@
 #include "Base/Core.h"
 #include "Base/Entity.hpp"
 
-DECLARE_CLASS(BaseShip, Entity)
+class BaseShip : public Entity
+{
+	AUTOBODY(BaseShip, Entity)
 public:
 	virtual void Tick(float DeltaTime) override;
 
-END_CLASS
+};

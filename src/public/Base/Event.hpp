@@ -3,17 +3,20 @@
 #include <typeindex>
 
 
-DECLARE_CLASS(IEvent, Object)
+class IEvent : public Object
+{
+	AUTOBODY(IEvent, Object)
+
 
 public:
 
 	virtual ~IEvent() = default;
-END_CLASS
+};
 
 
-DECLARE_CLASS(Event, IEvent)
+class Event : public IEvent
+{
+	AUTOBODY(Event, IEvent)
 
-public:
 
-
-END_CLASS
+};

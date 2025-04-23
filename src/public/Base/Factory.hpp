@@ -26,13 +26,11 @@ public:
 		:m_Outter(Outter)
 	{}
 
-	GameMode* m_Outter;
+	GameMode* m_Outter = nullptr;
 
 	template<typename T, typename... Args>
 	SoftObjectPath<T> NewObject(Args&&... args)
 	{
-		if (!m_Outter) return nullptr; // Probably will never happen, as the Factory resided inside the GameMode
-
 		static_assert(std::is_base_of_v<IObject, T>,
 			"T must inherit from IObject");
 
@@ -52,7 +50,7 @@ public:
 		LOG_INFO(l_FACTORY, TEXT("Created Object from Type '{}' with size: '{}' and Registred to Outter: '{}'", typeid(T).name(), sizeof(T), m_Outter->GetName()));
 
 		std::shared_ptr<IObject> CastedObj = std::dynamic_pointer_cast<IObject>(Obj); // Casting it to the actual Type
-		std::string ClassName = CastedObj->GetStaticClass().name();
+		std::string ClassName = CastedObj->GetStaticClass()->ClassName;
 
 		// typeid.name returns a whitespace and we clean it and replaces it with a .
 		std::replace(ClassName.begin(), ClassName.end(), ' ', '.');

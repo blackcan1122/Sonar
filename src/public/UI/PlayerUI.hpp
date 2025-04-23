@@ -7,7 +7,8 @@ class Player;
 
 class PlayerUI : public BaseUI
 {
-	AUTOBODY(PlayerUI);
+	AUTOBODY(PlayerUI, BaseUI)
+
 public:
 
 	PlayerUI(SoftObjectPath<Player> Player);

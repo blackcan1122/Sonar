@@ -3,9 +3,12 @@
 #include "Base/EventData.hpp"
 #include "Base/Entity.hpp"
 
-DECLARE_CLASS(StringEventData, EventData)
+
+class StringEventData : public EventData
+{
+	AUTOBODY(StringEventData, EventData)
 public:
 	// TODO: Should be changed to use SoftObjectPath
 	std::string String;
 
-	END_CLASS
+};

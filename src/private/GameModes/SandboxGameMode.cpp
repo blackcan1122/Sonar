@@ -1,5 +1,6 @@
 #include "GameModes/SandboxGameMode.hpp"
 #include "Base/GameInstance.h"
+#include "Base/Factory.hpp"
 
 SandboxGameMode::SandboxGameMode()
 {
@@ -9,13 +10,13 @@ SandboxGameMode::SandboxGameMode()
 
 void SandboxGameMode::BeginPlay()
 {
-	WaterfallDisplay = m_ObjectFactory.NewObject<Waterfall>(360, 300, 10);
+	WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 300, 10);
 	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
 
-	WaterfallDisplay2 = m_ObjectFactory.NewObject<Waterfall>(360, 300, 60);
+	WaterfallDisplay2 = m_ObjectFactory->NewObject<Waterfall>(360, 300, 60);
 	WaterfallDisplay2.TryLoad()->SetPosition(Vector2{ 0,310 });
 
-	MapDisplay = m_ObjectFactory.NewObject<Map>(400, 400);
+	MapDisplay = m_ObjectFactory->NewObject<Map>(400, 400);
 	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,100 });
 
 	MapDisplay.TryLoad()->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
@@ -23,14 +24,14 @@ void SandboxGameMode::BeginPlay()
 			this->OnMapClickedEvent(Event);
 		});
 
-	PlayerOne = m_ObjectFactory.NewObject<Player>();
+	PlayerOne = m_ObjectFactory->NewObject<Player>();
 	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
 	PlayerOne.TryLoad()->SetDisplayName("U521");
 	PlayerOne.TryLoad()->SetEntityRotation(0);
 	PlayerOne.TryLoad()->ConvertAngleToVector();
 	PlayerOne.TryLoad()->SetInitialSpeed(5);
 
-	PlayerTwo = m_ObjectFactory.NewObject<Player>();
+	PlayerTwo = m_ObjectFactory->NewObject<Player>();
 	PlayerTwo.TryLoad()->SetEntityLocation(Vector2{ 800,200 });
 	PlayerTwo.TryLoad()->SetDisplayName("K-21");
 
@@ -38,7 +39,7 @@ void SandboxGameMode::BeginPlay()
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerTwo.TryLoad());
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
 
-	m_PlayerUI = m_ObjectFactory.NewObject<PlayerUI>(PlayerOne);
+	m_PlayerUI = m_ObjectFactory->NewObject<PlayerUI>(PlayerOne);
 	m_PlayerUI.TryLoad()->SetPosition({500, 0});
 
 
@@ -53,6 +54,8 @@ void SandboxGameMode::Update()
 		ClearBackground(RED);
 		GameMode::Update();
 
+		std::cout << PlayerOne.TryLoad()->GetStaticClass() << std::endl;
+		std::cout << PlayerOne.TryLoad()->GetStaticClass()->ClassName << std::endl;
 
 		if (IsKeyPressed(KEY_D))
 		{
@@ -60,7 +63,7 @@ void SandboxGameMode::Update()
 		}
 		if (IsKeyPressed(KEY_N))
 		{
-			WaterfallDisplay = m_ObjectFactory.NewObject<Waterfall>(360, 360, 30);
+			WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 360, 30);
 			WaterfallDisplay.TryLoad()->SetPosition(Vector2{ 0,0 });
 		}
 

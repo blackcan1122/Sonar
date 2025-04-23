@@ -1,11 +1,11 @@
 #pragma once
-#include "Base/Core.h"
+#include <string>
 
 class SClass
 {
 public:
 
-	explicit SClass(const SClass* Parent, const std::string Name)
+	explicit SClass(const SClass* Parent, const char* Name)
 		: ParentClass(Parent), ClassName(Name)
 	{}
 
@@ -14,7 +14,7 @@ public:
 		const SClass* current = this;
 		while (current) 
 		{
-			if (current == ParentClass)
+			if (current == Other)
 			{
 				return true;
 			}
@@ -24,8 +24,9 @@ public:
 		return false;
 	}
 
+	const std::string ClassName;
+
 protected:
 
 	const SClass* ParentClass;
-	const std::string ClassName;
 };

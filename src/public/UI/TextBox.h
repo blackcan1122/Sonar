@@ -3,8 +3,9 @@
 #include <string>
 #include "Base/BaseUI.h"
 
-DECLARE_CLASS(TextInputBox, BaseUI)
-
+class TextInputBox : public BaseUI
+{
+	AUTOBODY(TextInputBox, BaseUI)
 public:
 
 	// Methods
@@ -93,5 +94,5 @@ private:
 	bool bHasBeenConstructed;
 	bool bUsesText;
 
-END_CLASS
+};
 

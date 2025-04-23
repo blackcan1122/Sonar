@@ -1,6 +1,7 @@
 #include "GameModes/Menu.hpp"
 #include "Base/GameInstance.h"
 #include "Base/StateMachine.h"
+#include "Base/Factory.hpp"
 
 // Events
 #include "Events/AllPurposeEvent.h"
@@ -60,7 +61,7 @@ void MenuMode::BeginPlay()
 #if DEBUG
 
 	Rectangle SandboxRec = { CenterX - ButtonWidth / 2, 100, ButtonWidth, ButtonHeight };
-	Sandbox = m_ObjectFactory.NewObject<Button>();
+	Sandbox = m_ObjectFactory->NewObject<Button>();
 	Sandbox.TryLoad()->Construct(SandboxRec, "Sandbox", RED)
 		.SetTexture(SpriteButton)
 		.CenterText()
@@ -82,7 +83,7 @@ void MenuMode::BeginPlay()
 #endif
 
 	Rectangle StartGameRec = { CenterX - ButtonWidth / 2, 200, ButtonWidth, ButtonHeight };
-	StartGame = m_ObjectFactory.NewObject<Button>();
+	StartGame = m_ObjectFactory->NewObject<Button>();
 	StartGame.TryLoad()->Construct(StartGameRec, "Start Game", RED)
 		.CenterText()
 		.UpdateTextColor(RED)
@@ -100,7 +101,7 @@ void MenuMode::BeginPlay()
 			});
 
 	Rectangle OptionRec = { CenterX - ButtonWidth / 2, 300, ButtonWidth, ButtonHeight };
-	Option = m_ObjectFactory.NewObject<Button>();
+	Option = m_ObjectFactory->NewObject<Button>();
 	Option.TryLoad()->Construct(OptionRec, "Option", RED)
 		.CenterText()
 		.SetEventDispatcher(UIDispatcher)
@@ -120,7 +121,7 @@ void MenuMode::BeginPlay()
 			});
 
 	Rectangle ExitRec = { CenterX - ButtonWidth / 2, 400, ButtonWidth, ButtonHeight };
-	Exit = m_ObjectFactory.NewObject<Button>();
+	Exit = m_ObjectFactory->NewObject<Button>();
 	Exit.TryLoad()->Construct(ExitRec, "Exit", RED).CenterText()
 		.SetEventDispatcher(UIDispatcher)
 		.SetEventPayload("Exit")

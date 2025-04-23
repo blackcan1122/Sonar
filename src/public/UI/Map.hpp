@@ -32,7 +32,7 @@ enum InteractionState
 
 class Map : public Display
 {
-	AUTOBODY(Map)
+	AUTOBODY(Map, Display)
 
 public:
 

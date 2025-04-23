@@ -2,8 +2,9 @@
 #include "Base/Core.h"
 #include "Base/BaseUI.h"
 
-DECLARE_CLASS(Display, BaseUI)
-
+class Display : public BaseUI
+{
+	AUTOBODY(Display, BaseUI)
 public:
 	Display(int Width, int Height);
 	virtual ~Display();
@@ -23,4 +24,4 @@ protected:
 	Rectangle SourceRect;
 	Rectangle DestinationRect;
 
-END_CLASS
+};

@@ -44,6 +44,7 @@ void InitLogger();
 
 // Own Class Forward
 class EventDispatcher;
+class Factory;
 class StateMachine;
 class GameMode;
 class GameInstance;
@@ -55,6 +56,7 @@ class AssetRegistry;
 
 // Own Header includes, for very important headers
 #include "Base/Object.hpp"
+#include "Base/SClass.hpp"
 #include "Base/NavalTypedefs.h"
 
 // Unsure if i should keep them away, as handling recursive includes suck
@@ -119,11 +121,20 @@ private:
 
 // MACROS
 
-
-// Autobody Macro for implementing a Static function in every IObject Derived Class, to make it possible to compare Static Classes against
-#define AUTOBODY(cls) \
+#define AUTOBODY(Base, Parent) \
+private: \
+	static inline SClass m_SClass = SClass(Parent::StaticClass(), #Base); \
 public: \
-    static std::type_index StaticClass() { return typeid(cls); } \
+    virtual SClass* GetStaticClass() override { return &m_SClass; } \
+    static SClass* StaticClass() { return  &m_SClass; } \
+private:
+
+#define ROOTBODY(Base) \
+private: \
+	static inline SClass m_SClass = SClass(nullptr, #Base); \
+public: \
+    virtual SClass* GetStaticClass() { return &m_SClass; } \
+    static SClass* StaticClass() { return  &m_SClass; } \
 private:
 
 // Macro for intermediate CRTP base classes
@@ -140,7 +151,7 @@ class ClassName : public BaseName<ClassName>
 class ClassName : public BaseClass \
 { \
 public: \
-AUTOBODY(ClassName) \
+AUTOBODY(ClassName, BaseClass)
 
 
 #define END_CLASS };
