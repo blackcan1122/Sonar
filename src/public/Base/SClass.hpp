@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <string>
 
 class SClass
@@ -23,6 +23,7 @@ public:
 		}
 		return false;
 	}
+
 
 	const std::string ClassName;
 

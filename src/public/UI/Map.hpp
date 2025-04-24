@@ -16,10 +16,11 @@ enum ObjectType
 
 enum ObjectState
 {
-	Friendly,
-	Enemy,
-	Neutral,
-	Unknown
+	EPlayer,
+	EFriendly,
+	EEnemy,
+	ENeutral,
+	EUnknown
 };
 
 enum InteractionState
@@ -66,7 +67,7 @@ private:
 	Texture2D PlayerIcon;
 	Texture2D ShipIcon;
 
-	Color ColorLookupState[4] = { GREEN, RED, BLUE, GRAY };
+	Color ColorLookupState[5] = {{0,255,255,255} , GREEN, RED, BLUE, GRAY};
 	Color ColorLookupInteractivity[3] = { BLANK, YELLOW, PURPLE};
 
 

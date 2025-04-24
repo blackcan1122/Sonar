@@ -1,5 +1,6 @@
 #include "GameModes/SandboxGameMode.hpp"
 #include "Base/GameInstance.h"
+#include "Entities/BaseSubmarine.hpp"
 #include "Base/Factory.hpp"
 
 SandboxGameMode::SandboxGameMode()
@@ -26,17 +27,17 @@ void SandboxGameMode::BeginPlay()
 
 	PlayerOne = m_ObjectFactory->NewObject<Player>();
 	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
-	PlayerOne.TryLoad()->SetDisplayName("U521");
+	PlayerOne.TryLoad()->SetDisplayName("U-521");
 	PlayerOne.TryLoad()->SetEntityRotation(0);
 	PlayerOne.TryLoad()->ConvertAngleToVector();
 	PlayerOne.TryLoad()->SetInitialSpeed(5);
 
-	PlayerTwo = m_ObjectFactory->NewObject<Player>();
-	PlayerTwo.TryLoad()->SetEntityLocation(Vector2{ 800,200 });
-	PlayerTwo.TryLoad()->SetDisplayName("K-21");
+	OtherSub = m_ObjectFactory->NewObject<BaseSubmarine>();
+	OtherSub.TryLoad()->SetEntityLocation(Vector2{ 800,200 });
+	OtherSub.TryLoad()->SetDisplayName("K-21");
 
 
-	MapDisplay.TryLoad()->AddObjectToDraw(PlayerTwo.TryLoad());
+	MapDisplay.TryLoad()->AddObjectToDraw(OtherSub.TryLoad());
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
 
 	m_PlayerUI = m_ObjectFactory->NewObject<PlayerUI>(PlayerOne);
@@ -53,9 +54,6 @@ void SandboxGameMode::Update()
 {
 		ClearBackground(RED);
 		GameMode::Update();
-
-		std::cout << PlayerOne.TryLoad()->GetStaticClass() << std::endl;
-		std::cout << PlayerOne.TryLoad()->GetStaticClass()->ClassName << std::endl;
 
 		if (IsKeyPressed(KEY_D))
 		{
@@ -79,7 +77,7 @@ void SandboxGameMode::Update()
 		if (IsKeyDown(KEY_W))
 		{
 
-			if (auto tempPlayer = FocusedUnit.Cast<Player>().TryLoad())
+			if (auto tempPlayer = FocusedUnit.Cast<BaseSubmarine>().TryLoad())
 			{
 				tempPlayer->SetSpeed(10);
 			}
@@ -121,8 +119,6 @@ void SandboxGameMode::OnMapClickedEvent(std::shared_ptr<IEvent> Event)
 	}
 
 	std::shared_ptr<MapClickEventData> tempEventData = std::dynamic_pointer_cast<MapClickEventData>(CastedEvent->Payload);
-
-	m_PlayerUI.TryLoad()->AssignedPlayer = tempEventData->ClickedObject.Cast<Player>();
 	FocusedUnit = tempEventData->ClickedObject;
 }
 

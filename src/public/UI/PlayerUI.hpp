@@ -18,6 +18,7 @@ public:
 	std::shared_ptr<TextInputBox> CourseBox;
 	std::shared_ptr<TextInputBox> SpeedBox;
 	std::shared_ptr<TextInputBox> DepthBox;
+	std::shared_ptr<TextInputBox> NameBox;
 
 	void SetPosition(Vector2 NewPos);
 	void SetNewPlayer(SoftObjectPath<Player> NewPlayer);

@@ -138,8 +138,8 @@ void Map::Draw()
         {
             case ObjectType::Submarine: 
             {
-                auto player = std::dynamic_pointer_cast<Player>(obj);
-                if (player) 
+                auto Submarine = std::dynamic_pointer_cast<BaseSubmarine>(obj);
+                if (Submarine) 
                 {
                     // BoundingBox Drawing for hover and focused
                     if (HoveredUnit.lock() == obj)
@@ -149,8 +149,8 @@ void Map::Draw()
                     if (FocusedUnit.lock() == obj)
                     {
                         DrawCircleLinesV(screenPos, PlayerIcon.width * ZoomLevel / 2, PURPLE);
-                        std::string CourseString = std::to_string(player->GetEntityRotation());
-                        std::string SpeedString = std::to_string(player->GetCurrentSpeed());
+                        std::string CourseString = std::to_string(Submarine->GetEntityRotation());
+                        std::string SpeedString = std::to_string(Submarine->GetCurrentSpeed());
                         DrawText(("Course: " + CourseString).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y, 12, GREEN);
                         DrawText(("Speed: " + SpeedString).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, GREEN);
                     }
@@ -250,10 +250,19 @@ void Map::Init()
 
 void Map::AddObjectToDraw(std::weak_ptr<IObject> Object) 
 {
-    if (Object.lock()->GetStaticClass() == Player::StaticClass())
+    if (*Object.lock()->GetStaticClass()<<(Entity::StaticClass()))
     {
-        auto playerPtr = std::dynamic_pointer_cast<Player>(Object.lock());
-        ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, ObjectState::Enemy} });
+        std::cout << "Found Derived " << Object.lock()->GetDisplayName() << std::endl;
+        if (std::shared_ptr<Player> PlayerPTR = std::dynamic_pointer_cast<Player>(Object.lock()))
+        {
+            ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, ObjectState::EPlayer} });
+        }
+        else
+        {
+            auto EntityPtr = std::dynamic_pointer_cast<Entity>(Object.lock());
+            ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, ObjectState::EEnemy} });
+        }
+
     }
 }
 

@@ -34,7 +34,7 @@ protected:
 	SoftObjectPath<Waterfall> WaterfallDisplay2;
 	SoftObjectPath<Map> MapDisplay;
 	SoftObjectPath<Player> PlayerOne;
-	SoftObjectPath<Player> PlayerTwo;
+	SoftObjectPath<BaseSubmarine> OtherSub;
 
 	SoftObjectPath<Entity> FocusedUnit;
 
