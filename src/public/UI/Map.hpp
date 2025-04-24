@@ -52,7 +52,6 @@ public:
 	bool IsDragging = false;
 
 	Vector2 LastMousePosition = { 0,0 };
-	std::weak_ptr<Player> TrackedPlayer;
 
 
 private:
@@ -67,11 +66,18 @@ private:
 	Texture2D PlayerIcon;
 	Texture2D ShipIcon;
 
+	// Texture Ressources
+	TextureResource* MapBorder;
+
+	Rectangle BorderRect;
+
 	Color ColorLookupState[5] = {{0,255,255,255} , GREEN, RED, BLUE, GRAY};
 	Color ColorLookupInteractivity[3] = { BLANK, YELLOW, PURPLE};
 
 
 	std::vector<std::pair<std::weak_ptr<IObject>, std::pair<ObjectType, ObjectState>>> ObjectsToDraw;
+	std::shared_ptr<Player> TrackedPlayer = nullptr;
+
 	std::vector<size_t> IndicesPendingKill;
 	double ZoomLevel = 1.f;
 

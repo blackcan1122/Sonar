@@ -37,8 +37,9 @@ void SandboxGameMode::BeginPlay()
 	OtherSub.TryLoad()->SetDisplayName("K-21");
 
 
-	MapDisplay.TryLoad()->AddObjectToDraw(OtherSub.TryLoad());
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
+	MapDisplay.TryLoad()->AddObjectToDraw(OtherSub.TryLoad());
+
 
 	m_PlayerUI = m_ObjectFactory->NewObject<PlayerUI>(PlayerOne);
 	m_PlayerUI.TryLoad()->SetPosition({500, 0});

@@ -87,7 +87,11 @@ SharedTexture2D TextureResource::LoadTexture()
         LoadedTexture.width = width;
 
     }
-    LOG_INFO(l_RESOURCES, TEXT("Texture '{}' already Loaded, will be reused", name));
+    else
+    {
+        LOG_INFO(l_RESOURCES, TEXT("Texture '{}' already Loaded, will be reused", name));
+    }
+  
     return SharedTexture2D(&LoadedTexture, this);
 }
 

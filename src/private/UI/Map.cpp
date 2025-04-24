@@ -24,10 +24,13 @@ Map::Map(int X, int Y)
 
 void Map::Draw()
 {
+
+    // Border and stuff outside of RenderTarget
+    DrawTextureNPatch(MapBorder->LoadTexture(), MapBorder->nPatchInfo.value(), BorderRect,{0,0}, 0, WHITE);
+
+    // RenderTarget 
     BeginTextureMode(ActiveRenderTarget);
     ClearBackground(BLACK);
-
-    
 
     // Assume gridSpacing is in world units
     const float gridSpacing = ZoomLevel < 0.01f ? 500000.f : 1000.f;
@@ -178,6 +181,8 @@ void Map::Draw()
     ObjectsToDraw.shrink_to_fit();
 
     EndTextureMode();
+
+    // Overlay
 }
 
 void Map::Tick(float DeltaTime)
@@ -219,6 +224,7 @@ void Map::Tick(float DeltaTime)
     }
 
 
+    BorderRect = { DestinationRect.x - 15, DestinationRect.y - 15, DestinationRect.width + 30, DestinationRect.height + 30 };
 
     Draw();
     RenderToMainBuffer();
@@ -253,8 +259,10 @@ void Map::AddObjectToDraw(std::weak_ptr<IObject> Object)
     if (*Object.lock()->GetStaticClass()<<(Entity::StaticClass()))
     {
         std::cout << "Found Derived " << Object.lock()->GetDisplayName() << std::endl;
-        if (std::shared_ptr<Player> PlayerPTR = std::dynamic_pointer_cast<Player>(Object.lock()))
+        std::shared_ptr<Player> PlayerPTR = std::dynamic_pointer_cast<Player>(Object.lock());
+        if (PlayerPTR && TrackedPlayer == nullptr)
         {
+            TrackedPlayer = PlayerPTR;
             ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, ObjectState::EPlayer} });
         }
         else
@@ -307,7 +315,6 @@ void Map::LoadRessources()
     if (!ImageSubmarine.data)
     {
         UnloadImage(ImageSubmarine);
-        throw std::runtime_error("Failed To Load Player Icon: " + PlayerIconPath);
     }
     ImageMipmaps(&ImageSubmarine);
     PlayerIcon = LoadTextureFromImage(ImageSubmarine);
@@ -319,11 +326,13 @@ void Map::LoadRessources()
     if (!ImageShip.data)
     {
         UnloadImage(ImageShip);
-        throw std::runtime_error("Failed To Load Ship Icon: " + ShipIconPath);
     }
 
     ShipIcon = LoadTextureFromImage(ImageShip);
     UnloadImage(ImageShip);
+
+    MapBorder = GameInstance::GetInstance()->GetResource("ButtonImage");
+    MapBorder->GenerateMipMaps();
 
 }
 

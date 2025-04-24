@@ -2,6 +2,8 @@
 #define RAYGUI_IMPLEMENTATION
 #endif // !RAYGUI_IMPLEMENTATION
 
+#define Version "DEV-0.1.1"
+
 
 // GameInstance Specific
 #include "Base/GameInstance.h"
@@ -201,6 +203,7 @@ void GameInstance::GameLoop()
 
 		// GameMode Independend UI Drawings
 
+		DrawText((std::string("Version: ") + Version).c_str(), 0 + 5, GetScreenHeight() - 20, 12, WHITE);
 		EndDrawing();
 	}
 }
