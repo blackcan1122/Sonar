@@ -8,13 +8,13 @@ class Player;
 
 
 // TODO: Move this enums somewhere more fitting and correct
-enum ObjectType
+enum class ObjectType
 {
 	Submarine,
 	Ship
 };
 
-enum ObjectState
+enum class ObjectState
 {
 	EPlayer,
 	EFriendly,
@@ -23,14 +23,14 @@ enum ObjectState
 	EUnknown
 };
 
-enum InteractionState
+enum class InteractionState
 {
 	None,
 	Hovered,
 	Active
 };
 
-
+// World Units: 1 Unit 1 Meter
 class Map : public Display
 {
 	AUTOBODY(Map, Display)
@@ -68,6 +68,7 @@ private:
 
 	// Texture Ressources
 	TextureResource* MapBorder;
+	SharedTexture2D BorderTexture;
 
 	Rectangle BorderRect;
 

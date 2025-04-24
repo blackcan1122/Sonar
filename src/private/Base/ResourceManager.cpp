@@ -135,7 +135,7 @@ void TextureResource::RemoveRef()
                 auto CurrentTime = StartTime;
                 bool StillZero = true;
                 size_t ResetCounter = 0;
-                while (StartTime + std::chrono::seconds(300) > CurrentTime)
+                while (StartTime + std::chrono::seconds(120) > CurrentTime)
                 {
                     std::this_thread::sleep_for(std::chrono::seconds(5));
                     CurrentTime = std::chrono::system_clock::now();
@@ -154,6 +154,7 @@ void TextureResource::RemoveRef()
                         else
                         {
                             LOG_INFO(l_RESOURCES, TEXT("Reset Counter exceed Max Reset Times, GC will be postponed"));
+
                             StillZero = false;
                             break;
                         }

@@ -2,6 +2,7 @@
 #include "Base/GameInstance.h"
 #include "Entities/BaseSubmarine.hpp"
 #include "Base/Factory.hpp"
+#include "Base/World.hpp"
 
 SandboxGameMode::SandboxGameMode()
 {
@@ -11,6 +12,9 @@ SandboxGameMode::SandboxGameMode()
 
 void SandboxGameMode::BeginPlay()
 {
+
+	CurrentWorld = m_ObjectFactory->NewObject<World>();
+
 	WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 300, 10);
 	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
 

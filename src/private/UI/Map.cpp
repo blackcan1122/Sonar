@@ -26,7 +26,7 @@ void Map::Draw()
 {
 
     // Border and stuff outside of RenderTarget
-    DrawTextureNPatch(MapBorder->LoadTexture(), MapBorder->nPatchInfo.value(), BorderRect,{0,0}, 0, WHITE);
+    DrawTextureNPatch(BorderTexture, MapBorder->nPatchInfo.value(), BorderRect,{0,0}, 0, WHITE);
 
     // RenderTarget 
     BeginTextureMode(ActiveRenderTarget);
@@ -333,7 +333,7 @@ void Map::LoadRessources()
 
     MapBorder = GameInstance::GetInstance()->GetResource("ButtonImage");
     MapBorder->GenerateMipMaps();
-
+    BorderTexture = MapBorder->LoadTexture();
 }
 
 

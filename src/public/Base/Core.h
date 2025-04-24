@@ -52,6 +52,7 @@ class TextInputBox;
 class Button;
 class IEvent;
 class AssetRegistry;
+class World;
 
 
 // Own Header includes, for very important headers
