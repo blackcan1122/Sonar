@@ -15,5 +15,10 @@ std::vector<int> World::CreateAmbientNoise(int NumberOfData)
 
 void World::Tick(float Deltatime)
 {
-    CurrentAmbientLevel = CreateAmbientNoise(360);
+    m_CurrentAmbientLevel = CreateAmbientNoise(360);
+}
+
+std::vector<int> World::GetAmbientLevel() const
+{
+    return m_CurrentAmbientLevel;
 }

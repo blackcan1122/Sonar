@@ -13,7 +13,7 @@ SandboxGameMode::SandboxGameMode()
 void SandboxGameMode::BeginPlay()
 {
 
-	CurrentWorld = m_ObjectFactory->NewObject<World>();
+	m_World = m_ObjectFactory->NewObject<World>();
 
 	WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 300, 10);
 	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });

@@ -1,13 +1,12 @@
 #pragma once
-#include "Base/Core.h"
 #include <algorithm>
 #include "Base/EventDispatcher.hpp"
 #include "Base/ResourceManager.hpp"
-#include "Base/StateMachine.h"
+//#include "Base/StateMachine.h"
 #include "StateMachines/GameModeSwitcher.h"
 #include "Base/GameThreadQueue.hpp"
-#include "Base/GameMode.h"
-#include "Base/AssetRegistry.hpp"
+
+class AssetRegistry;
 
 struct WindowProperties
 {
@@ -114,7 +113,7 @@ protected:
 	*/
 
 	static ResourceManager g_ResourceManager;
-	static AssetRegistry g_AssetRegistry;
+	static std::shared_ptr<AssetRegistry> g_AssetRegistry;
 
 	static void CreateWindow();
 	static void GameLoop();
@@ -150,7 +149,7 @@ public:
 	WindowProperties GetWindowProperties() const { return m_WindowProperties; }
 
 	static GameMode* GetCurrentGameMode();
-	static AssetRegistry* GetAssetRegistry();
+	static std::shared_ptr<AssetRegistry> GetAssetRegistry();
 
 
 	static EventDispatcher& GetUIEventDispatcher();

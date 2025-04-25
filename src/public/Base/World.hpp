@@ -75,12 +75,13 @@ public:
 	TimeOfDay m_TimeOfDay;
 
 	// TODO: Should be replaced by a designated struct to hold signal info for all bearings
-	std::vector<int> CreateAmbientNoise(int NumberOfData);
 
 	virtual void Tick(float Deltatime) override;
+	std::vector<int> GetAmbientLevel() const;
 
 protected:
 
-	std::vector<int> CurrentAmbientLevel;
+	std::vector<int> CreateAmbientNoise(int NumberOfData);
+	std::vector<int> m_CurrentAmbientLevel;
 
 };

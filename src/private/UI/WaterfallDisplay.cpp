@@ -1,4 +1,6 @@
 #include "UI/WaterfallDisplay.hpp"
+#include "Base/GameMode.h"
+#include "Base/World.hpp"
 #include "raylib.h"
 #include <chrono>
 #include <string>
@@ -34,6 +36,14 @@ Waterfall::~Waterfall()
 
 void Waterfall::Tick(float DeltaTime) 
 {
+    auto CurrentWorld = GetOutter()->GetWorld().TryLoad();
+    m_CurrentAmbientLevel.clear();
+    if (CurrentWorld)
+    {
+        m_CurrentAmbientLevel = CurrentWorld->GetAmbientLevel();
+    }
+
+
     // Temp to change index of signal
     if (IsKeyDown(KEY_A))
     {
@@ -97,7 +107,7 @@ void Waterfall::ProcessBackBuffer(int LinesToShift)
                 continue;
             }
 
-            PixelData myPixel(0, GetRandomValue(0, 45), 0, 255);
+            PixelData myPixel(0, m_CurrentAmbientLevel[i], 0, 255);
             (*BackBuffer)[i] = myPixel;
         }
     }

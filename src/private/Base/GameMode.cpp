@@ -42,6 +42,11 @@ void GameMode::BeginPlay()
 {
 }
 
+SoftObjectPath<World> GameMode::GetWorld()
+{
+	return m_World;
+}
+
 std::string GameMode::GetName()
 {
 	return this->m_Name;

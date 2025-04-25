@@ -1,3 +1,4 @@
+#include "Base/Core.h"
 #include "Base/Texture2DWrap.hpp"
 #include "Base/ResourceManager.hpp"
 #include <utility>

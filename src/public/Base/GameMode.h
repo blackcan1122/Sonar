@@ -1,5 +1,8 @@
 #pragma once
+#include "Base/SoftObject.hpp"
+#include "Base/World.hpp"
 #include "Base/Core.h"
+
 
 /**
  * @class GameMode
@@ -27,6 +30,10 @@
  * - Use `SetName` and `GetName` for identifying game modes.
  */
 
+class AssetRegistry;
+class Factory;
+class GameInstance;
+
 class GameMode
 {
 friend IObject;
@@ -41,13 +48,23 @@ public:
 	virtual void Update();
 	virtual void SetName(std::string Name);
 	virtual void BeginPlay();
+	virtual SoftObjectPath<World> GetWorld();
 	virtual std::string GetName();
 	std::shared_ptr<Factory> m_ObjectFactory;
 
 	virtual bool DestroyObjectExplicitly(std::shared_ptr<IObject> InObject);
 
 	template<typename T>
-	bool DestroyObjectExplicitly(SoftObjectPath<T> InObject);
+	bool DestroyObjectExplicitly(SoftObjectPath<T> InObject)
+	{
+		std::shared_ptr<T> Obj = InObject.TryLoad();
+		if (Obj)
+		{
+			return DestroyObjectExplicitly(Obj);
+		}
+
+		return false;
+	}
 
 
 protected:
@@ -61,16 +78,7 @@ protected:
 	float m_DeltaTime = 0;
 	std::string m_Name;
 
+	// Optional
+	SoftObjectPath<World> m_World;
+
 };
-
-template<typename T>
-inline bool GameMode::DestroyObjectExplicitly(SoftObjectPath<T> InObject)
-{
-	std::shared_ptr<T> Obj = InObject.TryLoad();
-	if (Obj)
-	{
-		return DestroyObjectExplicitly(Obj);
-	}
-
-	return false;
-}

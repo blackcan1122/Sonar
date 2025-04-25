@@ -1,9 +1,38 @@
 #include "Base/AssetRegistry.hpp"
+#include "Base/SoftObject.hpp"
+#include "Base/GameInstance.h"
+#include "Base/GameMode.h"
+
 
 // std
 
 #include <set>
 #include <sstream>
+
+std::shared_ptr<IObject> AssetRegistry::LoadAssetFromSoftObjectPath(SoftObjectPath<IObject> Path)
+{
+	std::string FullPath = Path.ToString();
+	size_t Index = FullPath.find_first_of("/");
+
+	std::string GameMode = FullPath.substr(0, Index);
+	std::string Object = FullPath.substr(Index + 1);
+
+	if (GameInstance::GetCurrentGameMode()->GetName() != GameMode)
+	{
+		return nullptr;
+	}
+
+	auto MapIT = GameInstance::GetCurrentGameMode()->m_Objects.find(FullPath);
+
+	if (MapIT == GameInstance::GetCurrentGameMode()->m_Objects.end())
+	{
+		return nullptr;
+	}
+
+	std::shared_ptr<IObject> CastedOBJ = std::dynamic_pointer_cast<IObject>(MapIT->second);
+
+	return CastedOBJ;
+}
 
 std::string AssetRegistry::RegisterAsset(const std::string name)
 {

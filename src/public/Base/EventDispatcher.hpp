@@ -9,6 +9,8 @@
 * TODO: Dispatch multithreaded
 */
 
+class IEvent;
+
 class EventDispatcher 
 {
 public:

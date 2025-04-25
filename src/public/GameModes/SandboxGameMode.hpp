@@ -39,7 +39,4 @@ protected:
 	SoftObjectPath<Entity> FocusedUnit;
 
 	SoftObjectPath<PlayerUI> m_PlayerUI;
-
-	SoftObjectPath<World> CurrentWorld;
-
 };
