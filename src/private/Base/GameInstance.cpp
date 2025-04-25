@@ -2,10 +2,14 @@
 #define RAYGUI_IMPLEMENTATION
 #endif // !RAYGUI_IMPLEMENTATION
 
+#define Version "DEV-0.1.1"
+
+#include "Base/Core.h"
 
 // GameInstance Specific
 #include "Base/GameInstance.h"
 #include "Base/StateMachine.h"
+#include "Base/AssetRegistry.hpp"
 
 // UI
 #include "UI/Button.h"
@@ -39,7 +43,7 @@ GameModeSwitcher GameInstance::g_ActiveStateMachine;
 
 GameThreadQueue GameInstance::MainQueue;
 ResourceManager GameInstance::g_ResourceManager;
-AssetRegistry GameInstance::g_AssetRegistry;
+std::shared_ptr<AssetRegistry> GameInstance::g_AssetRegistry = std::make_shared<AssetRegistry>();
 
 std::string GameInstance::g_WorkingDirectory;
 GameInstance* GameInstance::g_Instance = nullptr;
@@ -98,9 +102,9 @@ GameMode* GameInstance::GetCurrentGameMode()
 	return g_ActiveStateMachine.GetCurrentGameMode();
 }
 
-AssetRegistry* GameInstance::GetAssetRegistry()
+std::shared_ptr<AssetRegistry> GameInstance::GetAssetRegistry()
 {
-	return &g_AssetRegistry;
+	return g_AssetRegistry;
 }
 
 EventDispatcher& GameInstance::GetUIEventDispatcher()
@@ -201,6 +205,7 @@ void GameInstance::GameLoop()
 
 		// GameMode Independend UI Drawings
 
+		DrawText((std::string("Version: ") + Version).c_str(), 0 + 5, GetScreenHeight() - 20, 12, WHITE);
 		EndDrawing();
 	}
 }

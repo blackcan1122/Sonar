@@ -2,6 +2,8 @@
 #include "Base/Core.h"
 #include "Base/BaseUI.h"
 #include "Base/GameInstance.h"
+#include "Base/SoftObject.hpp"
+
 
 class Player;
 

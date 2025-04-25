@@ -1,5 +1,5 @@
 #pragma once
-#include "Base/Core.h"
+
 
 class ResourceManager;
 struct TextureResource;

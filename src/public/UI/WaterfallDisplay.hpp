@@ -114,6 +114,7 @@ private:
 	std::atomic<bool> WorkerDone;
 	std::atomic<bool> RenderReady;
 	std::future<void> WorkerFuture;
+	std::vector<int> m_CurrentAmbientLevel;
 	bool FirstUpdate = true;
 
 	int TimeFrameInSec;

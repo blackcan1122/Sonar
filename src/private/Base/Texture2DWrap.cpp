@@ -1,3 +1,4 @@
+#include "Base/Core.h"
 #include "Base/Texture2DWrap.hpp"
 #include "Base/ResourceManager.hpp"
 #include <utility>
@@ -8,7 +9,6 @@ SharedTexture2D::SharedTexture2D(Texture2D* TextureHandle, TextureResource* Outt
 {
 	m_IsInitialized = true;
 	m_Outter->AddRef();
-	std::cout << m_Outter->name << ": " << m_Outter->RefCount << std::endl;
 }
 
 SharedTexture2D::SharedTexture2D(const SharedTexture2D& Other)
@@ -18,7 +18,6 @@ SharedTexture2D::SharedTexture2D(const SharedTexture2D& Other)
 	{
 		m_IsInitialized = true;
 		m_Outter->AddRef();
-		std::cout << m_Outter->name << ": " << m_Outter->RefCount << std::endl;
 	}
 }
 
@@ -36,7 +35,6 @@ SharedTexture2D::~SharedTexture2D()
 	if (m_IsInitialized)
 	{
 		m_Outter->RemoveRef();
-		std::cout << m_Outter->name << ": " << m_Outter->RefCount << std::endl;
 	}
 }
 

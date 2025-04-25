@@ -2,6 +2,7 @@
 #include "Base/GameInstance.h"
 #include "Entities/BaseSubmarine.hpp"
 #include "Base/Factory.hpp"
+#include "Base/World.hpp"
 
 SandboxGameMode::SandboxGameMode()
 {
@@ -11,6 +12,9 @@ SandboxGameMode::SandboxGameMode()
 
 void SandboxGameMode::BeginPlay()
 {
+
+	m_World = m_ObjectFactory->NewObject<World>();
+
 	WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 300, 10);
 	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
 
@@ -37,8 +41,9 @@ void SandboxGameMode::BeginPlay()
 	OtherSub.TryLoad()->SetDisplayName("K-21");
 
 
-	MapDisplay.TryLoad()->AddObjectToDraw(OtherSub.TryLoad());
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
+	MapDisplay.TryLoad()->AddObjectToDraw(OtherSub.TryLoad());
+
 
 	m_PlayerUI = m_ObjectFactory->NewObject<PlayerUI>(PlayerOne);
 	m_PlayerUI.TryLoad()->SetPosition({500, 0});

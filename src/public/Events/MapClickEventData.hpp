@@ -1,5 +1,6 @@
 #pragma once
 #include "Base/Core.h"
+#include "Base/SoftObject.hpp"
 #include "Base/EventData.hpp"
 #include "Base/Entity.hpp"
 

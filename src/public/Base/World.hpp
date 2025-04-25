@@ -1,0 +1,87 @@
+#pragma once
+#include "Base/Core.h"
+
+enum class ETimeZone
+{
+	ZuluTime = 0, // GMT or UTC
+	GMT_POS_01 = 1,
+	GMT_POS_02 = 2,
+	GMT_POS_03 = 3,
+	GMT_POS_04 = 4,
+	GMT_POS_05 = 5,
+	GMT_POS_06 = 6,
+	GMT_POS_07 = 7,
+	GMT_POS_08 = 8,
+	GMT_POS_09 = 9,
+	GMT_POS_10 = 10,
+	GMT_POS_11 = 11,
+	GMT_POS_12 = 12,
+	GMT_POS_13 = 13,
+	GMT_POS_14 = 14,
+	GMT_NEG_12 = -12,
+	GMT_NEG_11 = -11,
+	GMT_NEG_10 = -10,
+	GMT_NEG_09 = -9,
+	GMT_NEG_08 = -8,
+	GMT_NEG_07 = -7,
+	GMT_NEG_06 = -6,
+	GMT_NEG_05 = -5,
+	GMT_NEG_04 = -4,
+	GMT_NEG_03 = -3,
+	GMT_NEG_02 = -2,
+	GMT_NEG_01 = -1
+};
+
+struct Time
+{
+	int Hour = 0;
+	int Minutes = 0;
+};
+
+struct TimeOfDay
+{
+	Time LocalTime;
+	Time ZuluTime;
+
+	ETimeZone CurrentTimeZone = ETimeZone::ZuluTime;
+
+	void SetTimeZone(ETimeZone NewTimezone)
+	{
+		CurrentTimeZone = NewTimezone;
+	}
+
+	void SetNewLocalTime(Time NewLocalTime)
+	{
+		LocalTime = NewLocalTime;
+	}
+
+	void SetNewZuliTime(Time NewZuluTime)
+	{
+		ZuluTime = NewZuluTime;
+	}
+
+	void ConvertLocalTimeToZulu()
+	{
+		ZuluTime.Hour = LocalTime.Hour + static_cast<int>(CurrentTimeZone);
+	}
+};
+
+class World : public Object
+{
+	AUTOBODY(World, Object)
+
+public:
+
+	TimeOfDay m_TimeOfDay;
+
+	// TODO: Should be replaced by a designated struct to hold signal info for all bearings
+
+	virtual void Tick(float Deltatime) override;
+	std::vector<int> GetAmbientLevel() const;
+
+protected:
+
+	std::vector<int> CreateAmbientNoise(int NumberOfData);
+	std::vector<int> m_CurrentAmbientLevel;
+
+};
