@@ -57,10 +57,10 @@ SandboxGameMode::~SandboxGameMode()
 
 void SandboxGameMode::Update()
 {
-		ClearBackground(RED);
+		ClearBackground(BLACK);
 		GameMode::Update();
 
-		if (IsKeyPressed(KEY_D))
+		if (IsKeyPressed(KEY_K))
 		{
 			PlayerOne.TryLoad()->MarkForDestruction();
 		}
