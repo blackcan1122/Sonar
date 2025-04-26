@@ -121,7 +121,10 @@ private:
 
 	size_t Index = 0;
 
-	void ProcessBackBuffer(int LinesToShift);
+	std::vector<int> m_AccumulatedSignals;
+	int Counter = 0;
+
+	void ProcessBackBuffer(int LinesToShift, std::vector<int> AccumulatedSamples, int AmountOfSamples);
 	void GenerateBearings();
 
 	std::weak_ptr<Entity> Listener;
