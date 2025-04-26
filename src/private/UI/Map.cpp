@@ -6,7 +6,6 @@
 #include "Base/GameMode.h"
 
 // Countries
-#include "Base/WorldData.hpp"
 #include "CountryMap/NA.hpp"
 #include "CountryMap/SA.hpp"
 #include "CountryMap/Africa.hpp"
