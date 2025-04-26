@@ -4,7 +4,7 @@
 #include <iostream>
 #include <format>
 #include "Base/GameMode.h"
-
+#include "Base/WorldData.hpp"
 
 #define GridColor {5,18,36,255}
 
@@ -74,6 +74,26 @@ void Map::Draw()
         Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
         DrawLineEx(screenStart, screenEnd, 2, GridColor);
+    }
+
+    for (int i = 0; i < africaOutline.size(); i++)
+    {
+        if (i == africaOutline.size() - 1)
+        {
+            continue;
+        }
+
+        auto AfricaOutlinePointA = ConvertWorldToScreenPos(africaOutline[i]);
+        auto AfricaOutlinePointB = ConvertWorldToScreenPos(africaOutline[i+1]);
+        if (AfricaOutlinePointA.x < 0 && AfricaOutlinePointB.x < 0
+            || AfricaOutlinePointA.x > DestinationRect.width && AfricaOutlinePointB.x > DestinationRect.width
+            || AfricaOutlinePointA.y < 0 && AfricaOutlinePointB.y < 0
+            || AfricaOutlinePointA.y > DestinationRect.height && AfricaOutlinePointB.y > DestinationRect.height)
+        {
+            continue;
+        }
+
+        DrawLineEx(AfricaOutlinePointA, AfricaOutlinePointB, 3, GREEN);    
     }
 
     for (size_t i = 0; i < ObjectsToDraw.size(); i++)
@@ -190,12 +210,12 @@ void Map::Tick(float DeltaTime)
     // Handle input (same as before)
     if (CheckCollisionPointRec(GetMousePosition(), DestinationRect)) 
     {
-        int Multiply = 100.f;
+        int Multiply = 1000.f;
         if (IsKeyDown(KEY_LEFT_CONTROL))
         {
-            Multiply = 10.f;
+            Multiply = 5.f;
         }
-        ZoomLevel += GetMouseWheelMove() * (0.001f * Multiply);
+        ZoomLevel += GetMouseWheelMove() * (0.0001f * Multiply);
         ZoomLevel = Clamp(ZoomLevel, 0.0001f, 10.0f);
 
         // Pan
