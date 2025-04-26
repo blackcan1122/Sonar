@@ -4,6 +4,7 @@
 #include <iostream>
 #include <format>
 #include "Base/GameMode.h"
+#include "omp.h"
 
 // Countries
 #include "CountryMap/NA.hpp"
@@ -82,108 +83,47 @@ void Map::Draw()
     }
 
     // Map Borders <-- TODO: Optimize heavily and refactor just a POC
-    // currently takes around 6 ms
+    // currently takes around 2 ms
     
-    for (int i = 0; i < africaOutline.size(); i++)
-    {
-        if (i == africaOutline.size() - 1)
-        {
-            continue;
-        }
-
-        auto AfricaOutlinePointA = ConvertWorldToScreenPos(africaOutline[i]);
-        auto AfricaOutlinePointB = ConvertWorldToScreenPos(africaOutline[i+1]);
-        if (AfricaOutlinePointA.x < 0 && AfricaOutlinePointB.x < 0
-            || AfricaOutlinePointA.x > DestinationRect.width && AfricaOutlinePointB.x > DestinationRect.width
-            || AfricaOutlinePointA.y < 0 && AfricaOutlinePointB.y < 0
-            || AfricaOutlinePointA.y > DestinationRect.height && AfricaOutlinePointB.y > DestinationRect.height)
-        {
-            continue;
-        }
-
-        DrawLineEx(AfricaOutlinePointA, AfricaOutlinePointB, 1, GREEN);    
-    }
-
-    for (int i = 0; i < EuropeOutline.size(); i++)
-    {
-        if (i == EuropeOutline.size() - 1)
-        {
-            continue;
-        }
-
-        auto AfricaOutlinePointA = ConvertWorldToScreenPos(EuropeOutline[i]);
-        auto AfricaOutlinePointB = ConvertWorldToScreenPos(EuropeOutline[i + 1]);
-        if (AfricaOutlinePointA.x < 0 && AfricaOutlinePointB.x < 0
-            || AfricaOutlinePointA.x > DestinationRect.width && AfricaOutlinePointB.x > DestinationRect.width
-            || AfricaOutlinePointA.y < 0 && AfricaOutlinePointB.y < 0
-            || AfricaOutlinePointA.y > DestinationRect.height && AfricaOutlinePointB.y > DestinationRect.height)
-        {
-            continue;
-        }
-
-        DrawLineEx(AfricaOutlinePointA, AfricaOutlinePointB, 1, GREEN);
-    }
-
-    for (int i = 0; i < NAOutline.size(); i++)
-    {
-        if (i == NAOutline.size() - 1)
-        {
-            continue;
-        }
-
-        auto AfricaOutlinePointA = ConvertWorldToScreenPos(NAOutline[i]);
-        auto AfricaOutlinePointB = ConvertWorldToScreenPos(NAOutline[i + 1]);
-        if (AfricaOutlinePointA.x < 0 && AfricaOutlinePointB.x < 0
-            || AfricaOutlinePointA.x > DestinationRect.width && AfricaOutlinePointB.x > DestinationRect.width
-            || AfricaOutlinePointA.y < 0 && AfricaOutlinePointB.y < 0
-            || AfricaOutlinePointA.y > DestinationRect.height && AfricaOutlinePointB.y > DestinationRect.height)
-        {
-            continue;
-        }
-
-        DrawLineEx(AfricaOutlinePointA, AfricaOutlinePointB, 1, GREEN);
-    }
-
+#pragma omp parallel for
     for (int i = 0; i < SAOutline.size(); i++)
     {
-        if (i == SAOutline.size() - 1)
-        {
-            continue;
-        }
-
-        auto AfricaOutlinePointA = ConvertWorldToScreenPos(SAOutline[i]);
-        auto AfricaOutlinePointB = ConvertWorldToScreenPos(SAOutline[i + 1]);
-        if (AfricaOutlinePointA.x < 0 && AfricaOutlinePointB.x < 0
-            || AfricaOutlinePointA.x > DestinationRect.width && AfricaOutlinePointB.x > DestinationRect.width
-            || AfricaOutlinePointA.y < 0 && AfricaOutlinePointB.y < 0
-            || AfricaOutlinePointA.y > DestinationRect.height && AfricaOutlinePointB.y > DestinationRect.height)
-        {
-            continue;
-        }
-
-        DrawLineEx(AfricaOutlinePointA, AfricaOutlinePointB, 1, GREEN);
+        SAConverted[i] = ConvertWorldToScreenPos(SAOutline[i]);
     }
 
+    DrawSplineLinear(&SAConverted[0], SAConverted.size(), 2, RED);
+
+#pragma omp parallel for
+    for (int i = 0; i < EuropeOutline.size(); i++)
+    {
+        EUConverted[i] = ConvertWorldToScreenPos(EuropeOutline[i]);
+    }
+
+    DrawSplineLinear(&EUConverted[0], EUConverted.size(), 2, RED);
+
+#pragma omp parallel for
+    for (int i = 0; i < africaOutline.size(); i++)
+    {
+        AfricaConverted[i] = ConvertWorldToScreenPos(africaOutline[i]);
+    }
+
+    DrawSplineLinear(&AfricaConverted[0], AfricaConverted.size(), 2, RED);
+
+#pragma omp parallel for
+    for (int i = 0; i < NAOutline.size(); i++)
+    {
+        NAConverted[i] = ConvertWorldToScreenPos(NAOutline[i]);
+    }
+
+    DrawSplineLinear(&NAConverted[0], NAConverted.size(), 2, RED);
+
+#pragma omp parallel for
     for (int i = 0; i < AsiaOutline.size(); i++)
     {
-        if (i == AsiaOutline.size() - 1)
-        {
-            continue;
-        }
-
-        auto AfricaOutlinePointA = ConvertWorldToScreenPos(AsiaOutline[i]);
-        auto AfricaOutlinePointB = ConvertWorldToScreenPos(AsiaOutline[i + 1]);
-        if (AfricaOutlinePointA.x < 0 && AfricaOutlinePointB.x < 0
-            || AfricaOutlinePointA.x > DestinationRect.width && AfricaOutlinePointB.x > DestinationRect.width
-            || AfricaOutlinePointA.y < 0 && AfricaOutlinePointB.y < 0
-            || AfricaOutlinePointA.y > DestinationRect.height && AfricaOutlinePointB.y > DestinationRect.height)
-        {
-            continue;
-        }
-
-        DrawLineEx(AfricaOutlinePointA, AfricaOutlinePointB, 1, GREEN);
+        AsiaConverted[i] = ConvertWorldToScreenPos(AsiaOutline[i]);
     }
 
+    DrawSplineLinear(&AsiaConverted[0], AsiaConverted.size(), 2, RED);
 
 
     for (size_t i = 0; i < ObjectsToDraw.size(); i++)
@@ -306,7 +246,7 @@ void Map::Tick(float DeltaTime)
             Multiply = 1.f;
         }
         ZoomLevel += GetMouseWheelMove() * (0.0001f * Multiply);
-        ZoomLevel = Clamp(ZoomLevel, 0.0001f, 10.0f);
+        ZoomLevel = Clamp(ZoomLevel, 0.00005f, 10.0f);
 
         // Pan
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
@@ -342,6 +282,13 @@ void Map::Tick(float DeltaTime)
 
 void Map::Init()
 {
+    SAConverted.resize(SAOutline.size());
+    NAConverted.resize(NAOutline.size());
+    EUConverted.resize(EuropeOutline.size());
+    AfricaConverted.resize(africaOutline.size());
+    AsiaConverted.resize(AsiaOutline.size());
+
+
     try
     {
         LoadRessources();
