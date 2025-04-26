@@ -37,7 +37,6 @@ Waterfall::~Waterfall()
 
 void Waterfall::Tick(float DeltaTime) 
 {
-    Timer<std::chrono::microseconds> t("Waterfall Tick");
     auto CurrentWorld = GetOutter()->GetWorld().TryLoad();
     m_CurrentAmbientLevel.clear();
     if (CurrentWorld)
