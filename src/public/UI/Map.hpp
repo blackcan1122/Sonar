@@ -91,6 +91,8 @@ private:
 	Vector2 ConvertWorldToScreenPos(Vector2 VectorToConver) const;
 	Vector2 ConvertScreenPosToWorld(Vector2 VectorToConver) const;
 
+	inline Vector2 ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters);
+
 	// Like wtf think of a better name haha
 	Vector2 ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos);
 
@@ -102,5 +104,8 @@ private:
 	std::vector<Vector2> EUConverted;
 	std::vector<Vector2> AfricaConverted;
 	std::vector<Vector2> AsiaConverted;
+
+	TextureResource* AfricaMapRes;
+	SharedTexture2D AfricaMapTex;
 
 };

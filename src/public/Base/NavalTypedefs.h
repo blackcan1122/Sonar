@@ -1,5 +1,6 @@
 #pragma once
 
+#define KiloMeter *1000
 
 namespace NavalUnits
 {

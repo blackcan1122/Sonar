@@ -1,6 +1,7 @@
 #include "UI/Map.hpp"
 #include <cstdio>
 #include "Entities/Player.hpp"
+#include "Base/NavalTypedefs.h"
 #include <iostream>
 #include <format>
 #include "Base/GameMode.h"
@@ -76,7 +77,7 @@ void Map::Draw()
         Vector2 worldEnd = { endX, y };
 
         // Convert both endpoints to screen space
-        Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
+        Vector2 screenStart = ConvertWorldToScreenPos(worldStart); 
         Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
         DrawLineEx(screenStart, screenEnd, 2, GridColor);
@@ -84,7 +85,25 @@ void Map::Draw()
 
     // Map Borders <-- TODO: Optimize heavily and refactor just a POC
     // currently takes around 2 ms
-    
+
+
+    auto AfricaPlace = ConvertWorldToScreenPos({ -1873482.3f ,-4104427.4f });
+
+    // Calculate scaled texture dimensions
+    float scaledWidthAfrica = (AfricaMapRes->width * ConvertTextureSizeToWorldSize(AfricaMapRes, {8000 KiloMeter, 7591 KiloMeter}).x) * ZoomLevel;
+    float scaledHeightAfrica = (AfricaMapRes->height * ConvertTextureSizeToWorldSize(AfricaMapRes, { 8000 KiloMeter, 7591 KiloMeter }).y) * ZoomLevel;
+
+    Rectangle AfricaDest = {
+        AfricaPlace.x,  // Center horizontally
+        AfricaPlace.y, // Center vertically
+        scaledWidthAfrica,
+        scaledHeightAfrica
+    };
+
+    DrawTexturePro(AfricaMapTex, { 0, 0, (float)AfricaMapRes->width, (float)AfricaMapRes->height }, AfricaDest, { 0,0 }, 0, GREEN);
+
+
+
 #pragma omp parallel for
     for (int i = 0; i < SAOutline.size(); i++)
     {
@@ -101,13 +120,6 @@ void Map::Draw()
 
     DrawSplineLinear(&EUConverted[0], EUConverted.size(), 2, RED);
 
-#pragma omp parallel for
-    for (int i = 0; i < africaOutline.size(); i++)
-    {
-        AfricaConverted[i] = ConvertWorldToScreenPos(africaOutline[i]);
-    }
-
-    DrawSplineLinear(&AfricaConverted[0], AfricaConverted.size(), 2, RED);
 
 #pragma omp parallel for
     for (int i = 0; i < NAOutline.size(); i++)
@@ -154,8 +166,8 @@ void Map::Draw()
 
         // Define the destination rectangle (centered at screenPos)
         Rectangle destRec = {
-            screenPos.x,  // Center horizontally
-            screenPos.y, // Center vertically
+            screenPos.x,
+            screenPos.y,
             scaledWidth,
             scaledHeight
         };
@@ -289,6 +301,7 @@ void Map::Init()
     AsiaConverted.resize(AsiaOutline.size());
 
 
+
     try
     {
         LoadRessources();
@@ -350,6 +363,11 @@ Vector2 Map::ConvertScreenPosToWorld(Vector2 VectorToConver) const
     return { transformed.x, transformed.y };
 }
 
+inline Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters)
+{
+    return { SizeInMeters.x / UsedTexture->width, SizeInMeters.y / UsedTexture->height };
+}
+
 Matrix Map::GetViewProjectionMatrix() const
 {
     Matrix translate = MatrixTranslate(-CameraWorldPosition.x, -CameraWorldPosition.y, 0);
@@ -367,6 +385,13 @@ Matrix Map::GetViewProjectionMatrix() const
 
 void Map::LoadRessources()
 {
+
+    AfricaMapRes = GameInstance::GetInstance()->GetResource("AfricaMap");
+    AfricaMapTex = AfricaMapRes->LoadTexture();
+
+    SetTextureFilter(AfricaMapTex, TextureFilter::TEXTURE_FILTER_ANISOTROPIC_16X);
+    GenTextureMipmaps(AfricaMapTex);
+
     // Player Icon
     Image ImageSubmarine = LoadImage(PlayerIconPath.c_str());
     if (!ImageSubmarine.data)
