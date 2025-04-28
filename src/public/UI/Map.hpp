@@ -91,11 +91,18 @@ private:
 	Vector2 ConvertWorldToScreenPos(Vector2 VectorToConver) const;
 	Vector2 ConvertScreenPosToWorld(Vector2 VectorToConver) const;
 
+	inline Vector2 ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters);
+
 	// Like wtf think of a better name haha
 	Vector2 ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos);
 
 	std::shared_ptr<AllPurposeEvent> MapClickEvent;
 	std::shared_ptr<MapClickEventData> ClickDataPayload;
 
+	std::vector<Vector2> SAConverted;
+	std::vector<Vector2> NAConverted;
+	std::vector<Vector2> EUConverted;
+	std::vector<Vector2> AfricaConverted;
+	std::vector<Vector2> AsiaConverted;
 
 };

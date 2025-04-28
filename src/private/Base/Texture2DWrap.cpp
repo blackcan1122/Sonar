@@ -7,13 +7,21 @@
 SharedTexture2D::SharedTexture2D(Texture2D* TextureHandle, TextureResource* Outter)
 	:m_Texture(TextureHandle), m_Outter(Outter)
 {
-	m_IsInitialized = true;
-	m_Outter->AddRef();
+	if (Outter)
+	{
+		m_IsInitialized = true;
+		m_Outter->AddRef();
+	}
+
 }
 
 SharedTexture2D::SharedTexture2D(const SharedTexture2D& Other)
 	:m_Outter(Other.m_Outter), m_Texture(Other.m_Texture)
 {
+	if (Other.m_IsInitialized == false)
+	{
+		return;
+	}
 	if (this != &Other)
 	{
 		m_IsInitialized = true;
@@ -24,6 +32,10 @@ SharedTexture2D::SharedTexture2D(const SharedTexture2D& Other)
 SharedTexture2D::SharedTexture2D(SharedTexture2D&& Other) noexcept
 	:m_Outter(Other.m_Outter), m_Texture(Other.m_Texture)
 {
+	if (Other.m_IsInitialized == false)
+	{
+		return;
+	}
 	m_IsInitialized = true;
 	Other.m_IsInitialized = false;
 	Other.m_Outter = nullptr;
@@ -44,10 +56,15 @@ SharedTexture2D& SharedTexture2D::operator=(const SharedTexture2D& Other)
 	{
 		return *this;
 	}
-	m_IsInitialized = true;
-	m_Outter = Other.m_Outter;
-	m_Texture = Other.m_Texture;
-	m_Outter->AddRef();
+
+	if (Other.m_IsInitialized)
+	{
+		m_IsInitialized = true;
+		m_Outter = Other.m_Outter;
+		m_Texture = Other.m_Texture;
+		m_Outter->AddRef();
+	}
+
 	return *this;
 }
 
@@ -57,10 +74,14 @@ SharedTexture2D& SharedTexture2D::operator=(SharedTexture2D& Other)
 	{
 		return *this;
 	}
-	m_IsInitialized = true;
-	m_Outter = Other.m_Outter;
-	m_Texture = Other.m_Texture;
-	m_Outter->AddRef();
+
+	if (Other.m_IsInitialized)
+	{
+		m_IsInitialized = true;
+		m_Outter = Other.m_Outter;
+		m_Texture = Other.m_Texture;
+		m_Outter->AddRef();
+	}
 	return *this;
 }
 

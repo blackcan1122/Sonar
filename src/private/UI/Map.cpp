@@ -1,10 +1,18 @@
 #include "UI/Map.hpp"
 #include <cstdio>
 #include "Entities/Player.hpp"
+#include "Base/NavalTypedefs.h"
 #include <iostream>
 #include <format>
 #include "Base/GameMode.h"
-#include "Base/WorldData.hpp"
+#include "omp.h"
+
+// Countries
+#include "CountryMap/NA.hpp"
+#include "CountryMap/SA.hpp"
+#include "CountryMap/Africa.hpp"
+#include "CountryMap/Asia.hpp"
+#include "CountryMap/Europe.hpp"
 
 #define GridColor {5,18,36,255}
 
@@ -24,7 +32,6 @@ Map::Map(int X, int Y)
 
 void Map::Draw()
 {
-
     // Border and stuff outside of RenderTarget
     DrawTextureNPatch(BorderTexture, MapBorder->nPatchInfo.value(), BorderRect,{0,0}, 0, WHITE);
 
@@ -70,31 +77,57 @@ void Map::Draw()
         Vector2 worldEnd = { endX, y };
 
         // Convert both endpoints to screen space
-        Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
+        Vector2 screenStart = ConvertWorldToScreenPos(worldStart); 
         Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
         DrawLineEx(screenStart, screenEnd, 2, GridColor);
     }
 
+    // Map Borders <-- TODO: Optimize heavily and refactor just a POC
+    // currently takes around 2 ms
+    // TODO: Postpone this whole Map Drawing part to the GPU
+
+#pragma omp parallel for
     for (int i = 0; i < africaOutline.size(); i++)
     {
-        if (i == africaOutline.size() - 1)
-        {
-            continue;
-        }
-
-        auto AfricaOutlinePointA = ConvertWorldToScreenPos(africaOutline[i]);
-        auto AfricaOutlinePointB = ConvertWorldToScreenPos(africaOutline[i+1]);
-        if (AfricaOutlinePointA.x < 0 && AfricaOutlinePointB.x < 0
-            || AfricaOutlinePointA.x > DestinationRect.width && AfricaOutlinePointB.x > DestinationRect.width
-            || AfricaOutlinePointA.y < 0 && AfricaOutlinePointB.y < 0
-            || AfricaOutlinePointA.y > DestinationRect.height && AfricaOutlinePointB.y > DestinationRect.height)
-        {
-            continue;
-        }
-
-        DrawLineEx(AfricaOutlinePointA, AfricaOutlinePointB, 3, GREEN);    
+        AfricaConverted[i] = ConvertWorldToScreenPos(africaOutline[i]);
     }
+
+    DrawSplineLinear(&AfricaConverted[0], AfricaConverted.size(), 2, RED);
+
+#pragma omp parallel for
+    for (int i = 0; i < SAOutline.size(); i++)
+    {
+        SAConverted[i] = ConvertWorldToScreenPos(SAOutline[i]);
+    }
+
+    DrawSplineLinear(&SAConverted[0], SAConverted.size(), 2, RED);
+
+#pragma omp parallel for
+    for (int i = 0; i < EuropeOutline.size(); i++)
+    {
+        EUConverted[i] = ConvertWorldToScreenPos(EuropeOutline[i]);
+    }
+
+    DrawSplineLinear(&EUConverted[0], EUConverted.size(), 2, RED);
+
+
+#pragma omp parallel for
+    for (int i = 0; i < NAOutline.size(); i++)
+    {
+        NAConverted[i] = ConvertWorldToScreenPos(NAOutline[i]);
+    }
+
+    DrawSplineLinear(&NAConverted[0], NAConverted.size(), 2, RED);
+
+#pragma omp parallel for
+    for (int i = 0; i < AsiaOutline.size(); i++)
+    {
+        AsiaConverted[i] = ConvertWorldToScreenPos(AsiaOutline[i]);
+    }
+
+    DrawSplineLinear(&AsiaConverted[0], AsiaConverted.size(), 2, RED);
+
 
     for (size_t i = 0; i < ObjectsToDraw.size(); i++)
     {
@@ -124,8 +157,8 @@ void Map::Draw()
 
         // Define the destination rectangle (centered at screenPos)
         Rectangle destRec = {
-            screenPos.x,  // Center horizontally
-            screenPos.y, // Center vertically
+            screenPos.x,
+            screenPos.y,
             scaledWidth,
             scaledHeight
         };
@@ -210,13 +243,13 @@ void Map::Tick(float DeltaTime)
     // Handle input (same as before)
     if (CheckCollisionPointRec(GetMousePosition(), DestinationRect)) 
     {
-        int Multiply = 1000.f;
+        int Multiply = 100.f;
         if (IsKeyDown(KEY_LEFT_CONTROL))
         {
-            Multiply = 5.f;
+            Multiply = 1.f;
         }
         ZoomLevel += GetMouseWheelMove() * (0.0001f * Multiply);
-        ZoomLevel = Clamp(ZoomLevel, 0.0001f, 10.0f);
+        ZoomLevel = Clamp(ZoomLevel, 0.00005f, 10.0f);
 
         // Pan
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
@@ -252,6 +285,14 @@ void Map::Tick(float DeltaTime)
 
 void Map::Init()
 {
+    SAConverted.resize(SAOutline.size());
+    NAConverted.resize(NAOutline.size());
+    EUConverted.resize(EuropeOutline.size());
+    AfricaConverted.resize(africaOutline.size());
+    AsiaConverted.resize(AsiaOutline.size());
+
+
+
     try
     {
         LoadRessources();
@@ -311,6 +352,11 @@ Vector2 Map::ConvertScreenPosToWorld(Vector2 VectorToConver) const
     // Transform the screen position (using z=0) into world space
     Vector3 transformed = Vector3Transform({ VectorToConver.x, VectorToConver.y, 0 }, invViewProj);
     return { transformed.x, transformed.y };
+}
+
+inline Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters)
+{
+    return { SizeInMeters.x / UsedTexture->width, SizeInMeters.y / UsedTexture->height };
 }
 
 Matrix Map::GetViewProjectionMatrix() const

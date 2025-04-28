@@ -6,7 +6,7 @@
 void ResourceManager::ParseJson()
 {
 	
-    std::string jsonPath = GameInstance::GetInstance()->g_WorkingDirectory + "/resources/json/example.json";
+    std::string jsonPath = GameInstance::GetInstance()->g_WorkingDirectory + "/resources/json/Textures.json";
     std::ifstream file(jsonPath);
     if (!file.is_open())
     {
