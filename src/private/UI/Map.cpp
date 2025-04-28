@@ -85,24 +85,15 @@ void Map::Draw()
 
     // Map Borders <-- TODO: Optimize heavily and refactor just a POC
     // currently takes around 2 ms
+    // TODO: Postpone this whole Map Drawing part to the GPU
 
+#pragma omp parallel for
+    for (int i = 0; i < africaOutline.size(); i++)
+    {
+        AfricaConverted[i] = ConvertWorldToScreenPos(africaOutline[i]);
+    }
 
-    auto AfricaPlace = ConvertWorldToScreenPos({ -1873482.3f ,-4104427.4f });
-
-    // Calculate scaled texture dimensions
-    float scaledWidthAfrica = (AfricaMapRes->width * ConvertTextureSizeToWorldSize(AfricaMapRes, {8000 KiloMeter, 7591 KiloMeter}).x) * ZoomLevel;
-    float scaledHeightAfrica = (AfricaMapRes->height * ConvertTextureSizeToWorldSize(AfricaMapRes, { 8000 KiloMeter, 7591 KiloMeter }).y) * ZoomLevel;
-
-    Rectangle AfricaDest = {
-        AfricaPlace.x,  // Center horizontally
-        AfricaPlace.y, // Center vertically
-        scaledWidthAfrica,
-        scaledHeightAfrica
-    };
-
-    DrawTexturePro(AfricaMapTex, { 0, 0, (float)AfricaMapRes->width, (float)AfricaMapRes->height }, AfricaDest, { 0,0 }, 0, GREEN);
-
-
+    DrawSplineLinear(&AfricaConverted[0], AfricaConverted.size(), 2, RED);
 
 #pragma omp parallel for
     for (int i = 0; i < SAOutline.size(); i++)
@@ -385,13 +376,6 @@ Matrix Map::GetViewProjectionMatrix() const
 
 void Map::LoadRessources()
 {
-
-    AfricaMapRes = GameInstance::GetInstance()->GetResource("AfricaMap");
-    AfricaMapTex = AfricaMapRes->LoadTexture();
-
-    SetTextureFilter(AfricaMapTex, TextureFilter::TEXTURE_FILTER_ANISOTROPIC_16X);
-    GenTextureMipmaps(AfricaMapTex);
-
     // Player Icon
     Image ImageSubmarine = LoadImage(PlayerIconPath.c_str());
     if (!ImageSubmarine.data)

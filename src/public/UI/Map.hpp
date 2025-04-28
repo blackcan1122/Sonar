@@ -105,7 +105,4 @@ private:
 	std::vector<Vector2> AfricaConverted;
 	std::vector<Vector2> AsiaConverted;
 
-	TextureResource* AfricaMapRes;
-	SharedTexture2D AfricaMapTex;
-
 };
