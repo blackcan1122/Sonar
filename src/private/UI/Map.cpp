@@ -1,4 +1,4 @@
-#include "UI/Map.hpp"
+﻿#include "UI/Map.hpp"
 #include <cstdio>
 #include "Entities/Player.hpp"
 #include "Base/NavalTypedefs.h"
@@ -13,6 +13,8 @@
 #include "CountryMap/Africa.hpp"
 #include "CountryMap/Asia.hpp"
 #include "CountryMap/Europe.hpp"
+
+#include "external/glad.h"
 
 #define GridColor {5,18,36,255}
 
@@ -38,6 +40,8 @@ void Map::Draw()
     // RenderTarget 
     BeginTextureMode(ActiveRenderTarget);
     ClearBackground(BLACK);
+
+   
 
     // Assume gridSpacing is in world units
     const float gridSpacing = ZoomLevel < 0.01f ? 500000.f : 1000.f;
@@ -233,6 +237,18 @@ void Map::Draw()
     IndicesPendingKill.clear();
     ObjectsToDraw.shrink_to_fit();
 
+    //// Flush raylib's batch system FIRST
+    rlDrawRenderBatchActive();
+
+    Matrix viewProj = GetOpenGLProjectionMatrix();
+    // OpenGL drawing
+    glUseProgram(shader.id);
+    glUniformMatrix4fv(locMVP, 1, GL_TRUE, &viewProj.m0); // GL_TRUE = transpose for raylib's Matrix
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
+
     EndTextureMode();
 
     // Overlay
@@ -291,7 +307,23 @@ void Map::Init()
     AfricaConverted.resize(africaOutline.size());
     AsiaConverted.resize(AsiaOutline.size());
 
+    // Load shader through raylib
+    shader = LoadShader("src/shaders/basic.vs", "src/shaders/basic.fs");
+    locMVP = glGetUniformLocation(shader.id, "uMVP");
 
+    // OpenGL Core Profile Setup
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    // Upload vertex data
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // Set vertex attribute (matches layout(location=0) in VS)
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
     try
     {
@@ -361,17 +393,44 @@ inline Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, 
 
 Matrix Map::GetViewProjectionMatrix() const
 {
-    Matrix translate = MatrixTranslate(-CameraWorldPosition.x, -CameraWorldPosition.y, 0);
+    // 1. Apply zoom scaling FIRST
+    Matrix S = MatrixScale(ZoomLevel, ZoomLevel, 1);
 
-    Matrix scale = MatrixScale(ZoomLevel, ZoomLevel, 1);
+    // 2. Then apply camera translation
+    Matrix T = MatrixTranslate(-CameraWorldPosition.x, -CameraWorldPosition.y, 0);
 
-    Matrix offset = MatrixTranslate(
+    // 3. Finally apply viewport centering
+    Matrix O = MatrixTranslate(
         DestinationRect.width / 2.0f,
         DestinationRect.height / 2.0f,
         0
     );
 
-    return MatrixMultiply(MatrixMultiply(translate, scale), offset);
+
+    return MatrixMultiply(MatrixMultiply(T, S), O);
+}
+
+Matrix Map::GetOpenGLProjectionMatrix() const
+{
+    // 1. Calculate visible area based on zoom
+    float visibleWidth = DestinationRect.width / ZoomLevel;
+    float visibleHeight = DestinationRect.height / ZoomLevel;
+
+    // 2. Define projection bounds in WORLD SPACE
+    float left = CameraWorldPosition.x - visibleWidth / 2.0f;
+    float right = CameraWorldPosition.x + visibleWidth / 2.0f;
+    float bottom = -CameraWorldPosition.y - visibleHeight / 2.0f;
+    float top = -CameraWorldPosition.y + visibleHeight / 2.0f;
+
+    // 3. Manual orthographic projection matrix for NDC
+    Matrix projection = { 0 };
+    projection.m0 = 2.0f / (right - left);      // X scale (world → NDC)
+    projection.m5 = 2.0f / (top - bottom);      // Y scale (world → NDC)
+    projection.m12 = -(right + left) / (right - left); // X translation
+    projection.m13 = -(top + bottom) / (top - bottom); // Y translation
+    projection.m15 = 1.0f;                      // Homogeneous coordinate
+
+    return projection;
 }
 
 void Map::LoadRessources()

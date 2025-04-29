@@ -15,19 +15,21 @@ void SandboxGameMode::BeginPlay()
 
 	m_World = m_ObjectFactory->NewObject<World>();
 
+	MapDisplay = m_ObjectFactory->NewObject<Map>(720, 720);
+	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,0 });
+
+	MapDisplay.TryLoad()->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
+		{
+			this->OnMapClickedEvent(Event);
+		});
+
 	WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 300, 10);
 	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
 
 	WaterfallDisplay2 = m_ObjectFactory->NewObject<Waterfall>(360, 300, 60);
 	WaterfallDisplay2.TryLoad()->SetPosition(Vector2{ 0,310 });
 
-	MapDisplay = m_ObjectFactory->NewObject<Map>(400, 400);
-	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,100 });
-
-	MapDisplay.TryLoad()->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
-		{
-			this->OnMapClickedEvent(Event);
-		});
+	
 
 	PlayerOne = m_ObjectFactory->NewObject<Player>();
 	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
