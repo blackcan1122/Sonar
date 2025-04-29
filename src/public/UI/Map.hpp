@@ -1,4 +1,4 @@
-#include "Base/Core.h"
+﻿#include "Base/Core.h"
 #include "Base/GameInstance.h"
 #include "UI/Display.hpp"
 #include "Events/AllPurposeEvent.h"
@@ -40,6 +40,8 @@ public:
 	Map(std::string Name, Vector2 Pos);
 	Map(int X, int Y);
 
+	~Map() override;
+
 	virtual void Tick(float DeltaTime) override;
 	virtual void Draw() override;
 	void Init();
@@ -57,8 +59,30 @@ public:
 private:
 
 	Matrix GetViewProjectionMatrix() const;
+	Matrix GetOpenGLProjectionMatrix() const;
 
 	void LoadRessources();
+
+	Shader shader;
+	int locMVP;
+	Matrix mvp = { 1,0,0,0,
+				   0,1,0,0,
+				   0,0,1,0,
+				   0,0,0,1};
+
+	float vertices[4] = 
+	{
+		-360.0f, -360.0f,
+		 360.0f, -360.f
+	};
+
+	unsigned int vaoAfrica, vboAfrica;
+	unsigned int vaoEurope, vboEurope;
+	unsigned int vaoNA, vboNA;
+	unsigned int vaoSA, vboSA;
+	unsigned int vaoAsia, vboAsia;
+	unsigned int vaoOceania, vboOceania;
+	unsigned int vaoAntarctica, vboAntarctica;
 
 	const std::string PlayerIconPath = (GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/PlayerMap.png");
 	const std::string ShipIconPath = (GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/ShipIcon.png");
@@ -93,16 +117,13 @@ private:
 
 	inline Vector2 ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters);
 
+	void LoadBuffer(unsigned int& VAO, unsigned int& VBO, const std::vector<float>* PointArray) const;
+	void RenderOpenGLBuffer(unsigned int& VAO, const std::vector<float>* PointArray) const;
+
 	// Like wtf think of a better name haha
 	Vector2 ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos);
 
 	std::shared_ptr<AllPurposeEvent> MapClickEvent;
 	std::shared_ptr<MapClickEventData> ClickDataPayload;
-
-	std::vector<Vector2> SAConverted;
-	std::vector<Vector2> NAConverted;
-	std::vector<Vector2> EUConverted;
-	std::vector<Vector2> AfricaConverted;
-	std::vector<Vector2> AsiaConverted;
 
 };

@@ -61,8 +61,7 @@ void Waterfall::Tick(float DeltaTime)
     {
         m_AccumulatedSignals.resize(m_CurrentAmbientLevel.size(), 0);
     }
-
-    #pragma omp parallel for
+#pragma omp parallel for num_threads(4)
     for (int i = 0; i < m_CurrentAmbientLevel.size(); ++i)
     {
         m_AccumulatedSignals[i] += m_CurrentAmbientLevel[i];

@@ -1,11 +1,10 @@
-#include "UI/Map.hpp"
+﻿#include "UI/Map.hpp"
 #include <cstdio>
 #include "Entities/Player.hpp"
 #include "Base/NavalTypedefs.h"
 #include <iostream>
 #include <format>
 #include "Base/GameMode.h"
-#include "omp.h"
 
 // Countries
 #include "CountryMap/NA.hpp"
@@ -13,6 +12,10 @@
 #include "CountryMap/Africa.hpp"
 #include "CountryMap/Asia.hpp"
 #include "CountryMap/Europe.hpp"
+#include "CountryMap/Oceania.hpp"
+#include "CountryMap/Antarctica.hpp"
+
+#include "external/glad.h"
 
 #define GridColor {5,18,36,255}
 
@@ -30,6 +33,16 @@ Map::Map(int X, int Y)
     Init();
 }
 
+Map::~Map()
+{
+    unsigned int vaos[] = { vaoAfrica, vaoEurope, vaoAsia, vaoNA, vaoOceania, vaoSA, vaoAntarctica };
+    unsigned int vbos[] = { vboAfrica, vboEurope, vboAsia, vboNA, vboOceania, vboSA, vboAntarctica };
+    glDeleteVertexArrays(7, vaos);
+    glDeleteBuffers(7, vbos);
+
+    Display::~Display();
+}
+
 void Map::Draw()
 {
     // Border and stuff outside of RenderTarget
@@ -39,16 +52,11 @@ void Map::Draw()
     BeginTextureMode(ActiveRenderTarget);
     ClearBackground(BLACK);
 
-    // Assume gridSpacing is in world units
     const float gridSpacing = ZoomLevel < 0.01f ? 500000.f : 1000.f;
 
-    // Determine the world-space bounds of the viewport.
-    // If you don't have ConvertScreenToWorldPos, you must compute the inverse of your view matrix.
-    // For example, if you have this function defined, you could do:
     Vector2 worldTopLeft = ConvertScreenPosToWorld({ 0, 0 });
     Vector2 worldBottomRight = ConvertScreenPosToWorld({ DestinationRect.width, DestinationRect.height });
 
-    // Calculate starting and ending grid positions (round down/up to the nearest grid spacing)
     float startX = std::floor(worldTopLeft.x / gridSpacing) * gridSpacing;
     float endX = std::ceil(worldBottomRight.x / gridSpacing) * gridSpacing;
     float startY = std::floor(worldTopLeft.y / gridSpacing) * gridSpacing;
@@ -57,11 +65,9 @@ void Map::Draw()
     // Draw vertical grid lines
     for (float x = startX; x <= endX; x += gridSpacing)
     {
-        // Create points in world space for the vertical line
         Vector2 worldStart = { x, startY };
         Vector2 worldEnd = { x, endY };
 
-        // Convert both endpoints to screen space
         Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
         Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
@@ -72,62 +78,36 @@ void Map::Draw()
     // Draw horizontal grid lines
     for (float y = startY; y <= endY; y += gridSpacing)
     {
-        // Create points in world space for the horizontal line
         Vector2 worldStart = { startX, y };
         Vector2 worldEnd = { endX, y };
 
-        // Convert both endpoints to screen space
         Vector2 screenStart = ConvertWorldToScreenPos(worldStart); 
         Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
         DrawLineEx(screenStart, screenEnd, 2, GridColor);
     }
 
-    // Map Borders <-- TODO: Optimize heavily and refactor just a POC
-    // currently takes around 2 ms
-    // TODO: Postpone this whole Map Drawing part to the GPU
 
-#pragma omp parallel for
-    for (int i = 0; i < africaOutline.size(); i++)
-    {
-        AfricaConverted[i] = ConvertWorldToScreenPos(africaOutline[i]);
-    }
+    // Custom OpenGL
 
-    DrawSplineLinear(&AfricaConverted[0], AfricaConverted.size(), 2, RED);
+    rlDrawRenderBatchActive();
 
-#pragma omp parallel for
-    for (int i = 0; i < SAOutline.size(); i++)
-    {
-        SAConverted[i] = ConvertWorldToScreenPos(SAOutline[i]);
-    }
+    Matrix viewProj = GetOpenGLProjectionMatrix();
+    glUseProgram(shader.id);
+    glUniformMatrix4fv(locMVP, 1, GL_TRUE, &viewProj.m0); // GL_TRUE = transpose for raylib's Matrix
 
-    DrawSplineLinear(&SAConverted[0], SAConverted.size(), 2, RED);
+    RenderOpenGLBuffer(vaoAfrica, &africaOutline);
+    RenderOpenGLBuffer(vaoEurope, &EuropeOutline);
+    RenderOpenGLBuffer(vaoAsia, &AsiaOutline);
+    RenderOpenGLBuffer(vaoNA, &NorthAmericaOutline);
+    RenderOpenGLBuffer(vaoSA, &SouthAmericaOutline);
+    RenderOpenGLBuffer(vaoOceania, &OceaniaOutline);
+    RenderOpenGLBuffer(vaoAntarctica, &AntarcticaOutline);
 
-#pragma omp parallel for
-    for (int i = 0; i < EuropeOutline.size(); i++)
-    {
-        EUConverted[i] = ConvertWorldToScreenPos(EuropeOutline[i]);
-    }
+    glBindVertexArray(0);
+    glUseProgram(rlGetShaderIdDefault());
 
-    DrawSplineLinear(&EUConverted[0], EUConverted.size(), 2, RED);
-
-
-#pragma omp parallel for
-    for (int i = 0; i < NAOutline.size(); i++)
-    {
-        NAConverted[i] = ConvertWorldToScreenPos(NAOutline[i]);
-    }
-
-    DrawSplineLinear(&NAConverted[0], NAConverted.size(), 2, RED);
-
-#pragma omp parallel for
-    for (int i = 0; i < AsiaOutline.size(); i++)
-    {
-        AsiaConverted[i] = ConvertWorldToScreenPos(AsiaOutline[i]);
-    }
-
-    DrawSplineLinear(&AsiaConverted[0], AsiaConverted.size(), 2, RED);
-
+    // Raylib Drawing
 
     for (size_t i = 0; i < ObjectsToDraw.size(); i++)
     {
@@ -151,11 +131,9 @@ void Map::Draw()
         Vector2 screenPos = ConvertWorldToScreenPos(Object.lock()->GetEntityLocation());
         Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(GetMousePosition());
 
-        // Calculate scaled texture dimensions
         float scaledWidth = PlayerIcon.width * std::fmax(ZoomLevel, 0.035f);
         float scaledHeight = PlayerIcon.height * std::fmax(ZoomLevel, 0.035f);
 
-        // Define the destination rectangle (centered at screenPos)
         Rectangle destRec = {
             screenPos.x,
             screenPos.y,
@@ -163,7 +141,6 @@ void Map::Draw()
             scaledHeight
         };
 
-        // Define the rotation origin (center of the sprite)
         Vector2 origin = { scaledWidth / 2, scaledHeight / 2 };
 
         if (CheckCollisionPointCircle(MousePos, screenPos, PlayerIcon.width * ZoomLevel / 2))
@@ -213,8 +190,8 @@ void Map::Draw()
                     
                     DrawTexturePro(
                         PlayerIcon,
-                        { 0, 0, (float)PlayerIcon.width, (float)PlayerIcon.height }, // Source rectangle (entire texture)
-                        destRec,                                                      // Destination rectangle (position/size)
+                        { 0, 0, (float)PlayerIcon.width, (float)PlayerIcon.height }, // Source rectangle
+                        destRec,                                                      // Destination rectangle
                         origin,                                                       // Rotate around the center
                         Object.lock()->GetEntityRotation(),                           // Rotation angle
                         ColorLookupState[static_cast<int>(State)]                     // Tint color
@@ -222,7 +199,7 @@ void Map::Draw()
                 }
                 break;
             }
-                                  // Handle Ship type similarly
+                                  // Handle Ship type
         }
     }
 
@@ -233,6 +210,8 @@ void Map::Draw()
     IndicesPendingKill.clear();
     ObjectsToDraw.shrink_to_fit();
 
+
+
     EndTextureMode();
 
     // Overlay
@@ -240,7 +219,6 @@ void Map::Draw()
 
 void Map::Tick(float DeltaTime)
 {
-    // Handle input (same as before)
     if (CheckCollisionPointRec(GetMousePosition(), DestinationRect)) 
     {
         int Multiply = 100.f;
@@ -285,13 +263,17 @@ void Map::Tick(float DeltaTime)
 
 void Map::Init()
 {
-    SAConverted.resize(SAOutline.size());
-    NAConverted.resize(NAOutline.size());
-    EUConverted.resize(EuropeOutline.size());
-    AfricaConverted.resize(africaOutline.size());
-    AsiaConverted.resize(AsiaOutline.size());
-
-
+    // Load shader through raylib
+    shader = LoadShader("src/shaders/basic.vs", "src/shaders/basic.fs");
+    locMVP = glGetUniformLocation(shader.id, "uMVP");
+    
+    LoadBuffer(vaoAfrica, vboAfrica, &africaOutline);
+    LoadBuffer(vaoEurope, vboEurope, &EuropeOutline);
+    LoadBuffer(vaoAsia, vboAsia, &AsiaOutline);
+    LoadBuffer(vaoNA, vboNA, &NorthAmericaOutline);
+    LoadBuffer(vaoSA, vboSA, &SouthAmericaOutline);
+    LoadBuffer(vaoOceania, vboOceania, &OceaniaOutline);
+    LoadBuffer(vaoAntarctica, vboAntarctica, &AntarcticaOutline);
 
     try
     {
@@ -349,7 +331,6 @@ Vector2 Map::ConvertScreenPosToWorld(Vector2 VectorToConver) const
     // Invert it so we get the transformation from screen -> world
     Matrix invViewProj = MatrixInvert(viewProj);
 
-    // Transform the screen position (using z=0) into world space
     Vector3 transformed = Vector3Transform({ VectorToConver.x, VectorToConver.y, 0 }, invViewProj);
     return { transformed.x, transformed.y };
 }
@@ -359,19 +340,66 @@ inline Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, 
     return { SizeInMeters.x / UsedTexture->width, SizeInMeters.y / UsedTexture->height };
 }
 
+void Map::LoadBuffer(unsigned int& VAO, unsigned int& VBO, const std::vector<float>* PointArray) const
+{
+    // VBO and VAO setup
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    // Upload vertex data
+    glBufferData(GL_ARRAY_BUFFER,
+        PointArray->size() * sizeof((*PointArray)[0]),
+        PointArray->data(),
+        GL_STATIC_DRAW);
+
+    // Set vertex attribute
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(0);
+}
+
+void Map::RenderOpenGLBuffer(unsigned int& VAO, const std::vector<float>* PointArray) const
+{
+    glBindVertexArray(VAO);
+    GLsizei numVerts = static_cast<GLsizei>(PointArray->size() / 2);
+    glDrawArrays(GL_LINE_LOOP, 0, numVerts);
+}
+
 Matrix Map::GetViewProjectionMatrix() const
 {
-    Matrix translate = MatrixTranslate(-CameraWorldPosition.x, -CameraWorldPosition.y, 0);
-
-    Matrix scale = MatrixScale(ZoomLevel, ZoomLevel, 1);
-
-    Matrix offset = MatrixTranslate(
+    Matrix S = MatrixScale(ZoomLevel, ZoomLevel, 1);
+    Matrix T = MatrixTranslate(-CameraWorldPosition.x, -CameraWorldPosition.y, 0);
+    Matrix O = MatrixTranslate(
         DestinationRect.width / 2.0f,
         DestinationRect.height / 2.0f,
         0
     );
 
-    return MatrixMultiply(MatrixMultiply(translate, scale), offset);
+    return MatrixMultiply(MatrixMultiply(T, S), O);
+}
+
+Matrix Map::GetOpenGLProjectionMatrix() const
+{
+    float visibleWidth = DestinationRect.width / ZoomLevel;
+    float visibleHeight = DestinationRect.height / ZoomLevel;
+
+    // Bounds
+    float left = CameraWorldPosition.x - visibleWidth / 2.0f;
+    float right = CameraWorldPosition.x + visibleWidth / 2.0f;
+    float bottom = -CameraWorldPosition.y - visibleHeight / 2.0f;
+    float top = -CameraWorldPosition.y + visibleHeight / 2.0f;
+
+    // OpenGL Matrix Projection
+    Matrix projection = { 0 };
+    projection.m0 = 2.0f / (right - left); // X scale
+    projection.m5 = 2.0f / (top - bottom); // Y scale
+    projection.m12 = -(right + left) / (right - left); // X translation
+    projection.m13 = -(top + bottom) / (top - bottom); // Y translation
+    projection.m15 = 1.0f;
+
+    return projection;
 }
 
 void Map::LoadRessources()
