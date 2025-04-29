@@ -122,6 +122,7 @@ void Map::Draw()
         NAConverted[i] = ConvertWorldToScreenPos(NAOutline[i]);
     }
 
+
     DrawSplineLinear(&NAConverted[0], NAConverted.size(), 2, RED);
 
 #pragma omp parallel for
