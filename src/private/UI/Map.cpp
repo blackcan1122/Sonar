@@ -5,7 +5,6 @@
 #include <iostream>
 #include <format>
 #include "Base/GameMode.h"
-#include "omp.h"
 
 // Countries
 #include "CountryMap/NA.hpp"
@@ -13,6 +12,8 @@
 #include "CountryMap/Africa.hpp"
 #include "CountryMap/Asia.hpp"
 #include "CountryMap/Europe.hpp"
+#include "CountryMap/Oceania.hpp"
+#include "CountryMap/Antarctica.hpp"
 
 #include "external/glad.h"
 
@@ -87,52 +88,27 @@ void Map::Draw()
         DrawLineEx(screenStart, screenEnd, 2, GridColor);
     }
 
-    // Map Borders <-- TODO: Optimize heavily and refactor just a POC
-    // currently takes around 2 ms
-    // TODO: Postpone this whole Map Drawing part to the GPU
 
-#pragma omp parallel for
-    for (int i = 0; i < africaOutline.size(); i++)
-    {
-        AfricaConverted[i] = ConvertWorldToScreenPos(africaOutline[i]);
-    }
+    // Custom OpenGL
 
-    DrawSplineLinear(&AfricaConverted[0], AfricaConverted.size(), 2, RED);
+    rlDrawRenderBatchActive();
 
-#pragma omp parallel for
-    for (int i = 0; i < SAOutline.size(); i++)
-    {
-        SAConverted[i] = ConvertWorldToScreenPos(SAOutline[i]);
-    }
+    Matrix viewProj = GetOpenGLProjectionMatrix();
+    glUseProgram(shader.id);
+    glUniformMatrix4fv(locMVP, 1, GL_TRUE, &viewProj.m0); // GL_TRUE = transpose for raylib's Matrix
 
-    DrawSplineLinear(&SAConverted[0], SAConverted.size(), 2, RED);
+    RenderOpenGLBuffer(vaoAfrica, &africaOutline);
+    RenderOpenGLBuffer(vaoEurope, &EuropeOutline);
+    RenderOpenGLBuffer(vaoAsia, &AsiaOutline);
+    RenderOpenGLBuffer(vaoNA, &NorthAmericaOutline);
+    RenderOpenGLBuffer(vaoSA, &SouthAmericaOutline);
+    RenderOpenGLBuffer(vaoOceania, &OceaniaOutline);
+    RenderOpenGLBuffer(vaoAntarctica, &AntarcticaOutline);
 
-#pragma omp parallel for
-    for (int i = 0; i < EuropeOutline.size(); i++)
-    {
-        EUConverted[i] = ConvertWorldToScreenPos(EuropeOutline[i]);
-    }
+    glBindVertexArray(0);
+    glUseProgram(rlGetShaderIdDefault());
 
-    DrawSplineLinear(&EUConverted[0], EUConverted.size(), 2, RED);
-
-
-#pragma omp parallel for
-    for (int i = 0; i < NAOutline.size(); i++)
-    {
-        NAConverted[i] = ConvertWorldToScreenPos(NAOutline[i]);
-    }
-
-
-    DrawSplineLinear(&NAConverted[0], NAConverted.size(), 2, RED);
-
-#pragma omp parallel for
-    for (int i = 0; i < AsiaOutline.size(); i++)
-    {
-        AsiaConverted[i] = ConvertWorldToScreenPos(AsiaOutline[i]);
-    }
-
-    DrawSplineLinear(&AsiaConverted[0], AsiaConverted.size(), 2, RED);
-
+    // Raylib Drawing
 
     for (size_t i = 0; i < ObjectsToDraw.size(); i++)
     {
@@ -238,17 +214,7 @@ void Map::Draw()
     IndicesPendingKill.clear();
     ObjectsToDraw.shrink_to_fit();
 
-    //// Flush raylib's batch system FIRST
-    rlDrawRenderBatchActive();
 
-    Matrix viewProj = GetOpenGLProjectionMatrix();
-    // OpenGL drawing
-    glUseProgram(shader.id);
-    glUniformMatrix4fv(locMVP, 1, GL_TRUE, &viewProj.m0); // GL_TRUE = transpose for raylib's Matrix
-
-    glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glBindVertexArray(0);
 
     EndTextureMode();
 
@@ -302,29 +268,17 @@ void Map::Tick(float DeltaTime)
 
 void Map::Init()
 {
-    SAConverted.resize(SAOutline.size());
-    NAConverted.resize(NAOutline.size());
-    EUConverted.resize(EuropeOutline.size());
-    AfricaConverted.resize(africaOutline.size());
-    AsiaConverted.resize(AsiaOutline.size());
-
     // Load shader through raylib
     shader = LoadShader("src/shaders/basic.vs", "src/shaders/basic.fs");
     locMVP = glGetUniformLocation(shader.id, "uMVP");
-
-    // OpenGL Core Profile Setup
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-    // Upload vertex data
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Set vertex attribute (matches layout(location=0) in VS)
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    
+    LoadBuffer(vaoAfrica, vboAfrica, &africaOutline);
+    LoadBuffer(vaoEurope, vboEurope, &EuropeOutline);
+    LoadBuffer(vaoAsia, vboAsia, &AsiaOutline);
+    LoadBuffer(vaoNA, vboNA, &NorthAmericaOutline);
+    LoadBuffer(vaoSA, vboSA, &SouthAmericaOutline);
+    LoadBuffer(vaoOceania, vboOceania, &OceaniaOutline);
+    LoadBuffer(vaoAntarctica, vboAntarctica, &AntarcticaOutline);
 
     try
     {
@@ -390,6 +344,32 @@ Vector2 Map::ConvertScreenPosToWorld(Vector2 VectorToConver) const
 inline Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters)
 {
     return { SizeInMeters.x / UsedTexture->width, SizeInMeters.y / UsedTexture->height };
+}
+
+void Map::LoadBuffer(unsigned int& VAO, unsigned int& VBO, std::vector<float>* PointArray)
+{
+    // OpenGL Core Profile Setup
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    // Upload vertex data
+    glBufferData(GL_ARRAY_BUFFER,
+        PointArray->size() * sizeof((*PointArray)[0]),
+        PointArray->data(),
+        GL_STATIC_DRAW);
+    // Set vertex attribute (matches layout(location=0) in VS)
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(0);
+}
+
+void Map::RenderOpenGLBuffer(unsigned int& VAO, std::vector<float>* PointArray)
+{
+    glBindVertexArray(VAO);
+    GLsizei numVerts = static_cast<GLsizei>(PointArray->size() / 2);
+    glDrawArrays(GL_LINE_LOOP, 0, numVerts);
 }
 
 Matrix Map::GetViewProjectionMatrix() const

@@ -68,14 +68,19 @@ private:
 				   0,0,1,0,
 				   0,0,0,1};
 
-	float vertices[6] = 
+	float vertices[4] = 
 	{
 		-360.0f, -360.0f,
-		 360.0f, -360.f,
-		 0.0f,   0.0f
+		 360.0f, -360.f
 	};
 
-	unsigned int vao, vbo;
+	unsigned int vaoAfrica, vboAfrica;
+	unsigned int vaoEurope, vboEurope;
+	unsigned int vaoNA, vboNA;
+	unsigned int vaoSA, vboSA;
+	unsigned int vaoAsia, vboAsia;
+	unsigned int vaoOceania, vboOceania;
+	unsigned int vaoAntarctica, vboAntarctica;
 
 	const std::string PlayerIconPath = (GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/PlayerMap.png");
 	const std::string ShipIconPath = (GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/ShipIcon.png");
@@ -110,16 +115,13 @@ private:
 
 	inline Vector2 ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters);
 
+	void LoadBuffer(unsigned int& VAO, unsigned int& VBO, std::vector<float>* PointArray);
+	void RenderOpenGLBuffer(unsigned int& VAO, std::vector<float>* PointArray);
+
 	// Like wtf think of a better name haha
 	Vector2 ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos);
 
 	std::shared_ptr<AllPurposeEvent> MapClickEvent;
 	std::shared_ptr<MapClickEventData> ClickDataPayload;
-
-	std::vector<Vector2> SAConverted;
-	std::vector<Vector2> NAConverted;
-	std::vector<Vector2> EUConverted;
-	std::vector<Vector2> AfricaConverted;
-	std::vector<Vector2> AsiaConverted;
 
 };
