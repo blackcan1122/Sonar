@@ -40,6 +40,8 @@ public:
 	Map(std::string Name, Vector2 Pos);
 	Map(int X, int Y);
 
+	~Map() override;
+
 	virtual void Tick(float DeltaTime) override;
 	virtual void Draw() override;
 	void Init();
@@ -115,8 +117,8 @@ private:
 
 	inline Vector2 ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters);
 
-	void LoadBuffer(unsigned int& VAO, unsigned int& VBO, std::vector<float>* PointArray);
-	void RenderOpenGLBuffer(unsigned int& VAO, std::vector<float>* PointArray);
+	void LoadBuffer(unsigned int& VAO, unsigned int& VBO, const std::vector<float>* PointArray) const;
+	void RenderOpenGLBuffer(unsigned int& VAO, const std::vector<float>* PointArray) const;
 
 	// Like wtf think of a better name haha
 	Vector2 ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos);

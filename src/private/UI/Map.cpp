@@ -33,6 +33,16 @@ Map::Map(int X, int Y)
     Init();
 }
 
+Map::~Map()
+{
+    unsigned int vaos[] = { vaoAfrica, vaoEurope, vaoAsia, vaoNA, vaoOceania, vaoSA, vaoAntarctica };
+    unsigned int vbos[] = { vboAfrica, vboEurope, vboAsia, vboNA, vboOceania, vboSA, vboAntarctica };
+    glDeleteVertexArrays(7, vaos);
+    glDeleteBuffers(7, vbos);
+
+    Display::~Display();
+}
+
 void Map::Draw()
 {
     // Border and stuff outside of RenderTarget
@@ -346,7 +356,7 @@ inline Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, 
     return { SizeInMeters.x / UsedTexture->width, SizeInMeters.y / UsedTexture->height };
 }
 
-void Map::LoadBuffer(unsigned int& VAO, unsigned int& VBO, std::vector<float>* PointArray)
+void Map::LoadBuffer(unsigned int& VAO, unsigned int& VBO, const std::vector<float>* PointArray) const
 {
     // OpenGL Core Profile Setup
     glGenVertexArrays(1, &VAO);
@@ -365,7 +375,7 @@ void Map::LoadBuffer(unsigned int& VAO, unsigned int& VBO, std::vector<float>* P
     glEnableVertexAttribArray(0);
 }
 
-void Map::RenderOpenGLBuffer(unsigned int& VAO, std::vector<float>* PointArray)
+void Map::RenderOpenGLBuffer(unsigned int& VAO, const std::vector<float>* PointArray) const
 {
     glBindVertexArray(VAO);
     GLsizei numVerts = static_cast<GLsizei>(PointArray->size() / 2);

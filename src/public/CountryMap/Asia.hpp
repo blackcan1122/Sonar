@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-std::vector<float>AsiaOutline = {
+const inline std::vector<float>AsiaOutline = {
     5898276.2f, 1851046.8f,   // lon=52.9849, lat=16.6282
     5813291.4f, 1749614.9f,   // lon=52.2214, lat=15.7170
     5736378.4f, 1705070.6f,   // lon=51.5305, lat=15.3168
