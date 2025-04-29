@@ -52,18 +52,11 @@ void Map::Draw()
     BeginTextureMode(ActiveRenderTarget);
     ClearBackground(BLACK);
 
-   
-
-    // Assume gridSpacing is in world units
     const float gridSpacing = ZoomLevel < 0.01f ? 500000.f : 1000.f;
 
-    // Determine the world-space bounds of the viewport.
-    // If you don't have ConvertScreenToWorldPos, you must compute the inverse of your view matrix.
-    // For example, if you have this function defined, you could do:
     Vector2 worldTopLeft = ConvertScreenPosToWorld({ 0, 0 });
     Vector2 worldBottomRight = ConvertScreenPosToWorld({ DestinationRect.width, DestinationRect.height });
 
-    // Calculate starting and ending grid positions (round down/up to the nearest grid spacing)
     float startX = std::floor(worldTopLeft.x / gridSpacing) * gridSpacing;
     float endX = std::ceil(worldBottomRight.x / gridSpacing) * gridSpacing;
     float startY = std::floor(worldTopLeft.y / gridSpacing) * gridSpacing;
@@ -72,11 +65,9 @@ void Map::Draw()
     // Draw vertical grid lines
     for (float x = startX; x <= endX; x += gridSpacing)
     {
-        // Create points in world space for the vertical line
         Vector2 worldStart = { x, startY };
         Vector2 worldEnd = { x, endY };
 
-        // Convert both endpoints to screen space
         Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
         Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
@@ -87,11 +78,9 @@ void Map::Draw()
     // Draw horizontal grid lines
     for (float y = startY; y <= endY; y += gridSpacing)
     {
-        // Create points in world space for the horizontal line
         Vector2 worldStart = { startX, y };
         Vector2 worldEnd = { endX, y };
 
-        // Convert both endpoints to screen space
         Vector2 screenStart = ConvertWorldToScreenPos(worldStart); 
         Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
@@ -142,11 +131,9 @@ void Map::Draw()
         Vector2 screenPos = ConvertWorldToScreenPos(Object.lock()->GetEntityLocation());
         Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(GetMousePosition());
 
-        // Calculate scaled texture dimensions
         float scaledWidth = PlayerIcon.width * std::fmax(ZoomLevel, 0.035f);
         float scaledHeight = PlayerIcon.height * std::fmax(ZoomLevel, 0.035f);
 
-        // Define the destination rectangle (centered at screenPos)
         Rectangle destRec = {
             screenPos.x,
             screenPos.y,
@@ -154,7 +141,6 @@ void Map::Draw()
             scaledHeight
         };
 
-        // Define the rotation origin (center of the sprite)
         Vector2 origin = { scaledWidth / 2, scaledHeight / 2 };
 
         if (CheckCollisionPointCircle(MousePos, screenPos, PlayerIcon.width * ZoomLevel / 2))
@@ -204,8 +190,8 @@ void Map::Draw()
                     
                     DrawTexturePro(
                         PlayerIcon,
-                        { 0, 0, (float)PlayerIcon.width, (float)PlayerIcon.height }, // Source rectangle (entire texture)
-                        destRec,                                                      // Destination rectangle (position/size)
+                        { 0, 0, (float)PlayerIcon.width, (float)PlayerIcon.height }, // Source rectangle
+                        destRec,                                                      // Destination rectangle
                         origin,                                                       // Rotate around the center
                         Object.lock()->GetEntityRotation(),                           // Rotation angle
                         ColorLookupState[static_cast<int>(State)]                     // Tint color
@@ -213,7 +199,7 @@ void Map::Draw()
                 }
                 break;
             }
-                                  // Handle Ship type similarly
+                                  // Handle Ship type
         }
     }
 
@@ -233,7 +219,6 @@ void Map::Draw()
 
 void Map::Tick(float DeltaTime)
 {
-    // Handle input (same as before)
     if (CheckCollisionPointRec(GetMousePosition(), DestinationRect)) 
     {
         int Multiply = 100.f;
@@ -346,7 +331,6 @@ Vector2 Map::ConvertScreenPosToWorld(Vector2 VectorToConver) const
     // Invert it so we get the transformation from screen -> world
     Matrix invViewProj = MatrixInvert(viewProj);
 
-    // Transform the screen position (using z=0) into world space
     Vector3 transformed = Vector3Transform({ VectorToConver.x, VectorToConver.y, 0 }, invViewProj);
     return { transformed.x, transformed.y };
 }
@@ -358,7 +342,7 @@ inline Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, 
 
 void Map::LoadBuffer(unsigned int& VAO, unsigned int& VBO, const std::vector<float>* PointArray) const
 {
-    // OpenGL Core Profile Setup
+    // VBO and VAO setup
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -370,7 +354,8 @@ void Map::LoadBuffer(unsigned int& VAO, unsigned int& VBO, const std::vector<flo
         PointArray->size() * sizeof((*PointArray)[0]),
         PointArray->data(),
         GL_STATIC_DRAW);
-    // Set vertex attribute (matches layout(location=0) in VS)
+
+    // Set vertex attribute
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(0);
 }
@@ -384,42 +369,35 @@ void Map::RenderOpenGLBuffer(unsigned int& VAO, const std::vector<float>* PointA
 
 Matrix Map::GetViewProjectionMatrix() const
 {
-    // 1. Apply zoom scaling FIRST
     Matrix S = MatrixScale(ZoomLevel, ZoomLevel, 1);
-
-    // 2. Then apply camera translation
     Matrix T = MatrixTranslate(-CameraWorldPosition.x, -CameraWorldPosition.y, 0);
-
-    // 3. Finally apply viewport centering
     Matrix O = MatrixTranslate(
         DestinationRect.width / 2.0f,
         DestinationRect.height / 2.0f,
         0
     );
 
-
     return MatrixMultiply(MatrixMultiply(T, S), O);
 }
 
 Matrix Map::GetOpenGLProjectionMatrix() const
 {
-    // 1. Calculate visible area based on zoom
     float visibleWidth = DestinationRect.width / ZoomLevel;
     float visibleHeight = DestinationRect.height / ZoomLevel;
 
-    // 2. Define projection bounds in WORLD SPACE
+    // Bounds
     float left = CameraWorldPosition.x - visibleWidth / 2.0f;
     float right = CameraWorldPosition.x + visibleWidth / 2.0f;
     float bottom = -CameraWorldPosition.y - visibleHeight / 2.0f;
     float top = -CameraWorldPosition.y + visibleHeight / 2.0f;
 
-    // 3. Manual orthographic projection matrix for NDC
+    // OpenGL Matrix Projection
     Matrix projection = { 0 };
-    projection.m0 = 2.0f / (right - left);      // X scale (world → NDC)
-    projection.m5 = 2.0f / (top - bottom);      // Y scale (world → NDC)
+    projection.m0 = 2.0f / (right - left); // X scale
+    projection.m5 = 2.0f / (top - bottom); // Y scale
     projection.m12 = -(right + left) / (right - left); // X translation
     projection.m13 = -(top + bottom) / (top - bottom); // Y translation
-    projection.m15 = 1.0f;                      // Homogeneous coordinate
+    projection.m15 = 1.0f;
 
     return projection;
 }
