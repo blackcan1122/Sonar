@@ -11,7 +11,7 @@ newoption
 		{ "openges2", "OpenGL ES2"},
 		{ "openges3", "OpenGL ES3"}
 	},
-	default = "opengl43"
+	default = "opengl33"
 }
 
 function download_progress(total, current)
@@ -150,6 +150,15 @@ workspace (workspaceName)
     configurations { "Debug", "Release", "Debug_RGFW", "Release_RGFW"}
     platforms { "x64", "x86", "ARM64"}
 
+    files {
+        "../src/shaders/**.vs",
+        "../src/shaders/**.fs"
+    }
+
+    filter { "files:**.vs", "files:**.fs", "action:vs*" }
+      buildaction           "Content"
+    filter {}  -- clear filter
+
     defaultplatform ("x64")
 
     -- Apply global settings for Linux
@@ -258,7 +267,9 @@ if (downloadRaylib) then
 
         postbuildcommands {
             -- Cross-platform way to copy entire folder recursively
-            '{COPYDIR} "../../resources/" "%{cfg.targetdir}/resources"'
+            '{COPYDIR} "../../resources/" "%{cfg.targetdir}/resources"',
+            '{COPYDIR} "../../src/shaders" "%{cfg.targetdir}/src/shaders"'
+
         }
 		
 

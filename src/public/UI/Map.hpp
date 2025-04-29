@@ -1,4 +1,4 @@
-#include "Base/Core.h"
+﻿#include "Base/Core.h"
 #include "Base/GameInstance.h"
 #include "UI/Display.hpp"
 #include "Events/AllPurposeEvent.h"
@@ -57,8 +57,25 @@ public:
 private:
 
 	Matrix GetViewProjectionMatrix() const;
+	Matrix GetOpenGLProjectionMatrix() const;
 
 	void LoadRessources();
+
+	Shader shader;
+	int locMVP;
+	Matrix mvp = { 1,0,0,0,
+				   0,1,0,0,
+				   0,0,1,0,
+				   0,0,0,1};
+
+	float vertices[6] = 
+	{
+		-360.0f, -360.0f,
+		 360.0f, -360.f,
+		 0.0f,   0.0f
+	};
+
+	unsigned int vao, vbo;
 
 	const std::string PlayerIconPath = (GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/PlayerMap.png");
 	const std::string ShipIconPath = (GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/ShipIcon.png");
