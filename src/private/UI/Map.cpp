@@ -7,13 +7,14 @@
 #include "Base/GameMode.h"
 
 // Countries
-#include "CountryMap/NA.hpp"
-#include "CountryMap/SA.hpp"
-#include "CountryMap/Africa.hpp"
-#include "CountryMap/Asia.hpp"
-#include "CountryMap/Europe.hpp"
-#include "CountryMap/Oceania.hpp"
-#include "CountryMap/Antarctica.hpp"
+//#include "CountryMap/NA.hpp"
+//#include "CountryMap/SA.hpp"
+//#include "CountryMap/Africa.hpp"
+//#include "CountryMap/Asia.hpp"
+//#include "CountryMap/Europe.hpp"
+//#include "CountryMap/Oceania.hpp"
+//#include "CountryMap/Antarctica.hpp"
+#include "CountryMap/continent_outline.h"
 
 #include "external/glad.h"
 
@@ -96,13 +97,14 @@ void Map::Draw()
     glUseProgram(shader.id);
     glUniformMatrix4fv(locMVP, 1, GL_TRUE, &viewProj.m0); // GL_TRUE = transpose for raylib's Matrix
 
-    RenderOpenGLBuffer(vaoAfrica, &africaOutline);
-    RenderOpenGLBuffer(vaoEurope, &EuropeOutline);
-    RenderOpenGLBuffer(vaoAsia, &AsiaOutline);
-    RenderOpenGLBuffer(vaoNA, &NorthAmericaOutline);
-    RenderOpenGLBuffer(vaoSA, &SouthAmericaOutline);
-    RenderOpenGLBuffer(vaoOceania, &OceaniaOutline);
-    RenderOpenGLBuffer(vaoAntarctica, &AntarcticaOutline);
+    RenderOpenGLBuffer(vaoAfrica, &AfricaVertices, &AfricaOffsets, &AfricaCounts);
+    RenderOpenGLBuffer(vaoEurope, &EuropeVertices, &EuropeOffsets, &EuropeCounts);
+    RenderOpenGLBuffer(vaoAsia, &AsiaVertices, &AsiaOffsets, &AsiaCounts);
+    RenderOpenGLBuffer(vaoNA, &NorthAmericaVertices, &NorthAmericaOffsets, &NorthAmericaCounts);
+    RenderOpenGLBuffer(vaoSA, &SouthAmericaVertices, &SouthAmericaOffsets, &SouthAmericaCounts);
+    RenderOpenGLBuffer(vaoOceania, &OceaniaVertices, &OceaniaOffsets, &OceaniaCounts);
+    RenderOpenGLBuffer(vaoAntarctica, &AntarcticaVertices, &AntarcticaOffsets, &AntarcticaCounts);
+    RenderOpenGLBuffer(vaoSevenSeas, &SevenseasVertices, &SevenseasOffsets, &SevenseasCounts);
 
     glBindVertexArray(0);
     glUseProgram(rlGetShaderIdDefault());
@@ -267,13 +269,14 @@ void Map::Init()
     shader = LoadShader("src/shaders/basic.vs", "src/shaders/basic.fs");
     locMVP = glGetUniformLocation(shader.id, "uMVP");
     
-    LoadBuffer(vaoAfrica, vboAfrica, &africaOutline);
-    LoadBuffer(vaoEurope, vboEurope, &EuropeOutline);
-    LoadBuffer(vaoAsia, vboAsia, &AsiaOutline);
-    LoadBuffer(vaoNA, vboNA, &NorthAmericaOutline);
-    LoadBuffer(vaoSA, vboSA, &SouthAmericaOutline);
-    LoadBuffer(vaoOceania, vboOceania, &OceaniaOutline);
-    LoadBuffer(vaoAntarctica, vboAntarctica, &AntarcticaOutline);
+    LoadBuffer(vaoAfrica, vboAfrica, &AfricaVertices);
+    LoadBuffer(vaoEurope, vboEurope, &EuropeVertices);
+    LoadBuffer(vaoAsia, vboAsia, &AsiaVertices);
+    LoadBuffer(vaoNA, vboNA, &NorthAmericaVertices);
+    LoadBuffer(vaoSA, vboSA, &SouthAmericaVertices);
+    LoadBuffer(vaoOceania, vboOceania, &OceaniaVertices);
+    LoadBuffer(vaoAntarctica, vboAntarctica, &AntarcticaVertices);
+    LoadBuffer(vaoSevenSeas, vboSevenSeas, &SevenseasVertices);
 
     try
     {
@@ -360,11 +363,22 @@ void Map::LoadBuffer(unsigned int& VAO, unsigned int& VBO, const std::vector<flo
     glEnableVertexAttribArray(0);
 }
 
-void Map::RenderOpenGLBuffer(unsigned int& VAO, const std::vector<float>* PointArray) const
+void Map::RenderOpenGLBuffer(unsigned int& VAO, const std::vector<float>* PointArray, const std::vector<unsigned int>* Offset, const std::vector<unsigned int>* Counts) const
 {
+
+
+    // Convert your std::vector<unsigned int> into the proper GL types:
+    GLsizei drawCount = GLsizei(Counts->size());
+    std::vector<GLint>   firsts(Offset->begin(), Offset->end());
+    std::vector<GLsizei> counts(Counts->begin(), Counts->end());
+
     glBindVertexArray(VAO);
-    GLsizei numVerts = static_cast<GLsizei>(PointArray->size() / 2);
-    glDrawArrays(GL_LINE_LOOP, 0, numVerts);
+    glMultiDrawArrays(
+        GL_LINE_LOOP,
+        firsts.data(),    // array of starting vertex indices
+        counts.data(),    // array of vertex counts per loop
+        drawCount         // number of loops
+    );
 }
 
 Matrix Map::GetViewProjectionMatrix() const

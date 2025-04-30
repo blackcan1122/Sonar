@@ -248,7 +248,7 @@ if (downloadRaylib) then
             links {"raylib.lib", "spdlog.lib"}
             libdirs { "../bin/%{cfg.buildcfg}" }  -- Tell linker where to find .lib files
             characterset ("Unicode")
-            buildoptions { "/Zc:__cplusplus", "/utf-8", "/openmp" }
+            buildoptions { "/Zc:__cplusplus", "/utf-8", "/openmp", "/bigobj" }
 
         filter "system:windows"
             defines{"_WIN32"}
