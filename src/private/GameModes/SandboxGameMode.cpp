@@ -15,8 +15,8 @@ void SandboxGameMode::BeginPlay()
 
 	m_World = m_ObjectFactory->NewObject<World>();
 
-	MapDisplay = m_ObjectFactory->NewObject<Map>(720, 720);
-	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,0 });
+	MapDisplay = m_ObjectFactory->NewObject<Map>(400, 400);
+	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,150 });
 
 	MapDisplay.TryLoad()->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
 		{
@@ -83,11 +83,7 @@ void SandboxGameMode::Update()
 
 		if (IsKeyDown(KEY_W))
 		{
-
-			if (auto tempPlayer = FocusedUnit.Cast<BaseSubmarine>().TryLoad())
-			{
-				tempPlayer->SetSpeed(10);
-			}
+			MapDisplay.TryLoad()->SetPosition({ 600,250 });
 		}
 
 
