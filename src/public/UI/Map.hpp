@@ -40,7 +40,7 @@ public:
 	Map(std::string Name, Vector2 Pos);
 	Map(int X, int Y);
 
-	~Map() override;
+	virtual ~Map() override;
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void Draw() override;
@@ -51,9 +51,13 @@ public:
 	std::shared_ptr<EventDispatcher> MapEventDispatcher;
 
 
+
 	bool IsDragging = false;
 
 	Vector2 LastMousePosition = { 0,0 };
+
+protected:
+	virtual void OnKeyStroke(KeyboardKey Key, Vector2 MousePos) override;
 
 
 private:
@@ -69,12 +73,6 @@ private:
 				   0,1,0,0,
 				   0,0,1,0,
 				   0,0,0,1};
-
-	float vertices[4] = 
-	{
-		-360.0f, -360.0f,
-		 360.0f, -360.f
-	};
 
 	unsigned int vaoAfrica, vboAfrica;
 	unsigned int vaoEurope, vboEurope;
@@ -101,11 +99,11 @@ private:
 	Color ColorLookupInteractivity[3] = { BLANK, YELLOW, PURPLE};
 
 
-	std::vector<std::pair<std::weak_ptr<IObject>, std::pair<ObjectType, ObjectState>>> ObjectsToDraw;
+	std::vector<std::pair<std::weak_ptr<Entity>, std::pair<ObjectType, ObjectState>>> ObjectsToDraw;
 	std::shared_ptr<Player> TrackedPlayer = nullptr;
 
 	std::vector<size_t> IndicesPendingKill;
-	double ZoomLevel = 1.f;
+	long double ZoomLevel = 1.f;
 
 	Vector2 MapOffset = { 0, 0 };			// World-space offset
 	Vector2 CameraWorldPosition = { 0, 0 };			// World Space Position of The Map

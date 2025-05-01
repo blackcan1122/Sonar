@@ -1,6 +1,7 @@
 #include "Base/Object.hpp"
 #include "Base/GameInstance.h"
 #include "Base/GameMode.h"
+#include "Events/KeyEvent.hpp"
 
 
 GameMode* IObject::GetOutter()
@@ -20,3 +21,10 @@ bool IObject::IsMarkedForDestruction()
 {
 	return bIsMarkedForDestruction;
 }
+
+Object::Object()
+{
+
+}
+
+
