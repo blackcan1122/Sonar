@@ -1,7 +1,9 @@
 #pragma once
+#include "raylib.h"
 #include <typeindex>
 #include <string>
 #include "Base/SClass.hpp"
+#include <memory>
 
 class GameMode;
 class Factory;
@@ -22,6 +24,10 @@ class Factory;
  * - Use `MarkForDestruction` to safely queue the object for cleanup.
  * - Override `GetName()` and `GetDisplayName()` as needed.
  */
+
+class IEvent;
+class GameInstance;
+
 class IObject
 {
 	friend class Factory;
@@ -43,11 +49,14 @@ public:
 
 	virtual bool IsMarkedForDestruction();
 
+
 	virtual std::string GetName() const { return m_Name; };
 	virtual std::string GetDisplayName() const { return m_DisplayName; };
 	virtual void SetDisplayName(std::string NewName) { m_DisplayName = NewName; };
 
 protected:
+
+	virtual void OnKeyStroke(KeyboardKey PressedKey, Vector2 MousePosition) {};
 
 	std::string m_Name;
 	std::string m_DisplayName = "Unit";
@@ -63,10 +72,19 @@ private:
 
 class Object : public IObject
 {
+	friend GameInstance;
+
 private:
 	static inline SClass m_SClass = SClass(IObject::StaticClass(), "Object");
 public:
+	Object();
+
+
+
+	
 	virtual SClass* GetStaticClass() override { return &m_SClass; }
 	static SClass* StaticClass() { return  &m_SClass; }
 private:
+
+protected:
 };

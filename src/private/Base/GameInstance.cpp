@@ -29,6 +29,7 @@
 #include "Events/UIEvent.h"
 #include "Events/SaveGameEvent.h"
 #include "Events/LoadGameEvent.h"
+#include "Events/KeyEvent.hpp"
 
 // EventData
 #include "Base/EventData.hpp"
@@ -38,6 +39,7 @@
 EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
+EventDispatcher GameInstance::KeyDispatcher;
 
 GameModeSwitcher GameInstance::g_ActiveStateMachine;
 
@@ -154,7 +156,7 @@ void GameInstance::CreateWindow()
 
 void GameInstance::GameLoop()
 {
-	
+
 	g_ResourceManager.ParseJson();
 	g_ActiveStateMachine.RegisterState("Menu", []() {return new MenuMode(); });
 	g_ActiveStateMachine.RegisterState("Sandbox", []() {return new SandboxGameMode(); });
@@ -171,11 +173,21 @@ void GameInstance::GameLoop()
 	std::shared_ptr<AllPurposeEvent> WindowResizeEvent = std::make_shared<AllPurposeEvent>();
 	std::shared_ptr<WindowResizeData> CurrentWindowResizeData = std::make_shared<WindowResizeData>();
 
+	std::shared_ptr<KeyEvent> KeyEventDispatch = std::make_shared<KeyEvent>();
 
 
 	// GAMELOOP //
 	while (!WindowShouldClose())
 	{
+		int KeyPressed = GetKeyPressed();
+		if (KeyPressed != 0)
+		{
+			KeyEventDispatch->KeyPressed = static_cast<KeyboardKey>(KeyPressed);
+			KeyEventDispatch->MousePos = GetMousePosition();
+
+			KeyDispatcher.Dispatch(KeyEventDispatch, "GlobalKeyEvent");
+		}
+
 		MainQueue.ProcessTasks();
 		BeginDrawing();
 		if (g_ActiveStateMachine.isPendingKillLastMode())

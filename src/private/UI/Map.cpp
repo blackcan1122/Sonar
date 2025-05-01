@@ -309,13 +309,24 @@ void Map::AddObjectToDraw(std::weak_ptr<IObject> Object)
         if (PlayerPTR && TrackedPlayer == nullptr)
         {
             TrackedPlayer = PlayerPTR;
-            ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, ObjectState::EPlayer} });
+            auto EntityPtr = std::dynamic_pointer_cast<Entity>(Object.lock());
+            ObjectsToDraw.push_back({ EntityPtr, {ObjectType::Submarine, ObjectState::EPlayer} });
         }
         else
         {
             auto EntityPtr = std::dynamic_pointer_cast<Entity>(Object.lock());
-            ObjectsToDraw.push_back({ Object, {ObjectType::Submarine, ObjectState::EEnemy} });
+            ObjectsToDraw.push_back({ EntityPtr, {ObjectType::Submarine, ObjectState::EEnemy} });
         }
+
+    }
+}
+
+void Map::OnKeyStroke(KeyboardKey Key, Vector2 MousePos)
+{
+    if (CheckCollisionPointRec(MousePos, DestinationRect)
+        && Key == KEY_C)
+    {
+        CameraWorldPosition = TrackedPlayer->GetEntityLocation();
 
     }
 }

@@ -11,8 +11,6 @@ class AllPurposeEvent : public Event
 
 public:
 
-	virtual void Tick(float DeltaTime) override;
-
 	std::shared_ptr<IEventData> Payload = nullptr;
 
 };

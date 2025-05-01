@@ -1,6 +1,7 @@
 #pragma once
 #include "Base/Core.h"
 #include "Base/GameMode.h"
+#include "Events/KeyEvent.hpp"
 
 /**
  * @class Factory
@@ -41,6 +42,7 @@ public:
 				[Outter = m_Outter](T* ptr) 
 				{
 					LOG_INFO(l_FACTORY, TEXT("Cleaned Up Object: '{}'", ptr->m_Name));
+					GameInstance::KeyDispatcher.RemoveListener(ptr->m_Name, KeyEvent::StaticClass());
 					Outter->UnregisterObject(ptr);
 					GameInstance::GetAssetRegistry()->UnregisterAsset(ptr->m_Name);
 					delete ptr;
@@ -59,6 +61,17 @@ public:
 		std::string GeneralName = m_Outter->GetName() + "/" + ClassName;
 		CastedObj->m_Name = GameInstance::GetAssetRegistry()->RegisterAsset(GeneralName);
 
+		// Subscribing to the Key Event for all IObjects which are created via factory
+		GameInstance::KeyDispatcher.AddListener(
+			GeneralName,
+			KeyEvent::StaticClass(),
+			[CastedObj](std::shared_ptr<IEvent> evt) 
+			{
+				auto CastedKeyEvent = std::dynamic_pointer_cast<KeyEvent>(evt);
+
+				CastedObj->OnKeyStroke(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
+			}
+		);
 		// Registering the created Obj to the GameMode
 		m_Outter->RegisterObject(Obj);
 

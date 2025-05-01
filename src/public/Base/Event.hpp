@@ -3,9 +3,9 @@
 #include <typeindex>
 
 
-class IEvent : public Object
+class IEvent
 {
-	AUTOBODY(IEvent, Object)
+	ROOTBODY(IEvent)
 
 
 public:

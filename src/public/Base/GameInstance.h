@@ -125,6 +125,7 @@ public:
 	GameInstance& operator=(const GameInstance&) = delete;
 
 	static EventDispatcher UIEventDispatcher;
+	static EventDispatcher KeyDispatcher;
 	static EventDispatcher SaveStateDispatcher;
 	static EventDispatcher AllPurposeDispatcher;
 
