@@ -59,6 +59,7 @@ protected:
 	virtual void OnKeyStroke(KeyboardKey PressedKey, Vector2 MousePosition) {};
 	virtual void OnMouseButtonPressed(MouseButton PressedKey, Vector2 MousePosition) {};
 
+
 	std::string m_Name;
 	std::string m_DisplayName = "Unit";
 

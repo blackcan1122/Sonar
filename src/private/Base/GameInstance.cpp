@@ -179,6 +179,7 @@ void GameInstance::GameLoop()
 	std::shared_ptr<MouseEvent> MouseEventDispatch = std::make_shared<MouseEvent>();
 
 
+
 	// GAMELOOP //
 	while (!WindowShouldClose())
 	{
@@ -214,6 +215,7 @@ void GameInstance::GameLoop()
 
 			MouseDispatcher.Dispatch(MouseEventDispatch, "MouseGlobalEvent");
 		}
+
 
 		MainQueue.ProcessTasks();
 		BeginDrawing();

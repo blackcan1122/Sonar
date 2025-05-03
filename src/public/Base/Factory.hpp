@@ -45,6 +45,7 @@ public:
 					LOG_INFO(l_FACTORY, TEXT("Cleaned Up Object: '{}'", ptr->m_Name));
 					GameInstance::KeyDispatcher.RemoveListener(ptr->m_Name, KeyEvent::StaticClass());
 					GameInstance::MouseDispatcher.RemoveListener(ptr->m_Name, MouseEvent::StaticClass());
+
 					Outter->UnregisterObject(ptr);
 					GameInstance::GetAssetRegistry()->UnregisterAsset(ptr->m_Name);
 					delete ptr;
@@ -85,6 +86,7 @@ public:
 				CastedObj->OnMouseButtonPressed(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
 			}
 		);
+
 		// Registering the created Obj to the GameMode
 		m_Outter->RegisterObject(Obj);
 
