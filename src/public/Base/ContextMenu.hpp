@@ -13,12 +13,12 @@ public:
 	void OnDelete();
 
 	void AddMenuEntry(const ContextMenuEntry Entry);
-	void SetSize(const Vector2 Size);
 	Rectangle Window;
 
 
 protected:
 
+	void CalculateSize();
 	void Draw() const;
 	bool IsConstructed = false;
 	std::vector<ContextMenuEntry> MenuEntries;

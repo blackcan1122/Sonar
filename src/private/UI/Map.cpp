@@ -7,6 +7,7 @@
 #include "Base/GameMode.h"
 #include "Base/ContextMenu.hpp"
 #include "Base/Factory.hpp"
+#include "Base/ContextMenuEntry.hpp"
 
 // Countries
 #include "CountryMap/continent_outline.h"
@@ -289,7 +290,23 @@ void Map::Init()
     ClickDataPayload = std::make_shared<MapClickEventData>();
 
     RightClickMenu = std::make_shared<ContextMenu>();
-    RightClickMenu->SetSize({ 100,100 });
+
+    ContextMenuEntry NewEntry;
+    NewEntry.SetDisplayName("Center Player");
+    NewEntry.SetCallback([]()
+        {
+            std::cout << "Called Callback" << std::endl;
+        });
+
+    ContextMenuEntry NewEntry2;
+    NewEntry2.SetDisplayName("Center Player");
+    NewEntry2.SetCallback([]()
+        {
+            std::cout << "Called Callback" << std::endl;
+        });
+
+    RightClickMenu->AddMenuEntry(NewEntry);
+    RightClickMenu->AddMenuEntry(NewEntry2);
 
     MapClickEvent->Payload = ClickDataPayload;
 
@@ -341,6 +358,10 @@ void Map::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
     if (Key == MOUSE_BUTTON_RIGHT)
     {
         RightClickMenu->OnConstruct(MousePos);
+    }
+    else
+    {
+        RightClickMenu->OnDelete();
     }
 }
 

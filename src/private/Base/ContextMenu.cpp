@@ -15,6 +15,7 @@ void ContextMenu::TestTick()
 
 void ContextMenu::OnConstruct(Vector2 Position)
 {
+	CalculateSize();
 	Window.x = Position.x;
 	Window.y = Position.y;
 	IsConstructed = true;
@@ -30,14 +31,34 @@ void ContextMenu::AddMenuEntry(ContextMenuEntry Entry)
 	MenuEntries.push_back(Entry);
 }
 
-void ContextMenu::SetSize(Vector2 Size)
+void ContextMenu::CalculateSize()
 {
-	Window.width = Size.x;
-	Window.height = Size.y;
+	int MaxLength = 0;
+	int Height = 0;
+	for (auto& const Entry : MenuEntries)
+	{
+		Entry.Construct();
+		if (Entry.MeasuredText > MaxLength)
+		{
+			MaxLength = Entry.MeasuredText;
+		}
+
+		Height += Entry.FontSize + 2;
+	}
+
+	Window.width = MaxLength;
+	Window.height = Height;
 }
 
 void ContextMenu::Draw() const
 {
 	DrawRectangle(Window.x, Window.y, Window.width, Window.height, BackgroundColor);
+
+	int PaddingY = 0;
+	for (auto const Entry : MenuEntries)
+	{
+		DrawText(Entry.GetDisplayName().c_str(), Window.x, Window.y + PaddingY, Entry.FontSize, GREEN);
+		PaddingY += Entry.FontSize + 2;
+	}
 }
 
