@@ -2,6 +2,7 @@
 #include "Base/Core.h"
 #include "Base/GameMode.h"
 #include "Events/KeyEvent.hpp"
+#include "Events/MouseEvent.hpp"
 
 /**
  * @class Factory
@@ -43,6 +44,8 @@ public:
 				{
 					LOG_INFO(l_FACTORY, TEXT("Cleaned Up Object: '{}'", ptr->m_Name));
 					GameInstance::KeyDispatcher.RemoveListener(ptr->m_Name, KeyEvent::StaticClass());
+					GameInstance::MouseDispatcher.RemoveListener(ptr->m_Name, MouseEvent::StaticClass());
+
 					Outter->UnregisterObject(ptr);
 					GameInstance::GetAssetRegistry()->UnregisterAsset(ptr->m_Name);
 					delete ptr;
@@ -72,6 +75,18 @@ public:
 				CastedObj->OnKeyStroke(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
 			}
 		);
+
+		GameInstance::MouseDispatcher.AddListener(
+			GeneralName,
+			MouseEvent::StaticClass(),
+			[CastedObj](std::shared_ptr<IEvent> evt)
+			{
+				auto CastedKeyEvent = std::dynamic_pointer_cast<MouseEvent>(evt);
+
+				CastedObj->OnMouseButtonPressed(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
+			}
+		);
+
 		// Registering the created Obj to the GameMode
 		m_Outter->RegisterObject(Obj);
 

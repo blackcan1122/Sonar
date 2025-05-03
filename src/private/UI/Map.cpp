@@ -5,15 +5,10 @@
 #include <iostream>
 #include <format>
 #include "Base/GameMode.h"
+#include "Base/ContextMenu.hpp"
+#include "Base/Factory.hpp"
 
 // Countries
-//#include "CountryMap/NA.hpp"
-//#include "CountryMap/SA.hpp"
-//#include "CountryMap/Africa.hpp"
-//#include "CountryMap/Asia.hpp"
-//#include "CountryMap/Europe.hpp"
-//#include "CountryMap/Oceania.hpp"
-//#include "CountryMap/Antarctica.hpp"
 #include "CountryMap/continent_outline.h"
 
 #include "external/glad.h"
@@ -213,7 +208,6 @@ void Map::Draw()
     ObjectsToDraw.shrink_to_fit();
 
 
-
     EndTextureMode();
 
     // Overlay
@@ -261,6 +255,8 @@ void Map::Tick(float DeltaTime)
 
     Draw();
     RenderToMainBuffer();
+
+    RightClickMenu->TestTick();
 }
 
 void Map::Init()
@@ -291,6 +287,9 @@ void Map::Init()
     MapClickEvent = std::make_shared<AllPurposeEvent>();
     MapEventDispatcher = std::make_shared<EventDispatcher>();
     ClickDataPayload = std::make_shared<MapClickEventData>();
+
+    RightClickMenu = std::make_shared<ContextMenu>();
+    RightClickMenu->SetSize({ 100,100 });
 
     MapClickEvent->Payload = ClickDataPayload;
 
@@ -327,7 +326,21 @@ void Map::OnKeyStroke(KeyboardKey Key, Vector2 MousePos)
         && Key == KEY_C)
     {
         CameraWorldPosition = TrackedPlayer->GetEntityLocation();
+        ZoomLevel = 1.f;
+    }
+}
 
+void Map::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
+{
+    if (!CheckCollisionPointRec(MousePos, DestinationRect))
+    {
+        return;
+    }
+
+
+    if (Key == MOUSE_BUTTON_RIGHT)
+    {
+        RightClickMenu->OnConstruct(MousePos);
     }
 }
 
