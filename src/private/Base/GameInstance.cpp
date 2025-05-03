@@ -30,6 +30,7 @@
 #include "Events/SaveGameEvent.h"
 #include "Events/LoadGameEvent.h"
 #include "Events/KeyEvent.hpp"
+#include "Events/MouseEvent.hpp"
 
 // EventData
 #include "Base/EventData.hpp"
@@ -40,6 +41,7 @@ EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;
 EventDispatcher GameInstance::AllPurposeDispatcher;
 EventDispatcher GameInstance::KeyDispatcher;
+EventDispatcher GameInstance::MouseDispatcher;
 
 GameModeSwitcher GameInstance::g_ActiveStateMachine;
 
@@ -174,6 +176,7 @@ void GameInstance::GameLoop()
 	std::shared_ptr<WindowResizeData> CurrentWindowResizeData = std::make_shared<WindowResizeData>();
 
 	std::shared_ptr<KeyEvent> KeyEventDispatch = std::make_shared<KeyEvent>();
+	std::shared_ptr<MouseEvent> MouseEventDispatch = std::make_shared<MouseEvent>();
 
 
 	// GAMELOOP //
@@ -186,6 +189,30 @@ void GameInstance::GameLoop()
 			KeyEventDispatch->MousePos = GetMousePosition();
 
 			KeyDispatcher.Dispatch(KeyEventDispatch, "GlobalKeyEvent");
+		}
+
+		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+		{
+			MouseEventDispatch->KeyPressed = MOUSE_BUTTON_LEFT;
+			MouseEventDispatch->MousePos = GetMousePosition();
+
+			MouseDispatcher.Dispatch(MouseEventDispatch, "MouseGlobalEvent");
+		}
+
+		if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+		{
+			MouseEventDispatch->KeyPressed = MOUSE_BUTTON_RIGHT;
+			MouseEventDispatch->MousePos = GetMousePosition();
+
+			MouseDispatcher.Dispatch(MouseEventDispatch, "MouseGlobalEvent");
+		}
+
+		if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
+		{
+			MouseEventDispatch->KeyPressed = MOUSE_BUTTON_MIDDLE;
+			MouseEventDispatch->MousePos = GetMousePosition();
+
+			MouseDispatcher.Dispatch(MouseEventDispatch, "MouseGlobalEvent");
 		}
 
 		MainQueue.ProcessTasks();

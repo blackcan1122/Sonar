@@ -4,6 +4,7 @@
 #include "Events/AllPurposeEvent.h"
 #include "Events/MapClickEventData.hpp"
 
+class ContextMenu;
 class Player;
 
 
@@ -58,6 +59,7 @@ public:
 
 protected:
 	virtual void OnKeyStroke(KeyboardKey Key, Vector2 MousePos) override;
+	virtual void OnMouseButtonPressed(MouseButton Key, Vector2 MousePos) override;
 
 
 private:
@@ -124,5 +126,7 @@ private:
 
 	std::shared_ptr<AllPurposeEvent> MapClickEvent;
 	std::shared_ptr<MapClickEventData> ClickDataPayload;
+
+	std::shared_ptr<ContextMenu> RightClickMenu;
 
 };
