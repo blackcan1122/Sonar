@@ -66,7 +66,7 @@ public:
 
 		// Subscribing to the Key Event for all IObjects which are created via factory
 		GameInstance::KeyDispatcher.AddListener(
-			GeneralName,
+			CastedObj->m_Name,
 			KeyEvent::StaticClass(),
 			[CastedObj](std::shared_ptr<IEvent> evt) 
 			{
@@ -75,9 +75,11 @@ public:
 				CastedObj->OnKeyStroke(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
 			}
 		);
+		LOG_INFO(l_FACTORY, TEXT("Class: '{}' subscribed to OnKeyEvent", CastedObj->m_Name));
+
 
 		GameInstance::MouseDispatcher.AddListener(
-			GeneralName,
+			CastedObj->m_Name,
 			MouseEvent::StaticClass(),
 			[CastedObj](std::shared_ptr<IEvent> evt)
 			{
@@ -86,6 +88,8 @@ public:
 				CastedObj->OnMouseButtonPressed(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
 			}
 		);
+		LOG_INFO(l_FACTORY, TEXT("Class: '{}' subscribed to OnMouseEvent", CastedObj->m_Name));
+
 
 		// Registering the created Obj to the GameMode
 		m_Outter->RegisterObject(Obj);

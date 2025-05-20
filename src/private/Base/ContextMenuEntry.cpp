@@ -4,18 +4,20 @@ void ContextMenuEntry::Construct()
 {
 	if (GetDisplayName() == "Unit")
 	{
-		LOG_ERROR(l_DEFAULT, TEXT("Missing Display Name for Context Menu. Skipping Construct"));
-		return;
+		LOG_ERROR(l_DEFAULT, TEXT("Missing Display Name for Context Menu. Should be Changed"));
 	}
 	MeasuredText =  MeasureText(GetDisplayName().c_str(), FontSize);
 }
 
 void ContextMenuEntry::OnClick()
 {
-	OnClickCallback();
+	if (Callback != nullptr)
+	{
+		Callback(this);
+	}
 }
 
-void ContextMenuEntry::SetCallback(void(*Function)(void))
+void ContextMenuEntry::SetCallback(std::function<void(ContextMenuEntry* Self)> NewCallback)
 {
-	OnClickCallback = Function;
+	Callback = NewCallback;
 }

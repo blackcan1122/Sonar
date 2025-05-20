@@ -114,8 +114,6 @@ void Map::Draw()
         auto State = ObjectPair.second.second;
         auto obj = ObjectPair.first.lock();
 
-        
-
         if (!obj)
         {
             IndicesPendingKill.push_back(i);
@@ -123,8 +121,6 @@ void Map::Draw()
         }
 
         std::weak_ptr<Entity> Object = std::dynamic_pointer_cast<Entity>(obj);
-
-
 
         Vector2 screenPos = ConvertWorldToScreenPos(Object.lock()->GetEntityLocation());
         Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(GetMousePosition());
@@ -200,6 +196,8 @@ void Map::Draw()
                                   // Handle Ship type
         }
     }
+    auto Mark = ConvertWorldToScreenPos(MarkedPos);
+    DrawCircle(Mark.x, Mark.y, 10, GREEN);
 
     for (const auto Index : IndicesPendingKill)
     {
@@ -257,7 +255,11 @@ void Map::Tick(float DeltaTime)
     Draw();
     RenderToMainBuffer();
 
-    RightClickMenu->TestTick();
+    // Calling it manually
+    // TODO: Later on should be changed to TickGroups
+    RightClickMenu.TryLoad()->Tick(DeltaTime);
+    SpeedMenu.TryLoad()->Tick(DeltaTime);
+
 }
 
 void Map::Init()
@@ -288,27 +290,111 @@ void Map::Init()
     MapClickEvent = std::make_shared<AllPurposeEvent>();
     MapEventDispatcher = std::make_shared<EventDispatcher>();
     ClickDataPayload = std::make_shared<MapClickEventData>();
+    MapClickEvent->Payload = ClickDataPayload;
 
-    RightClickMenu = std::make_shared<ContextMenu>();
+
+    RightClickMenu = GetOutter()->m_ObjectFactory->NewObject<ContextMenu>();
+    RightClickMenu.TryLoad()->SetDisplayName("Right Click Menu");
+   
+    SpeedMenu = GetOutter()->m_ObjectFactory->NewObject<ContextMenu>();
+    SpeedMenu.TryLoad()->SetDisplayName("Speed Menu");
+
+    ContextMenuEntry FullSpeedEntry;
+    FullSpeedEntry.SetDisplayName("Full Speed");
+    FullSpeedEntry.SetCallback([this](ContextMenuEntry* Self)
+        {
+            TrackedPlayer->SetSpeed(20);
+        });
+
+    ContextMenuEntry HalfSpeedEntry;
+    HalfSpeedEntry.SetDisplayName("Half Speed");
+    HalfSpeedEntry.SetCallback([this](ContextMenuEntry* Self)
+        {
+            TrackedPlayer->SetSpeed(12);
+        });
+
+    ContextMenuEntry SlowAheadEntry;
+    SlowAheadEntry.SetDisplayName("Slow Ahead");
+    SlowAheadEntry.SetCallback([this](ContextMenuEntry* Self)
+        {
+            TrackedPlayer->SetSpeed(8);
+        });
+
+    ContextMenuEntry DeadSlowEntry;
+    DeadSlowEntry.SetDisplayName("Dead Slow");
+    DeadSlowEntry.SetCallback([this](ContextMenuEntry* Self)
+        {
+            TrackedPlayer->SetSpeed(3);
+        });
+
+    ContextMenuEntry StopEntry;
+    StopEntry.SetDisplayName("Stop");
+    StopEntry.SetCallback([this](ContextMenuEntry* Self)
+        {
+            TrackedPlayer->SetSpeed(0);
+        });
+
+    SpeedMenu.TryLoad()->AddMenuEntry(FullSpeedEntry);
+    SpeedMenu.TryLoad()->AddMenuEntry(HalfSpeedEntry);
+    SpeedMenu.TryLoad()->AddMenuEntry(SlowAheadEntry);
+    SpeedMenu.TryLoad()->AddMenuEntry(DeadSlowEntry);
+    SpeedMenu.TryLoad()->AddMenuEntry(StopEntry);
+
+
 
     ContextMenuEntry NewEntry;
     NewEntry.SetDisplayName("Center Player");
-    NewEntry.SetCallback([]()
+    NewEntry.SetCallback([this](ContextMenuEntry* Self) -> void
         {
-            std::cout << "Called Callback" << std::endl;
+            CameraWorldPosition = TrackedPlayer->GetEntityLocation();
+            return;
         });
 
     ContextMenuEntry NewEntry2;
-    NewEntry2.SetDisplayName("Center Player");
-    NewEntry2.SetCallback([]()
+    NewEntry2.SetDisplayName("Set Course");
+    NewEntry2.SetCallback([this](ContextMenuEntry* Self)
         {
-            std::cout << "Called Callback" << std::endl;
+            Vector2 localMouse = ConvertMouseScreenPosToMapScreenPos(RightClickMenu.TryLoad()->MousePosWhenConstructed);
+
+            Vector2 MousePos = ConvertScreenPosToWorld(localMouse);
+            Vector2 PlayerPos = TrackedPlayer->GetEntityLocation();
+            std::cout << MousePos.x << " " << MousePos.y << std::endl;
+
+            MarkedPos = MousePos;
+
+            Vector2 delta = MousePos - PlayerPos;
+
+            float angleRad = std::atan2(delta.y, delta.x);
+
+            float angleDeg = angleRad * (180.0f / PI);
+            angleDeg += 90.0f; // Offset so 0, is north
+            angleDeg = std::fmod(angleDeg, 360.0f);
+            if (angleDeg < 0.0f)
+            {
+                angleDeg += 360.0f;
+            }
+
+            TrackedPlayer->SetCourse(angleDeg);
+
         });
 
-    RightClickMenu->AddMenuEntry(NewEntry);
-    RightClickMenu->AddMenuEntry(NewEntry2);
 
-    MapClickEvent->Payload = ClickDataPayload;
+    ContextMenuEntry NewEntry3;
+    NewEntry3.SetDisplayName("Set Speed");
+    NewEntry3.SetCallback([this](ContextMenuEntry* Self)
+        {
+            auto Height = Self->ContextMenuEntryRec.y + Self->ContextMenuEntryRec.height;
+            auto Width = Self->ContextMenuEntryRec.x + Self->ContextMenuEntryRec.width;
+            this->SpeedMenu.TryLoad()->OnConstruct({ Width, Height });
+
+            auto ptr = this->SpeedMenu.TryLoad();
+        });
+
+
+    RightClickMenu.TryLoad()->AddMenuEntry(NewEntry);
+    RightClickMenu.TryLoad()->AddMenuEntry(NewEntry2);
+    RightClickMenu.TryLoad()->AddMenuEntry(NewEntry3);
+
 
 
 
@@ -318,7 +404,7 @@ void Map::Init()
 
 void Map::AddObjectToDraw(std::weak_ptr<IObject> Object) 
 {
-    if (*Object.lock()->GetStaticClass()<<(Entity::StaticClass()))
+    if (Object.lock() != nullptr && *Object.lock()->GetStaticClass() << (Entity::StaticClass()))
     {
         std::cout << "Found Derived " << Object.lock()->GetDisplayName() << std::endl;
         std::shared_ptr<Player> PlayerPTR = std::dynamic_pointer_cast<Player>(Object.lock());
@@ -357,30 +443,53 @@ void Map::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
 
     if (Key == MOUSE_BUTTON_RIGHT)
     {
-        RightClickMenu->OnConstruct(MousePos);
-    }
-    else
-    {
-        RightClickMenu->OnDelete();
+        RightClickMenu.TryLoad()->OnConstruct(MousePos);
     }
 }
 
 Vector2 Map::ConvertWorldToScreenPos(Vector2 worldPos) const
 {
-    Matrix transform = GetViewProjectionMatrix();
-    Vector3 transformed = Vector3Transform({ worldPos.x, worldPos.y, 0 }, transform);
-    return { transformed.x, transformed.y };
+    // 1) Translate the world so that CameraWorldPosition maps to (0,0)
+    float relX = worldPos.x - CameraWorldPosition.x;
+    float relY = worldPos.y - CameraWorldPosition.y;
+
+    // 2) Scale by zoom
+    relX *= ZoomLevel;
+    relY *= ZoomLevel;
+
+    // 3) Raylib’s render‑target space has +Y down, so flip Y if your world +Y is up:
+    //    (uncomment if needed)
+    // relY = -relY;
+
+    // 4) Now center it inside your render target:
+    //    camera‑origin (0,0) → (width/2, height/2)
+    Vector2 screenPos;
+    screenPos.x = relX + (DestinationRect.width * 0.5f);
+    screenPos.y = relY + (DestinationRect.height * 0.5f);
+
+    return screenPos;
 }
 
 Vector2 Map::ConvertScreenPosToWorld(Vector2 VectorToConver) const
 {
-    // Get the view projection matrix (maps world -> screen)
-    Matrix viewProj = GetViewProjectionMatrix();
-    // Invert it so we get the transformation from screen -> world
-    Matrix invViewProj = MatrixInvert(viewProj);
+    // 1) Convert so that (0,0) is at the center:
+    float centeredX = VectorToConver.x - (DestinationRect.width * 0.5f);
+    float centeredY = VectorToConver.y - (DestinationRect.height * 0.5f);
 
-    Vector3 transformed = Vector3Transform({ VectorToConver.x, VectorToConver.y, 0 }, invViewProj);
-    return { transformed.x, transformed.y };
+    // 2) If you flipped Y above, flip back here:
+    //    (uncomment if you used relY = -relY)
+    // centeredY = -centeredY;
+
+    // 3) Undo zoom:
+    centeredX /= ZoomLevel;
+    centeredY /= ZoomLevel;
+
+    // 4) Translate so that camera‑origin returns to its world position:
+    Vector2 worldPos;
+    worldPos.x = centeredX + CameraWorldPosition.x;
+    worldPos.y = centeredY + CameraWorldPosition.y;
+
+    return worldPos;
 }
 
 inline Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters)
@@ -494,5 +603,5 @@ inline Vector2 Map::ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos
 {
     Vector2 DestinationVector = { DestinationRect.x, DestinationRect.y };
     Vector2 DestinationVectorSize = { DestinationRect.width, DestinationRect.height };
-    return Vector2Clamp(Vector2Subtract(GetMousePosition(), DestinationVector), Vector2{ 0,0 }, DestinationVectorSize);
+    return Vector2Clamp(Vector2Subtract(MouseAbsolutePos, DestinationVector), Vector2{ 0,0 }, DestinationVectorSize);
 }

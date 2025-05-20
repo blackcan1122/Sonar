@@ -68,6 +68,8 @@ private:
 	Matrix GetViewProjectionMatrix() const;
 	Matrix GetOpenGLProjectionMatrix() const;
 
+	Vector2 MarkedPos = { 0,0 };
+
 	void LoadRessources();
 
 	Shader shader;
@@ -128,6 +130,7 @@ private:
 	std::shared_ptr<AllPurposeEvent> MapClickEvent;
 	std::shared_ptr<MapClickEventData> ClickDataPayload;
 
-	std::shared_ptr<ContextMenu> RightClickMenu;
+	SoftObjectPath<ContextMenu> RightClickMenu;
+	SoftObjectPath<ContextMenu> SpeedMenu;
 
 };

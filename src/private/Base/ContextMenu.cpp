@@ -2,13 +2,9 @@
 
 void ContextMenu::Tick(float DeltaTime)
 {
-
-}
-
-void ContextMenu::TestTick()
-{
 	if (IsConstructed)
 	{
+		ElapsedLifetime += DeltaTime;
 		Draw();
 	}
 }
@@ -16,14 +12,72 @@ void ContextMenu::TestTick()
 void ContextMenu::OnConstruct(Vector2 Position)
 {
 	CalculateSize();
+	MousePosWhenConstructed = Position;
 	Window.x = Position.x;
 	Window.y = Position.y;
+
+	int Padding = 2;
+
+	for (int i = 0; i < MenuEntries.size(); i++)
+	{
+
+		Rectangle TempRec;
+		if (i != 0)
+		{
+			auto YPos = Padding + MenuEntries[i - 1].ContextMenuEntryRec.y + MenuEntries[i - 1].ContextMenuEntryRec.height;
+			TempRec = { Window.x, YPos , Window.width, (float)MenuEntries[i].FontSize };
+		}
+		else
+		{
+			TempRec = { Window.x, Window.y + Padding, Window.width, (float)MenuEntries[i].FontSize };
+		}
+
+		MenuEntries[i].ContextMenuEntryRec = TempRec;
+
+		Padding += PaddingY;
+	}
+
+	ElapsedLifetime = 0.f;
 	IsConstructed = true;
 }
 
 void ContextMenu::OnDelete()
 {
 	IsConstructed = false;
+}
+
+void ContextMenu::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
+{
+	if (!IsConstructed)
+	{
+		return;
+	}
+
+	if (ElapsedLifetime >= CloseDelaySecs)
+	{
+		if (!CheckCollisionPointRec(MousePos, Window))
+		{
+			OnDelete();
+			return;
+		}
+	}
+	
+	if (Key == MouseButton::MOUSE_BUTTON_LEFT)
+	for (auto& Entry : MenuEntries)
+	{		
+		if (CheckCollisionPointRec(MousePos, Entry.ContextMenuEntryRec))
+		{
+			Entry.OnClick();
+			//OnDelete();
+			//return;
+		}
+	}
+
+}
+
+bool ContextMenu::GetIsConstructed() const
+{
+	return IsConstructed;
 }
 
 void ContextMenu::AddMenuEntry(ContextMenuEntry Entry)
@@ -35,7 +89,8 @@ void ContextMenu::CalculateSize()
 {
 	int MaxLength = 0;
 	int Height = 0;
-	for (auto& const Entry : MenuEntries)
+	int Count = 1;
+	for (auto& Entry : MenuEntries)
 	{
 		Entry.Construct();
 		if (Entry.MeasuredText > MaxLength)
@@ -43,7 +98,7 @@ void ContextMenu::CalculateSize()
 			MaxLength = Entry.MeasuredText;
 		}
 
-		Height += Entry.FontSize + 2;
+		Height += Entry.FontSize + (PaddingY * 2);
 	}
 
 	Window.width = MaxLength;
@@ -54,11 +109,18 @@ void ContextMenu::Draw() const
 {
 	DrawRectangle(Window.x, Window.y, Window.width, Window.height, BackgroundColor);
 
-	int PaddingY = 0;
-	for (auto const Entry : MenuEntries)
+	for (auto& const Entry : MenuEntries)
 	{
-		DrawText(Entry.GetDisplayName().c_str(), Window.x, Window.y + PaddingY, Entry.FontSize, GREEN);
-		PaddingY += Entry.FontSize + 2;
+		if (CheckCollisionPointRec(GetMousePosition(), Entry.ContextMenuEntryRec) == false)
+		{
+			DrawRectangle(Entry.ContextMenuEntryRec.x, Entry.ContextMenuEntryRec.y, Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, BLANK);
+		}
+		else
+		{
+			DrawRectangle(Entry.ContextMenuEntryRec.x, Entry.ContextMenuEntryRec.y, Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, BLACK);
+		}
+
+		DrawText(Entry.GetDisplayName().c_str(), Entry.ContextMenuEntryRec.x, Entry.ContextMenuEntryRec.y, Entry.FontSize, GREEN);
 	}
 }
 
