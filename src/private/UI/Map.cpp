@@ -444,6 +444,7 @@ void Map::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
     if (Key == MOUSE_BUTTON_RIGHT)
     {
         RightClickMenu.TryLoad()->OnConstruct(MousePos);
+        //SpeedMenu.TryLoad()->OnConstruct(MousePos);
     }
 }
 

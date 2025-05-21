@@ -16,25 +16,17 @@ void ContextMenu::OnConstruct(Vector2 Position)
 	Window.x = Position.x;
 	Window.y = Position.y;
 
-	int Padding = 2;
+	float LastYPos = Window.y;
 
 	for (int i = 0; i < MenuEntries.size(); i++)
 	{
-
 		Rectangle TempRec;
-		if (i != 0)
-		{
-			auto YPos = Padding + MenuEntries[i - 1].ContextMenuEntryRec.y + MenuEntries[i - 1].ContextMenuEntryRec.height;
-			TempRec = { Window.x, YPos , Window.width, (float)MenuEntries[i].FontSize };
-		}
-		else
-		{
-			TempRec = { Window.x, Window.y + Padding, Window.width, (float)MenuEntries[i].FontSize };
-		}
 
+		TempRec = { Window.x, LastYPos + PaddingY, Window.width, (float)MenuEntries[i].FontSize };
+
+		LastYPos = TempRec.y + TempRec.height + PaddingY;
 		MenuEntries[i].ContextMenuEntryRec = TempRec;
 
-		Padding += PaddingY;
 	}
 
 	ElapsedLifetime = 0.f;
