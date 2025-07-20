@@ -2,7 +2,7 @@
 #include "Base/Core.h"
 
 
-static class Helper
+class Helper
 {
 	Helper();
 	~Helper() = default;

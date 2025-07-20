@@ -77,6 +77,9 @@ protected:
 	std::vector<std::shared_ptr<IObject>> m_PendingKill;
 	float m_DeltaTime = 0;
 	std::string m_Name;
+	
+	// Flag to prevent UnregisterObject calls during destruction
+	bool m_IsDestroying = false;
 
 	// Optional
 	SoftObjectPath<World> m_World;

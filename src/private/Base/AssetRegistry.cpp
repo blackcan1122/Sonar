@@ -89,6 +89,7 @@ bool AssetRegistry::UnregisterAsset(const std::string name)
 		g_AssetRegistry.erase(it);
 	}
 	LOG_INFO(l_ASSET_REGISTRY, TEXT("Successfully removed '{}' from Asset Registry", name));
+	return true;
 }
 
 std::string AssetRegistry::GenerateNextAvaiableName(const std::string base_name)

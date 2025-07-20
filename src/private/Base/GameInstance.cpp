@@ -150,6 +150,9 @@ void GameInstance::CreateWindow()
 	InitWindow(g_Instance->m_WindowProperties.m_ScreenWidth, g_Instance->m_WindowProperties.m_ScreenHeight, "Sonar");
 	SetTargetFPS(g_Instance->m_WindowProperties.m_TargetFps);
 
+	// Initialize audio device once for the entire application
+	InitAudioDevice();
+
 	LOG_INFO(l_GAME_INSTANCE, TEXT("Window Initialized with Properties, Size: {} x {}, TargetFPS: {}",
 		g_Instance->m_WindowProperties.m_ScreenWidth, 
 		g_Instance->m_WindowProperties.m_ScreenHeight, 

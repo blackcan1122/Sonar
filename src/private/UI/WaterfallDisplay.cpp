@@ -50,11 +50,15 @@ void Waterfall::Tick(float DeltaTime)
     // Temp to change index of signal
     if (IsKeyDown(KEY_A))
     {
-        Index--;
+        if (Index > 0) {
+            Index--;
+        }
     }
     else if (IsKeyDown(KEY_D))
     {
-        Index++;
+        if (Index < m_CurrentAmbientLevel.size() - 1) {
+            Index++;
+        }
     }
 
     if (m_AccumulatedSignals.empty())
@@ -67,7 +71,10 @@ void Waterfall::Tick(float DeltaTime)
         m_AccumulatedSignals[i] += m_CurrentAmbientLevel[i];
     }
 
-    m_AccumulatedSignals[Index] += 255;
+    // Add bounds check for Index before accessing the array
+    if (Index < m_AccumulatedSignals.size()) {
+        m_AccumulatedSignals[Index] += 255;
+    }
     ++Counter;
 
     AccDelta += DeltaTime;
