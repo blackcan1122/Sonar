@@ -101,7 +101,7 @@ void ContextMenu::Draw() const
 {
 	DrawRectangle(Window.x, Window.y, Window.width, Window.height, BackgroundColor);
 
-	for (auto& const Entry : MenuEntries)
+	for (auto& Entry : MenuEntries)
 	{
 		if (CheckCollisionPointRec(GetMousePosition(), Entry.ContextMenuEntryRec) == false)
 		{
