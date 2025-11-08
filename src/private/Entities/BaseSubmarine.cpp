@@ -1,4 +1,4 @@
-#include "Entities/BaseSubmarine.hpp"
+﻿#include "Entities/BaseSubmarine.hpp"
 
 
 void BaseSubmarine::Tick(float DeltaTime)
@@ -23,6 +23,7 @@ void BaseSubmarine::SetInitialSpeed(NavalUnits::Knot DesiredKnots)
 
 void BaseSubmarine::SetCourse(int Course)
 {
+    std::cout << "Course is now: " << Course << std::endl;
     m_DesiredCourse = Course % 360;
 }
 
@@ -65,24 +66,42 @@ void BaseSubmarine::CalculateRotation(float Deltatime)
     if (RotationChangeTimer < SpeedChangeDelay)
         return;
 
-    // Reset timer once enough time has passed.
     RotationChangeTimer = 0.0f;
 
+    // Compute smallest signed difference in [–180°, +180°]
     float diff = m_DesiredCourse - m_CurrentCourse;
+    // wrap into –180..+180
+    if (diff > 180.0f)  diff -= 360.0f;
+    if (diff < -180.0f) diff += 360.0f;
 
+    //std::cout << "Heading error: " << diff << "°\n";
+
+    // If we're "close enough", just snap on target
     if (std::fabs(diff) < DampeningRate)
     {
         m_CurrentCourse = m_DesiredCourse;
+        return;
     }
-    else
-    {
-        float RealTurningRate = BaseTurningRate * NavalUnits::KnotToMetersPerSecond(m_CurrentKnots);
-        float RotationAngle = (diff > std::fabs(diff - 360)) ? -RealTurningRate : RealTurningRate;
 
-        // Update the current speed.
-        m_CurrentCourse += RotationAngle * Deltatime;
+    // Base turning speed (m/s → rad/s or deg/s as you prefer)
+    float RealTurningRate = BaseTurningRate * NavalUnits::KnotToMetersPerSecond(m_CurrentKnots);
+    // Now scale it down the closer we are:
+    // Choose a full-speed dead‑zone, e.g. 90°, beyond which you turn at full rate:
+    constexpr float fullSpeedZone = 15.0f;
+    float factor = std::clamp(std::fabs(diff) / fullSpeedZone, 0.0f, 1.0f);
 
-    }
+    // Apply dampening factor
+    float scaledTurnRate = RealTurningRate * factor;
+
+    // Determine direction: + for CCW increase, – for CW decrease
+    float turnDirection = (diff > 0 ? +1.0f : -1.0f);
+
+    // Finally update the current course
+    m_CurrentCourse += turnDirection * scaledTurnRate * Deltatime;
+
+    // Optional: wrap m_CurrentCourse back into [0,360)
+    if (m_CurrentCourse >= 360.0f) m_CurrentCourse -= 360.0f;
+    if (m_CurrentCourse < 0.0f)   m_CurrentCourse += 360.0f;
 }
 
 void BaseSubmarine::Accel(float Deltatime)
