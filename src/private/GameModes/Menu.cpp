@@ -21,8 +21,9 @@ MenuMode::MenuMode()
 
 MenuMode::~MenuMode()
 {
+	StopMusicStream(MenuMusic);
+	UnloadMusicStream(MenuMusic);
 	GameInstance::GetInstance()->AllPurposeDispatcher.RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
-	CloseAudioDevice();
 }
 
 void MenuMode::Update()
@@ -35,9 +36,10 @@ void MenuMode::Update()
 
 void MenuMode::BeginPlay()
 {
-	InitAudioDevice();
+	// Audio device should be initialized once at application startup, not per GameMode
+	// InitAudioDevice(); // Removed to prevent conflicts when creating multiple MenuMode instances
 	
-	MenuMusic = LoadMusicStream((GameInstance::GetInstance()->g_WorkingDirectory + "\\resources\\music\\Untitled.mp3").c_str());
+	MenuMusic = LoadMusicStream((GameInstance::GetInstance()->g_WorkingDirectory + "/resources/music/Untitled.mp3").c_str());
 	MenuMusic.looping = true;
 	PlayMusicStream(MenuMusic);
 	SetMusicVolume(MenuMusic, 0.02f);

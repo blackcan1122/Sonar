@@ -8,13 +8,13 @@ GameMode::GameMode()
 
 GameMode::~GameMode()
 {
-	for (auto& Objects : m_Objects)
-	{
-		Objects.second->MarkForDestruction();
-	}
-
-	CollectPendingDestruction();
-	CleanUpPendingKill();
+	// Set flag to prevent UnregisterObject calls during destruction
+	m_IsDestroying = true;
+	
+	// Clear objects map - this will trigger shared_ptr destructors
+	// but UnregisterObject calls will be ignored due to m_IsDestroying flag
+	m_Objects.clear();
+	m_PendingKill.clear();
 }
 
 
@@ -83,6 +83,11 @@ void GameMode::RegisterObject(std::shared_ptr<IObject> Object)
 
 void GameMode::UnregisterObject(IObject* inObject)
 {
+	// Skip unregistration if GameMode is being destroyed to prevent circular destruction
+	if (m_IsDestroying) {
+		return;
+	}
+	
 	m_Objects.erase(inObject->GetName());
 }
 

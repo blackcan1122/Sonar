@@ -5,7 +5,7 @@
             "TextureID": 101,
             "TextureKind": "Texture2D", 
             "TextureNPatchInfo": null,
-            "Path": "imgs\\BackgroundMenu.jpg",
+            "Path": "imgs/BackgroundMenu.jpg",
             "Properties": {
                 "Width": 3072,
                 "Height": 2048,
@@ -23,7 +23,7 @@
                 "HoverOffset": {"width" : 128, "height": 0},
                 "Layout": "stretch"
             },
-            "Path": "imgs\\9PatchTile.png",
+            "Path": "imgs/9PatchTile.png",
             "Properties": {
                 "Width": 256,
                 "Height": 128,
@@ -35,7 +35,7 @@
             "TextureID": 103,
             "TextureKind": "Texture2D", 
             "TextureNPatchInfo": null,
-            "Path": "imgs\\map\\Africa.png",
+            "Path": "imgs/map/Africa.png",
             "Properties": {
                 "Width": 1563,
                 "Height": 1692,

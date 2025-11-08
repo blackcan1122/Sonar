@@ -257,7 +257,7 @@ if (downloadRaylib) then
 
 
         filter "system:linux"
-            links {"pthread", "m", "dl", "rt", "X11"}
+            links {"spdlog", "pthread", "m", "dl", "rt", "X11"}
             kind   "ConsoleApp"
 
         filter "system:macosx"
@@ -268,6 +268,7 @@ if (downloadRaylib) then
         postbuildcommands {
             -- Cross-platform way to copy entire folder recursively
             '{COPYDIR} "../../resources/" "%{cfg.targetdir}/resources"',
+            '{MKDIR} "%{cfg.targetdir}/src"',
             '{COPYDIR} "../../src/shaders" "%{cfg.targetdir}/src/shaders"'
 
         }
