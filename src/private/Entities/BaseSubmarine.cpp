@@ -29,16 +29,16 @@ void BaseSubmarine::SetCourse(int Course)
 
 void BaseSubmarine::CalculateSpeed(float Deltatime)
 {
-    SpeedChangeTimer += Deltatime;
-    if (SpeedChangeTimer < SpeedChangeDelay)
+    m_SpeedChangeTimer += Deltatime;
+    if (m_SpeedChangeTimer < m_SpeedChangeDelay)
         return;
 
     // Reset timer once enough time has passed.
-    SpeedChangeTimer = 0.0f;
+    m_SpeedChangeTimer = 0.0f;
 
     float diff = m_DesiredKnots - m_CurrentKnots;
 
-    if (std::fabs(diff) < DampeningRate)
+    if (std::fabs(diff) < m_DampeningRate)
     {
         // If we're very close to the target, snap to the target speed
         m_CurrentKnots = m_DesiredKnots;
@@ -62,11 +62,11 @@ void BaseSubmarine::CalculateSpeed(float Deltatime)
 
 void BaseSubmarine::CalculateRotation(float Deltatime)
 {
-    RotationChangeTimer += Deltatime;
-    if (RotationChangeTimer < SpeedChangeDelay)
+    m_RotationChangeTimer += Deltatime;
+    if (m_RotationChangeTimer < m_SpeedChangeDelay)
         return;
 
-    RotationChangeTimer = 0.0f;
+    m_RotationChangeTimer = 0.0f;
 
     // Compute smallest signed difference in [–180°, +180°]
     float diff = m_DesiredCourse - m_CurrentCourse;
@@ -77,18 +77,16 @@ void BaseSubmarine::CalculateRotation(float Deltatime)
     //std::cout << "Heading error: " << diff << "°\n";
 
     // If we're "close enough", just snap on target
-    if (std::fabs(diff) < DampeningRate)
+    if (std::fabs(diff) < m_DampeningRate)
     {
         m_CurrentCourse = m_DesiredCourse;
         return;
     }
 
     // Base turning speed (m/s → rad/s or deg/s as you prefer)
-    float RealTurningRate = BaseTurningRate * NavalUnits::KnotToMetersPerSecond(m_CurrentKnots);
-    // Now scale it down the closer we are:
-    // Choose a full-speed dead‑zone, e.g. 90°, beyond which you turn at full rate:
-    constexpr float fullSpeedZone = 15.0f;
-    float factor = std::clamp(std::fabs(diff) / fullSpeedZone, 0.0f, 1.0f);
+    float RealTurningRate = m_BaseTurningRate * NavalUnits::KnotToMetersPerSecond(m_CurrentKnots);
+
+    float factor = std::clamp(std::fabs(diff) / m_FullSpeedZone, 0.0f, 1.0f);
 
     // Apply dampening factor
     float scaledTurnRate = RealTurningRate * factor;
@@ -99,7 +97,6 @@ void BaseSubmarine::CalculateRotation(float Deltatime)
     // Finally update the current course
     m_CurrentCourse += turnDirection * scaledTurnRate * Deltatime;
 
-    // Optional: wrap m_CurrentCourse back into [0,360)
     if (m_CurrentCourse >= 360.0f) m_CurrentCourse -= 360.0f;
     if (m_CurrentCourse < 0.0f)   m_CurrentCourse += 360.0f;
 }

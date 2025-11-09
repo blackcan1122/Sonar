@@ -1,6 +1,17 @@
 #pragma once
 #include "Base/Core.h"
 
+/*
+	Base class for all entities in the game world.
+	TODO:
+	need to parse JSON / XML data to populate entity attributes like:
+	- Model/Texture
+	- Speed
+	- Armament
+	- Sensors
+	- Crew
+	- etc.
+*/
 class Entity : public Object
 {
 	AUTOBODY(Entity, Object)
@@ -9,7 +20,6 @@ public:
 	void SetEntityLocation(Vector2 NewLocation) { m_Position = NewLocation; };
 	void SetEntityVelocity(Vector2 NewVelocity) { m_Velocity = NewVelocity; };
 	void SetEntityRotation(float Angle) { m_Rotation = std::fmod(Angle, 360.f); };
-	// TODO More
 
 	virtual void ConvertAngleToVector();
 	Vector2 GetFacingVector() const { return m_FacingVector; };
@@ -21,11 +31,11 @@ public:
 
 
 	void SetAccelerationRate(float NewAccelRate) { m_AccelerationRate = NewAccelRate; }
-	void SetDampeningRate(float NewDampeningRate) { DampeningRate = NewDampeningRate; }
+	void SetDampeningRate(float NewDampeningRate) { m_DampeningRate = NewDampeningRate; }
 
-	void SetBaseTurningRate(float NewBaseTurningRate) { BaseTurningRate = NewBaseTurningRate; }
-	void SetSpeedChangeDelay(float NewSpeedChangeDelay) { SpeedChangeDelay = NewSpeedChangeDelay; }
-	void SetSpeedChangeTimer(float NewSpeedChangeTimer) { SpeedChangeTimer = NewSpeedChangeTimer; }
+	void SetBaseTurningRate(float NewBaseTurningRate) { m_BaseTurningRate = NewBaseTurningRate; }
+	void SetSpeedChangeDelay(float NewSpeedChangeDelay) { m_SpeedChangeDelay = NewSpeedChangeDelay; }
+	void SetSpeedChangeTimer(float NewSpeedChangeTimer) { m_SpeedChangeTimer = NewSpeedChangeTimer; }
 
 protected:
 
@@ -50,13 +60,15 @@ protected:
 	virtual void Turning() = 0;
 
 	float m_AccelerationRate = 2.f;
-	float DampeningRate = 0.01f;
+	float m_DampeningRate = 0.01f;
 
-	float SpeedChangeDelay = 0.2f;
-	float SpeedChangeTimer = 0.0f;
-	float RotationChangeTimer = 0.0f;
+	float m_SpeedChangeDelay = 0.2f;
+	float m_SpeedChangeTimer = 0.0f;
+	float m_RotationChangeTimer = 0.0f;
 
-	float BaseTurningRate = 6.f;
+	float m_FullSpeedZone = 45.0f;
+
+	float m_BaseTurningRate = 6.f;
 
 
 

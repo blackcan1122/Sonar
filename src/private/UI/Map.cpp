@@ -178,6 +178,7 @@ void Map::Draw()
                         DrawCircleLinesV(screenPos, PlayerIcon.width * ZoomLevel / 2, PURPLE);
                         std::string CourseString = std::to_string(Submarine->GetEntityRotation());
                         std::string SpeedString = std::to_string(Submarine->GetCurrentSpeed());
+                        DrawText(("Name: " + obj->GetDisplayName()).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y - 24, 12, GREEN);
                         DrawText(("Course: " + CourseString).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y, 12, GREEN);
                         DrawText(("Speed: " + SpeedString).c_str(), screenPos.x + (PlayerIcon.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, GREEN);
                     }
@@ -264,7 +265,6 @@ void Map::Tick(float DeltaTime)
 
 void Map::Init()
 {
-    // Load shader through raylib
     shader = LoadShader("src/shaders/basic.vs", "src/shaders/basic.fs");
     locMVP = glGetUniformLocation(shader.id, "uMVP");
     
@@ -506,9 +506,6 @@ void Map::LoadBuffer(unsigned int& VAO, unsigned int& VBO, const std::vector<flo
 
 void Map::RenderOpenGLBuffer(unsigned int& VAO, const std::vector<float>* PointArray, const std::vector<unsigned int>* Offset, const std::vector<unsigned int>* Counts) const
 {
-
-
-    // Convert your std::vector<unsigned int> into the proper GL types:
     GLsizei drawCount = GLsizei(Counts->size());
     std::vector<GLint>   firsts(Offset->begin(), Offset->end());
     std::vector<GLsizei> counts(Counts->begin(), Counts->end());
