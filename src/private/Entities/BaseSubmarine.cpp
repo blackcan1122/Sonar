@@ -46,7 +46,7 @@ void BaseSubmarine::CalculateSpeed(float Deltatime)
     else
     {
         // Determine the sign of acceleration: + if we need to speed up, - if we need to slow down.
-        float acceleration = (diff > 0.0f) ? AccelerationRate : -AccelerationRate;
+        float acceleration = (diff > 0.0f) ? m_AccelerationRate : -m_AccelerationRate;
 
         // Update the current speed.
         m_CurrentKnots += acceleration * Deltatime;

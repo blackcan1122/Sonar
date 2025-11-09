@@ -10,3 +10,19 @@ void Entity::ConvertAngleToVector()
 
 	m_FacingVector = Vector2Normalize(m_FacingVector);
 }
+
+void Entity::MoveEntityToPosition(Vector2 TargetPosition)
+{
+	Vector2 Delta = TargetPosition - m_Position;
+	double AngleRadians = std::atan2(Delta.y, Delta.x);
+	double AngleDeg = AngleRadians * (180.0f / PI);
+
+	AngleDeg += 90.0f;
+	AngleDeg = std::fmod(AngleDeg, 360.0f);
+	if (AngleDeg < 0.0f)
+	{
+		AngleDeg += 360.0f;
+	}
+
+	this->m_DesiredCourse = ((int)AngleDeg % 360);
+}

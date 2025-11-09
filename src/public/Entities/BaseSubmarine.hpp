@@ -15,18 +15,9 @@ public:
 
 protected:
 
-	virtual void CalculateSpeed(float Deltatime);
-	virtual void CalculateRotation(float Deltatime);
+	virtual void CalculateSpeed(float Deltatime) override;
+	virtual void CalculateRotation(float Deltatime) override;
 
-	const float AccelerationRate = 2.f;
-	const float DampeningRate = 0.01f;
-
-	float SpeedChangeDelay = 0.2f;
-	float SpeedChangeTimer = 0.0f;
-	float RotationChangeTimer = 0.0f;
-
-	float BaseTurningRate = 6.f;
-
-	virtual void Accel(float Deltatime);
-	virtual void Turning();
+	virtual void Accel(float Deltatime) override;
+	virtual void Turning() override;
 };

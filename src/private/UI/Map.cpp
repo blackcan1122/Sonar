@@ -120,9 +120,9 @@ void Map::Draw()
             continue; 
         }
 
-        std::weak_ptr<Entity> Object = std::dynamic_pointer_cast<Entity>(obj);
+        std::weak_ptr<Entity> TempObject = std::dynamic_pointer_cast<Entity>(obj);
 
-        Vector2 screenPos = ConvertWorldToScreenPos(Object.lock()->GetEntityLocation());
+        Vector2 screenPos = ConvertWorldToScreenPos(TempObject.lock()->GetEntityLocation());
         Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(GetMousePosition());
 
         float scaledWidth = PlayerIcon.width * std::fmax(ZoomLevel, 0.035f);
@@ -187,7 +187,7 @@ void Map::Draw()
                         { 0, 0, (float)PlayerIcon.width, (float)PlayerIcon.height }, // Source rectangle
                         destRec,                                                      // Destination rectangle
                         origin,                                                       // Rotate around the center
-                        Object.lock()->GetEntityRotation(),                           // Rotation angle
+                        TempObject.lock()->GetEntityRotation(),                           // Rotation angle
                         ColorLookupState[static_cast<int>(State)]                     // Tint color
                     );
                 }
@@ -357,24 +357,10 @@ void Map::Init()
             Vector2 localMouse = ConvertMouseScreenPosToMapScreenPos(RightClickMenu.TryLoad()->MousePosWhenConstructed);
 
             Vector2 MousePos = ConvertScreenPosToWorld(localMouse);
-            Vector2 PlayerPos = TrackedPlayer->GetEntityLocation();
-            std::cout << MousePos.x << " " << MousePos.y << std::endl;
 
             MarkedPos = MousePos;
 
-            Vector2 delta = MousePos - PlayerPos;
-
-            float angleRad = std::atan2(delta.y, delta.x);
-
-            float angleDeg = angleRad * (180.0f / PI);
-            angleDeg += 90.0f; // Offset so 0, is north
-            angleDeg = std::fmod(angleDeg, 360.0f);
-            if (angleDeg < 0.0f)
-            {
-                angleDeg += 360.0f;
-            }
-
-            TrackedPlayer->SetCourse(angleDeg);
+            TrackedPlayer->MoveEntityToPosition(MarkedPos);
 
         });
 
@@ -402,21 +388,21 @@ void Map::Init()
     ZoomLevel = 1.0f;
 }
 
-void Map::AddObjectToDraw(std::weak_ptr<IObject> Object) 
+void Map::AddObjectToDraw(std::weak_ptr<IObject> inObject) 
 {
-    if (Object.lock() != nullptr && *Object.lock()->GetStaticClass() << (Entity::StaticClass()))
+    if (inObject.lock() != nullptr && *inObject.lock()->GetStaticClass() << (Entity::StaticClass()))
     {
-        std::cout << "Found Derived " << Object.lock()->GetDisplayName() << std::endl;
-        std::shared_ptr<Player> PlayerPTR = std::dynamic_pointer_cast<Player>(Object.lock());
+        std::cout << "Found Derived " << inObject.lock()->GetDisplayName() << std::endl;
+        std::shared_ptr<Player> PlayerPTR = std::dynamic_pointer_cast<Player>(inObject.lock());
         if (PlayerPTR && TrackedPlayer == nullptr)
         {
             TrackedPlayer = PlayerPTR;
-            auto EntityPtr = std::dynamic_pointer_cast<Entity>(Object.lock());
+            auto EntityPtr = std::dynamic_pointer_cast<Entity>(inObject.lock());
             ObjectsToDraw.push_back({ EntityPtr, {ObjectType::Submarine, ObjectState::EPlayer} });
         }
         else
         {
-            auto EntityPtr = std::dynamic_pointer_cast<Entity>(Object.lock());
+            auto EntityPtr = std::dynamic_pointer_cast<Entity>(inObject.lock());
             ObjectsToDraw.push_back({ EntityPtr, {ObjectType::Submarine, ObjectState::EEnemy} });
         }
 

@@ -17,7 +17,18 @@ public:
 	float GetEntityRotation() const { return m_Rotation; };
 	NavalUnits::Knot GetCurrentSpeed() const { return m_CurrentKnots; };
 
+	void MoveEntityToPosition(Vector2 TargetPosition);
+
+
+	void SetAccelerationRate(float NewAccelRate) { m_AccelerationRate = NewAccelRate; }
+	void SetDampeningRate(float NewDampeningRate) { DampeningRate = NewDampeningRate; }
+
+	void SetBaseTurningRate(float NewBaseTurningRate) { BaseTurningRate = NewBaseTurningRate; }
+	void SetSpeedChangeDelay(float NewSpeedChangeDelay) { SpeedChangeDelay = NewSpeedChangeDelay; }
+	void SetSpeedChangeTimer(float NewSpeedChangeTimer) { SpeedChangeTimer = NewSpeedChangeTimer; }
+
 protected:
+
 	Vector2 m_Position = { 0,0 };
 	Vector2 m_Velocity = { 0,0 };
 	NavalUnits::Knot m_CurrentKnots = 0.f;
@@ -31,6 +42,23 @@ protected:
 	bool m_IsActive = true;
 	bool m_IsVisible = true;
 	bool m_CollisionEnabled = false;
+
+	virtual void CalculateSpeed(float Deltatime) = 0;
+	virtual void CalculateRotation(float Deltatime) = 0;
+
+	virtual void Accel(float Deltatime) = 0;
+	virtual void Turning() = 0;
+
+	float m_AccelerationRate = 2.f;
+	float DampeningRate = 0.01f;
+
+	float SpeedChangeDelay = 0.2f;
+	float SpeedChangeTimer = 0.0f;
+	float RotationChangeTimer = 0.0f;
+
+	float BaseTurningRate = 6.f;
+
+
 
 	Texture2D Texture; // don't know about this, since we should need a way to cicyle through a tileset maybe
 

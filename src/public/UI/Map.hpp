@@ -47,7 +47,7 @@ public:
 	virtual void Draw() override;
 	void Init();
 
-	void AddObjectToDraw(std::weak_ptr<IObject> Object);
+	void AddObjectToDraw(std::weak_ptr<IObject> inObject);
 
 	std::shared_ptr<EventDispatcher> MapEventDispatcher;
 
