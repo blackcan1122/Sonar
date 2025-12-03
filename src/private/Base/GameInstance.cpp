@@ -252,5 +252,33 @@ void GameInstance::GameLoop()
 		DrawText((std::string("Version: ") + Version).c_str(), 0 + 5, GetScreenHeight() - 20, 12, WHITE);
 		EndDrawing();
 	}
+
+GameInstance::GetInstance()->GetCurrentGameMode()->~GameMode();
+
+LOG_INFO(l_GAME_INSTANCE, "Starting shutdown sequence...");
+
+LOG_INFO(l_GAME_INSTANCE, "Waiting for resource cleanup threads...");
+for (auto& [name, resource] : g_ResourceManager.AllResources)
+{
+    resource.ForceCleanup();
+}
+
+LOG_INFO(l_GAME_INSTANCE, "Processing pending tasks...");
+MainQueue.ProcessTasks();
+
+g_ResourceManager.AllResources.clear();
+LOG_INFO(l_GAME_INSTANCE, "Resources cleared");
+
+LOG_INFO(l_GAME_INSTANCE, "Closing audio and window...");
+
+SetTraceLogCallback(nullptr);
+
+CloseAudioDevice();
+CloseWindow();
+
+LOG_INFO(l_GAME_INSTANCE, "GameInstance shutdown complete");
+
+spdlog::shutdown();
+
 }
 

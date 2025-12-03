@@ -23,75 +23,74 @@
 class Factory
 {
 public:
+	Factory(GameMode *Outter)
+		: m_Outter(Outter)
+	{
+	}
 
-	Factory(GameMode* Outter)
-		:m_Outter(Outter)
-	{}
+	GameMode *m_Outter = nullptr;
 
-	GameMode* m_Outter = nullptr;
-
-	template<typename T, typename... Args>
-	SoftObjectPath<T> NewObject(Args&&... args)
+	template <typename T, typename... Args>
+	SoftObjectPath<T> NewObject(Args &&...args)
 	{
 		static_assert(std::is_base_of_v<IObject, T>,
-			"T must inherit from IObject");
+					  "T must inherit from IObject");
 
 		// SharedPtr with custom Deleter
 		auto Obj = std::shared_ptr<T>(
-				new T(std::forward<Args>(args)...),
-				// Custom Deleter to clean it from the Asset Registry and also from the GameMode
-				[Outter = m_Outter](T* ptr) 
-				{
-					LOG_INFO(l_FACTORY, TEXT("Cleaned Up Object: '{}'", ptr->m_Name));
-					GameInstance::KeyDispatcher.RemoveListener(ptr->m_Name, KeyEvent::StaticClass());
-					GameInstance::MouseDispatcher.RemoveListener(ptr->m_Name, MouseEvent::StaticClass());
+			new T(std::forward<Args>(args)...),
+			// Custom Deleter to clean it from the Asset Registry and also from the GameMode
+			[Outter = m_Outter](T *ptr)
+			{
+				std::cout << "WE DELETE SOMETHING" << std::endl;
+				std::cout.flush();
+				LOG_INFO(l_FACTORY, TEXT("Cleaned Up Object: '{}'", ptr->m_Name));
+				GameInstance::KeyDispatcher.RemoveListener(ptr->m_Name, KeyEvent::StaticClass());
+				GameInstance::MouseDispatcher.RemoveListener(ptr->m_Name, MouseEvent::StaticClass());
 
-					Outter->UnregisterObject(ptr);
-					GameInstance::GetAssetRegistry()->UnregisterAsset(ptr->m_Name);
-					delete ptr;
-				});
-
-
-		LOG_INFO(l_FACTORY, TEXT("Created Object from Type '{}' with size: '{}' and Registred to Outter: '{}'", typeid(T).name(), sizeof(T), m_Outter->GetName()));
+				Outter->UnregisterObject(ptr);
+				GameInstance::GetAssetRegistry()->UnregisterAsset(ptr->m_Name);
+				delete ptr;
+			});
 
 		std::shared_ptr<IObject> CastedObj = std::dynamic_pointer_cast<IObject>(Obj); // Casting it to the actual Type
 		std::string ClassName = CastedObj->GetStaticClass()->ClassName;
 
-		// typeid.name returns a whitespace and we clean it and replaces it with a .
+		LOG_INFO(l_FACTORY, TEXT("Created Object from Type '{}' with size: '{}' and Registred to Outter: '{}'", ClassName, sizeof(T), m_Outter->GetName()));
+
 		std::replace(ClassName.begin(), ClassName.end(), ' ', '.');
 
-		// Creating a Unique Name in the Asset Registry here
 		std::string GeneralName = m_Outter->GetName() + "/" + ClassName;
 		CastedObj->m_Name = GameInstance::GetAssetRegistry()->RegisterAsset(GeneralName);
 
-		// Subscribing to the Key Event for all IObjects which are created via factory
+		std::weak_ptr<IObject> WeakObj = CastedObj; // Create weak_ptr BEFORE the lambdas
+
 		GameInstance::KeyDispatcher.AddListener(
 			CastedObj->m_Name,
 			KeyEvent::StaticClass(),
-			[CastedObj](std::shared_ptr<IEvent> evt) 
+			[WeakObj](std::shared_ptr<IEvent> evt)
 			{
-				auto CastedKeyEvent = std::dynamic_pointer_cast<KeyEvent>(evt);
-
-				CastedObj->OnKeyStroke(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
-			}
-		);
+				if (auto CastedObj = WeakObj.lock()) // Try to get shared_ptr
+				{
+					auto CastedKeyEvent = std::dynamic_pointer_cast<KeyEvent>(evt);
+					CastedObj->OnKeyStroke(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
+				}
+			});
 		LOG_INFO(l_FACTORY, TEXT("Class: '{}' subscribed to OnKeyEvent", CastedObj->m_Name));
-
 
 		GameInstance::MouseDispatcher.AddListener(
 			CastedObj->m_Name,
 			MouseEvent::StaticClass(),
-			[CastedObj](std::shared_ptr<IEvent> evt)
+			[WeakObj](std::shared_ptr<IEvent> evt) // Capture weak_ptr instead
 			{
-				auto CastedKeyEvent = std::dynamic_pointer_cast<MouseEvent>(evt);
-
-				CastedObj->OnMouseButtonPressed(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
-			}
-		);
+				if (auto CastedObj = WeakObj.lock()) // Try to get shared_ptr
+				{
+					auto CastedKeyEvent = std::dynamic_pointer_cast<MouseEvent>(evt);
+					CastedObj->OnMouseButtonPressed(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
+				}
+			});
 		LOG_INFO(l_FACTORY, TEXT("Class: '{}' subscribed to OnMouseEvent", CastedObj->m_Name));
 
-
-		// Registering the created Obj to the GameMode
 		m_Outter->RegisterObject(Obj);
 
 		// we just return a SoftObjectPath

@@ -54,14 +54,12 @@ void SandboxGameMode::BeginPlay()
 
 }
 
-SandboxGameMode::~SandboxGameMode()
-{
-}
-
 void SandboxGameMode::Update()
 {
 		ClearBackground(BLACK);
 		GameMode::Update();
+
+
 
 		DrawFocusPlayer();
 
@@ -69,7 +67,10 @@ void SandboxGameMode::Update()
 #if DEBUG
 		DrawFPS(GameInstance::GetInstance()->GetWindowProperties().m_ScreenWidth - 100, 20);
 #endif
-
+		if (IsKeyPressed(KEY_K))
+		{
+			GameInstance::GetInstance()->g_ActiveStateMachine.ChangeState("Menu");
+		}
 }
 
 void SandboxGameMode::SetName(std::string Name)

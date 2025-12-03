@@ -11,7 +11,6 @@ class SandboxGameMode : public GameMode
 {
 public:
 	SandboxGameMode();
-	~SandboxGameMode();
 
 
 

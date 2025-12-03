@@ -9,15 +9,19 @@ namespace NavalUnits
 
     using NauticalMile = float;
     using Knot = float;
+    using Hz = double;
+
+    // Sound frequency units
+    constexpr Hz KHz = 1000 * 1;
+    constexpr Hz MHz = 1000 * KHz;
 
     inline float NauticalMilesToMeters(NauticalMile nm)
     {
         return nm * 1852.0f;
     }
 
-    constexpr inline  float KnotToMetersPerSecond(Knot k)
+    constexpr inline float KnotToMetersPerSecond(Knot k)
     {
         return k * 0.514444f;
     }
 }
-
