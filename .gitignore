@@ -11,3 +11,5 @@ bin/*
 logs/*
 .vs
 *.sln
+.vscode/
+.vscode/*

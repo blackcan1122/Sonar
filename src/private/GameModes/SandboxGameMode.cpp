@@ -36,11 +36,12 @@ void SandboxGameMode::BeginPlay()
 	PlayerOne.TryLoad()->SetDisplayName("U-521");
 	PlayerOne.TryLoad()->SetEntityRotation(0);
 	PlayerOne.TryLoad()->ConvertAngleToVector();
-	PlayerOne.TryLoad()->SetInitialSpeed(15);
+	PlayerOne.TryLoad()->SetInitialSpeed(0);
 
 	OtherSub = m_ObjectFactory->NewObject<BaseSubmarine>();
 	OtherSub.TryLoad()->SetEntityLocation(Vector2{ 800,200 });
 	OtherSub.TryLoad()->SetDisplayName("K-21");
+	OtherSub.TryLoad()->SetInitialSpeed(15);
 
 
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
@@ -61,31 +62,6 @@ void SandboxGameMode::Update()
 {
 		ClearBackground(BLACK);
 		GameMode::Update();
-
-		if (IsKeyPressed(KEY_K))
-		{
-			PlayerOne.TryLoad()->MarkForDestruction();
-		}
-		if (IsKeyPressed(KEY_N))
-		{
-			WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 360, 30);
-			WaterfallDisplay.TryLoad()->SetPosition(Vector2{ 0,0 });
-		}
-
-		if (IsKeyPressed(KEY_R))
-		{
-
-			if (auto tempPlayer = FocusedUnit.Cast<Player>().TryLoad())
-			{
-				tempPlayer->SetCourse(180.f);
-			}
-		}
-
-		if (IsKeyDown(KEY_W))
-		{
-			MapDisplay.TryLoad()->SetPosition({ 600,250 });
-		}
-
 
 		DrawFocusPlayer();
 

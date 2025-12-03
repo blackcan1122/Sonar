@@ -393,7 +393,11 @@ void Map::AddObjectToDraw(std::weak_ptr<IObject> inObject)
     if (inObject.lock() != nullptr && *inObject.lock()->GetStaticClass() << (Entity::StaticClass()))
     {
         std::cout << "Found Derived " << inObject.lock()->GetDisplayName() << std::endl;
-        std::shared_ptr<Player> PlayerPTR = std::dynamic_pointer_cast<Player>(inObject.lock());
+        std::shared_ptr<Player> PlayerPTR = nullptr;
+        if (*(inObject.lock()->GetStaticClass()) << (Player::StaticClass()))
+        {
+            PlayerPTR = std::dynamic_pointer_cast<Player>(inObject.lock());
+        }
         if (PlayerPTR && TrackedPlayer == nullptr)
         {
             TrackedPlayer = PlayerPTR;
@@ -436,20 +440,12 @@ void Map::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
 
 Vector2 Map::ConvertWorldToScreenPos(Vector2 worldPos) const
 {
-    // 1) Translate the world so that CameraWorldPosition maps to (0,0)
     float relX = worldPos.x - CameraWorldPosition.x;
     float relY = worldPos.y - CameraWorldPosition.y;
 
-    // 2) Scale by zoom
     relX *= ZoomLevel;
     relY *= ZoomLevel;
 
-    // 3) Raylib’s render‑target space has +Y down, so flip Y if your world +Y is up:
-    //    (uncomment if needed)
-    // relY = -relY;
-
-    // 4) Now center it inside your render target:
-    //    camera‑origin (0,0) → (width/2, height/2)
     Vector2 screenPos;
     screenPos.x = relX + (DestinationRect.width * 0.5f);
     screenPos.y = relY + (DestinationRect.height * 0.5f);
