@@ -32,6 +32,8 @@ enum class InteractionState
 };
 
 // World Units: 1 Unit 1 Meter
+// TODO: we need to refactor this here a lot since we allocate a lot of memory
+// and most of the stuff here could be somehow created and managed over the factory
 class Map : public Display
 {
 	AUTOBODY(Map, Display)
@@ -105,7 +107,7 @@ private:
 
 
 	std::vector<std::pair<std::weak_ptr<Entity>, std::pair<ObjectType, ObjectState>>> ObjectsToDraw;
-	std::shared_ptr<Player> TrackedPlayer = nullptr;
+	std::weak_ptr<Player> TrackedPlayer;
 
 	std::vector<size_t> IndicesPendingKill;
 	long double ZoomLevel = 1.f;

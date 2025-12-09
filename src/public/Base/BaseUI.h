@@ -10,6 +10,7 @@ public:
 	// Methods
 
 	BaseUI() = default;
+	virtual void MarkForDestruction() override;
 	virtual ~BaseUI() = default;
 
 

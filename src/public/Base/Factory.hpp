@@ -42,11 +42,10 @@ public:
 			// Custom Deleter to clean it from the Asset Registry and also from the GameMode
 			[Outter = m_Outter](T *ptr)
 			{
-				std::cout << "WE DELETE SOMETHING" << std::endl;
-				std::cout.flush();
-				LOG_INFO(l_FACTORY, TEXT("Cleaned Up Object: '{}'", ptr->m_Name));
+				LOG_INFO(l_FACTORY, TEXT("Cleaning Up Object: '{}'", ptr->m_Name));
 				GameInstance::KeyDispatcher.RemoveListener(ptr->m_Name, KeyEvent::StaticClass());
 				GameInstance::MouseDispatcher.RemoveListener(ptr->m_Name, MouseEvent::StaticClass());
+				LOG_INFO(l_FACTORY, TEXT("Object:'{}' Unsubscribed from 'OnMouseEvent' and 'OnKeyEvent' ", ptr->m_Name));
 
 				Outter->UnregisterObject(ptr);
 				GameInstance::GetAssetRegistry()->UnregisterAsset(ptr->m_Name);

@@ -19,6 +19,11 @@ GameMode::~GameMode()
 	// Clear objects map - this will trigger shared_ptr destructors
 	// but UnregisterObject calls will be ignored due to m_IsDestroying flag
 	    // Remove all event listeners FIRST to break the circular reference
+	for (auto& obj : m_Objects)
+	{
+		obj.second->MarkForDestruction();
+	}
+
 	m_Objects.clear();
 	m_PendingKill.clear();
 	#if DEBUG

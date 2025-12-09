@@ -11,6 +11,7 @@ public:
 
 
 	virtual void Draw();
+	virtual void  MarkForDestruction() override;
 
 	void SetPosition(Vector2 NewPosition);
 	void RenderToMainBuffer();
