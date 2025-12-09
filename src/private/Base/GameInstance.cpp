@@ -36,10 +36,6 @@
 #include "Base/EventData.hpp"
 #include "Events/WindowResizeData.hpp"
 
-			#include <unistd.h>
-			#include <fstream>
-			#include <string>
-
 // Definition of the static member
 EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;
@@ -228,7 +224,6 @@ void GameInstance::GameLoop()
 		BeginDrawing();
 		if (g_ActiveStateMachine.isPendingKillLastMode())
 		{
-			// Print the size of the GameInstance object (not total memory usage)
 			g_ActiveStateMachine.KillLastGameMode();
 		}
 		g_ActiveStateMachine.UpdateGameMode();

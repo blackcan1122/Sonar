@@ -54,7 +54,6 @@ void SandboxGameMode::BeginPlay()
 
 }
 
-
 void SandboxGameMode::Update()
 {
 		ClearBackground(BLACK);
