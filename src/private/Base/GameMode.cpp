@@ -1,5 +1,6 @@
 #include "Base/GameMode.h"
 #include "Base/Factory.hpp"
+#include "Base/Core.h"
 
 GameMode::GameMode()
 {
@@ -8,13 +9,28 @@ GameMode::GameMode()
 
 GameMode::~GameMode()
 {
+	#if DEBUG
+	LogInfo(l_GAMEMODE, TEXT("Start Destructor of GameMode: {}", this->m_Name));
+	LogInfo(l_GAMEMODE, TEXT("{} Objects belong to GameMode before Cleaning", this->m_Objects.size()));
+	#endif
 	// Set flag to prevent UnregisterObject calls during destruction
 	m_IsDestroying = true;
 	
 	// Clear objects map - this will trigger shared_ptr destructors
 	// but UnregisterObject calls will be ignored due to m_IsDestroying flag
+	    // Remove all event listeners FIRST to break the circular reference
+	for (auto& obj : m_Objects)
+	{
+		obj.second->MarkForDestruction();
+	}
+
 	m_Objects.clear();
 	m_PendingKill.clear();
+	#if DEBUG
+	LogInfo(l_GAMEMODE, TEXT("Finished Destructor of GameMode: {}", this->m_Name));
+	LogInfo(l_GAMEMODE, TEXT("{} Objects belong to GameMode after Cleaning", this->m_Objects.size()));
+
+	#endif
 }
 
 
@@ -83,7 +99,6 @@ void GameMode::RegisterObject(std::shared_ptr<IObject> Object)
 
 void GameMode::UnregisterObject(IObject* inObject)
 {
-	// Skip unregistration if GameMode is being destroyed to prevent circular destruction
 	if (m_IsDestroying) {
 		return;
 	}

@@ -6,6 +6,7 @@
 #include <string>
 #include "omp.h"
 
+
 Waterfall::Waterfall(int Width, int Height, int TimeFrame)
     : Display(Width, Height), WorkerDone(true), RenderReady(false), TimeFrameInSec(TimeFrame)
 {
@@ -23,6 +24,8 @@ Waterfall::Waterfall(int Width, int Height, int TimeFrame)
         FrontBuffer->m_Width, 
         FrontBuffer->m_Height, 
         Size));
+
+    InDestruction.store(false);
 }
 
 Waterfall::~Waterfall() 
@@ -46,6 +49,11 @@ void Waterfall::Tick(float DeltaTime)
 
     // change to always accumulate data and process them, no matter how many lines we shift
     // but reset the sampled data when we shift
+
+    if (InDestruction.load())
+    {
+        return;
+    }
 
     // Temp to change index of signal
     if (IsKeyDown(KEY_A))
@@ -147,6 +155,19 @@ void Waterfall::Draw()
     DrawTexture(FrontTexture, 0, 0, WHITE);
     GenerateBearings();
     EndTextureMode();
+}
+
+void Waterfall::MarkForDestruction()
+{
+    InDestruction.store(true);
+
+    if (WorkerFuture.valid())
+    {
+        WorkerFuture.wait();
+    }
+
+    LogInfo(l_HOUSE_KEEPING, TEXT("Cleaned Up Waterfall now Calling: {}", Super::GetStaticClass()->ClassName));
+    Super::MarkForDestruction();
 }
 
 float Waterfall::TimestepPerPixel()

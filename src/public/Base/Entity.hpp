@@ -29,6 +29,10 @@ public:
 
 	void MoveEntityToPosition(Vector2 TargetPosition);
 
+	virtual void SetSpeed(NavalUnits::Knot DesiredKnots);
+	virtual void SetInitialSpeed(NavalUnits::Knot DesiredKnots);
+	virtual void SetCourse(int Course);
+
 
 	void SetAccelerationRate(float NewAccelRate) { m_AccelerationRate = NewAccelRate; }
 	void SetDampeningRate(float NewDampeningRate) { m_DampeningRate = NewDampeningRate; }

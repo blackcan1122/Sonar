@@ -26,6 +26,19 @@ bool EventDispatcher::RemoveListener(const std::string& Identifier, SClass* Even
 	return true;
 }
 
+void EventDispatcher::DumpListeners() const
+{
+	LOG_INFO(l_DISPATCHER, TEXT("=== EventDispatcher '{}' Listeners ===", m_Name));
+    for (const auto& [eventClass, listeners] : m_Listener)
+    {
+        LOG_INFO(l_DISPATCHER, TEXT("  EventClass '{}': {} listeners", 
+            eventClass->ClassName, listeners.size()));
+        for (const auto& [id, callback] : listeners)
+        {
+            LOG_INFO(l_DISPATCHER, TEXT("    - '{}'", id));
+        }
+    }
+}
 
 void EventDispatcher::Dispatch(std::shared_ptr<IEvent> EventToDispatch, const std::string& Identifier, bool bUseIdentifier)
 {

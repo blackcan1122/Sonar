@@ -103,6 +103,7 @@ public:
 
 	virtual void Tick(float Deltatime) override;
 	virtual void Draw() override;
+	virtual void MarkForDestruction() override;
 
 private:
 
@@ -115,6 +116,7 @@ private:
 	std::atomic<bool> RenderReady;
 	std::future<void> WorkerFuture;
 	std::vector<int> m_CurrentAmbientLevel;
+	std::atomic<bool> InDestruction;
 	bool FirstUpdate = true;
 
 	int TimeFrameInSec;

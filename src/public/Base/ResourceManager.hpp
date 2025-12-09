@@ -69,6 +69,7 @@ struct TextureNPatchInfo
 struct TextureResource 
 {
     friend SharedTexture2D;
+    friend GameInstance;
 
     TextureResource()
         :WorkerDone(true)
@@ -150,6 +151,7 @@ private:
     Texture2D LoadedTexture = {};
     int RefCount = 0;
     std::atomic<bool> WorkerDone;
+    std::atomic<bool> ShutdownRequested{false};
     std::future<void> WorkerFuture;
 
     void AddRef()
@@ -158,7 +160,7 @@ private:
     }
 
     void RemoveRef();
-
+    void ForceCleanup();
     bool UnloadTexture();
 };
 

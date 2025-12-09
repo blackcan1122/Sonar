@@ -8,9 +8,6 @@ class BaseSubmarine : public Entity
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetSpeed(NavalUnits::Knot DesiredKnots);
-	virtual void SetInitialSpeed(NavalUnits::Knot DesiredKnots);
-	virtual void SetCourse(int Course);
 
 
 protected:

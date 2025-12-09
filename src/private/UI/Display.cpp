@@ -19,6 +19,11 @@ void Display::Draw()
 	EndTextureMode();
 }
 
+void Display::MarkForDestruction()
+{
+	Super::MarkForDestruction();
+}
+
 void Display::SetPosition(Vector2 NewPosition)
 {
 	DestinationRect.x = NewPosition.x;

@@ -24,5 +24,29 @@ void Entity::MoveEntityToPosition(Vector2 TargetPosition)
 		AngleDeg += 360.0f;
 	}
 
-	this->m_DesiredCourse = ((int)AngleDeg % 360);
+	this->SetCourse(((int)AngleDeg % 360));
+}
+void Entity::SetSpeed(NavalUnits::Knot DesiredKnots)
+{
+	#if DEBUG
+	LOG_INFO(l_GAMEMODE, TEXT("Setting Desired Speed to {}", static_cast<int>(DesiredKnots)));
+	#endif
+	m_DesiredKnots = DesiredKnots;
+}
+
+void Entity::SetInitialSpeed(NavalUnits::Knot DesiredKnots)
+{
+	#if DEBUG
+	LOG_INFO(l_GAMEMODE, TEXT("Setting Initial Speed to {}", static_cast<int>(DesiredKnots)));
+	#endif
+	m_DesiredKnots = DesiredKnots;
+    m_CurrentKnots = DesiredKnots;
+}
+
+void Entity::SetCourse(int Course)
+{
+	#if DEBUG
+	LOG_INFO(l_GAMEMODE, TEXT("Setting Course To: {}", Course));
+	#endif
+	m_DesiredCourse = Course % 360;
 }

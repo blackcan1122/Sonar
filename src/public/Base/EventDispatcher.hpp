@@ -26,6 +26,8 @@ public:
 	int AmountOfListener(std::shared_ptr<IEvent> EventToDispatch);
 	int AmountOfListener(SClass* ClassID);
 
+	void DumpListeners() const;
+
 	std::string m_Name;
 
 private:

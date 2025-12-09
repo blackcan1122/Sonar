@@ -84,6 +84,7 @@ void InitLogger();
 private: \
 	static inline SClass m_SClass = SClass(Parent::StaticClass(), #Base); \
 public: \
+    using Super = Parent; \
     virtual SClass* GetStaticClass() override { return &m_SClass; } \
     static SClass* StaticClass() { return  &m_SClass; } \
 private:

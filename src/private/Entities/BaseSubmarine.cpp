@@ -10,23 +10,6 @@ void BaseSubmarine::Tick(float DeltaTime)
     Accel(DeltaTime);
 }
 
-void BaseSubmarine::SetSpeed(NavalUnits::Knot DesiredKnots)
-{
-    m_DesiredKnots = DesiredKnots;
-}
-
-void BaseSubmarine::SetInitialSpeed(NavalUnits::Knot DesiredKnots)
-{
-    m_DesiredKnots = DesiredKnots;
-    m_CurrentKnots = DesiredKnots;
-}
-
-void BaseSubmarine::SetCourse(int Course)
-{
-    std::cout << "Course is now: " << Course << std::endl;
-    m_DesiredCourse = Course % 360;
-}
-
 void BaseSubmarine::CalculateSpeed(float Deltatime)
 {
     m_SpeedChangeTimer += Deltatime;

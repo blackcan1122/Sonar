@@ -60,6 +60,4 @@ int main (int args, char* argv[])
 
 	GameInstance::InitGameInstance(WindowProperties(1280, 720, 60, false, isDebug));
 	
-	CloseWindow();
-	return 0;
 }

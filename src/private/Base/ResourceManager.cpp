@@ -135,7 +135,7 @@ void TextureResource::RemoveRef()
                 auto CurrentTime = StartTime;
                 bool StillZero = true;
                 size_t ResetCounter = 0;
-                while (StartTime + std::chrono::seconds(120) > CurrentTime)
+                while (StartTime + std::chrono::seconds(120) > CurrentTime && !ShutdownRequested.load())
                 {
                     std::this_thread::sleep_for(std::chrono::seconds(5));
                     CurrentTime = std::chrono::system_clock::now();
@@ -178,6 +178,18 @@ void TextureResource::RemoveRef()
                 WorkerDone.store(true);
                 return;
             });
+    }
+}
+
+void TextureResource::ForceCleanup()
+{
+    ShutdownRequested.store(true);
+    if (WorkerFuture.valid() == false) // No GC in action
+    {
+        GameInstance::GetInstance()->MainQueue.Enqueue([this]()
+        {
+            this->UnloadTexture();
+        });
     }
 }
 

@@ -11,16 +11,14 @@ class SandboxGameMode : public GameMode
 {
 public:
 	SandboxGameMode();
-	~SandboxGameMode();
 
 
 
-	void Update() override;
-	void SetName(std::string Name) override;
-	void BeginPlay() override;
+	virtual void Update() override;
+	virtual void SetName(std::string Name) override;
+	virtual void BeginPlay() override;
+
 	void OnMapClickedEvent(std::shared_ptr<IEvent> Event);
-
-
 
 	void DrawFocusPlayer();
 

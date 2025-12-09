@@ -32,11 +32,13 @@ Map::Map(int X, int Y)
 
 Map::~Map()
 {
-    unsigned int vaos[] = { vaoAfrica, vaoEurope, vaoAsia, vaoNA, vaoOceania, vaoSA, vaoAntarctica };
-    unsigned int vbos[] = { vboAfrica, vboEurope, vboAsia, vboNA, vboOceania, vboSA, vboAntarctica };
-    glDeleteVertexArrays(7, vaos);
-    glDeleteBuffers(7, vbos);
-
+    unsigned int vaos[] = { vaoAfrica, vaoEurope, vaoAsia, vaoNA, vaoOceania, vaoSA, vaoAntarctica, vaoSevenSeas };
+    unsigned int vbos[] = { vboAfrica, vboEurope, vboAsia, vboNA, vboOceania, vboSA, vboAntarctica, vboSevenSeas };
+    glDeleteVertexArrays(8, vaos);
+    glDeleteBuffers(8, vbos);
+    UnloadTexture(PlayerIcon);
+    UnloadTexture(ShipIcon);
+    UnloadShader(shader);
     Display::~Display();
 }
 
@@ -303,35 +305,35 @@ void Map::Init()
     FullSpeedEntry.SetDisplayName("Full Speed");
     FullSpeedEntry.SetCallback([this](ContextMenuEntry* Self)
         {
-            TrackedPlayer->SetSpeed(20);
+            TrackedPlayer.lock()->SetSpeed(20);
         });
 
     ContextMenuEntry HalfSpeedEntry;
     HalfSpeedEntry.SetDisplayName("Half Speed");
     HalfSpeedEntry.SetCallback([this](ContextMenuEntry* Self)
         {
-            TrackedPlayer->SetSpeed(12);
+            TrackedPlayer.lock()->SetSpeed(12);
         });
 
     ContextMenuEntry SlowAheadEntry;
     SlowAheadEntry.SetDisplayName("Slow Ahead");
     SlowAheadEntry.SetCallback([this](ContextMenuEntry* Self)
         {
-            TrackedPlayer->SetSpeed(8);
+            TrackedPlayer.lock()->SetSpeed(8);
         });
 
     ContextMenuEntry DeadSlowEntry;
     DeadSlowEntry.SetDisplayName("Dead Slow");
     DeadSlowEntry.SetCallback([this](ContextMenuEntry* Self)
         {
-            TrackedPlayer->SetSpeed(3);
+            TrackedPlayer.lock()->SetSpeed(3);
         });
 
     ContextMenuEntry StopEntry;
     StopEntry.SetDisplayName("Stop");
     StopEntry.SetCallback([this](ContextMenuEntry* Self)
         {
-            TrackedPlayer->SetSpeed(0);
+            TrackedPlayer.lock()->SetSpeed(0);
         });
 
     SpeedMenu.TryLoad()->AddMenuEntry(FullSpeedEntry);
@@ -346,7 +348,7 @@ void Map::Init()
     NewEntry.SetDisplayName("Center Player");
     NewEntry.SetCallback([this](ContextMenuEntry* Self) -> void
         {
-            CameraWorldPosition = TrackedPlayer->GetEntityLocation();
+            CameraWorldPosition = TrackedPlayer.lock()->GetEntityLocation();
             return;
         });
 
@@ -360,7 +362,7 @@ void Map::Init()
 
             MarkedPos = MousePos;
 
-            TrackedPlayer->MoveEntityToPosition(MarkedPos);
+            TrackedPlayer.lock()->MoveEntityToPosition(MarkedPos);
 
         });
 
@@ -393,12 +395,12 @@ void Map::AddObjectToDraw(std::weak_ptr<IObject> inObject)
     if (inObject.lock() != nullptr && *inObject.lock()->GetStaticClass() << (Entity::StaticClass()))
     {
         std::cout << "Found Derived " << inObject.lock()->GetDisplayName() << std::endl;
-        std::shared_ptr<Player> PlayerPTR = nullptr;
+        std::weak_ptr<Player> PlayerPTR;
         if (*(inObject.lock()->GetStaticClass()) << (Player::StaticClass()))
         {
             PlayerPTR = std::dynamic_pointer_cast<Player>(inObject.lock());
         }
-        if (PlayerPTR && TrackedPlayer == nullptr)
+        if (PlayerPTR.lock() && TrackedPlayer.lock() == nullptr)
         {
             TrackedPlayer = PlayerPTR;
             auto EntityPtr = std::dynamic_pointer_cast<Entity>(inObject.lock());
@@ -418,7 +420,7 @@ void Map::OnKeyStroke(KeyboardKey Key, Vector2 MousePos)
     if (CheckCollisionPointRec(MousePos, DestinationRect)
         && Key == KEY_C)
     {
-        CameraWorldPosition = TrackedPlayer->GetEntityLocation();
+        CameraWorldPosition = TrackedPlayer.lock()->GetEntityLocation();
         ZoomLevel = 1.f;
     }
 }
