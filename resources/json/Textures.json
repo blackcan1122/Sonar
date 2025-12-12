@@ -29,19 +29,6 @@
                 "Height": 128,
                 "Format": "RGBA"
             }
-        },
-        {
-            "Name": "AfricaMap",
-            "TextureID": 103,
-            "TextureKind": "Texture2D", 
-            "TextureNPatchInfo": null,
-            "Path": "imgs/map/Africa.png",
-            "Properties": {
-                "Width": 1563,
-                "Height": 1692,
-                "Format": "RGBA",
-                "WrapMode": "Repeat"
-            }
         }
     ]
 }

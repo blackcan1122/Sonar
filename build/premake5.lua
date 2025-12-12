@@ -259,6 +259,8 @@ if (downloadRaylib) then
         filter "system:linux"
             links {"spdlog", "pthread", "m", "dl", "rt", "X11"}
             kind   "ConsoleApp"
+            buildoptions { "-fopenmp" }
+            linkoptions { "-fopenmp" }
 
         filter "system:macosx"
             links {"OpenGL.framework", "Cocoa.framework", "IOKit.framework", "CoreFoundation.framework", "CoreAudio.framework", "CoreVideo.framework", "AudioToolbox.framework"}

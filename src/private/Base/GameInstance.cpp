@@ -255,16 +255,12 @@ void GameInstance::GameLoop()
 
 GameInstance::GetInstance()->GetCurrentGameMode()->~GameMode();
 
-LOG_INFO(l_GAME_INSTANCE, "Starting shutdown sequence...");
-
-LOG_INFO(l_GAME_INSTANCE, "Waiting for resource cleanup threads...");
-for (auto& [name, resource] : g_ResourceManager.AllResources)
-{
-    resource.ForceCleanup();
-}
-
 LOG_INFO(l_GAME_INSTANCE, "Processing pending tasks...");
 MainQueue.ProcessTasks();
+
+LOG_INFO(l_GAME_INSTANCE, "Waiting for resource cleanup threads...");
+g_ResourceManager.CleanAllResources();
+
 
 g_ResourceManager.AllResources.clear();
 LOG_INFO(l_GAME_INSTANCE, "Resources cleared");
