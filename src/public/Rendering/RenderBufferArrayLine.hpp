@@ -32,6 +32,21 @@ public:
     // Copy Assignment
     RenderBufferArrayLine& operator=(const RenderBufferArrayLine& Other)
     {
+        if (this == &Other)
+        {
+            return *this;
+        }
+
+        if (vbo != 0)
+        {
+            glDeleteBuffers(1, &vbo);
+        }
+
+        if (vao != 0)
+        {
+            glDeleteVertexArrays(1, &vao);
+        }
+        
         this->Vertices = Other.Vertices;
         this->Counts = Other.Counts;
         this->Offsets = Other.Offsets;
@@ -61,13 +76,14 @@ public:
         {
             return *this;
         }
+
         if (vbo != 0)
         {
             glDeleteBuffers(1, &vbo);
         }
         if (vao != 0)
         {
-            glDeleteBuffers(1, &vao);
+            glDeleteVertexArrays(1, &vao);
         }
 
         this->vao = Other.vao;
