@@ -81,15 +81,6 @@ private:
 				   0,0,1,0,
 				   0,0,0,1};
 
-	unsigned int vaoAfrica, vboAfrica;
-	unsigned int vaoEurope, vboEurope;
-	unsigned int vaoNA, vboNA;
-	unsigned int vaoSA, vboSA;
-	unsigned int vaoAsia, vboAsia;
-	unsigned int vaoOceania, vboOceania;
-	unsigned int vaoAntarctica, vboAntarctica;
-	unsigned int vaoSevenSeas, vboSevenSeas;
-
 	const std::string PlayerIconPath = (GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/PlayerMap.png");
 	const std::string ShipIconPath = (GameInstance::GetInstance()->g_WorkingDirectory + "/resources/imgs/ShipIcon.png");
 
@@ -122,9 +113,6 @@ private:
 	Vector2 ConvertScreenPosToWorld(Vector2 VectorToConver) const;
 
 	inline Vector2 ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters);
-
-	void LoadBuffer(unsigned int& VAO, unsigned int& VBO, const std::vector<float>* PointArray) const;
-	void RenderOpenGLBuffer(unsigned int& VAO, const std::vector<float>* PointArray, const std::vector<unsigned int>* Offset, const std::vector<unsigned int>* Counts) const;
 
 	// Like wtf think of a better name haha
 	Vector2 ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos);

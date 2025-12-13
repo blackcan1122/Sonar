@@ -1,5 +1,9 @@
 #pragma once
 #include "Base/Core.h"
+#include "Rendering/RenderBufferArrayLine.hpp"
+
+// Need a Base Class and a interface with specific payloads
+// For now we just keep it in this class
 
 enum class ETimeZone
 {
@@ -74,10 +78,12 @@ public:
 
 	TimeOfDay m_TimeOfDay;
 
-	// TODO: Should be replaced by a designated struct to hold signal info for all bearings
 
 	virtual void Tick(float Deltatime) override;
+	virtual void Initialize() override;
+
 	std::vector<int> GetAmbientLevel() const;
+	std::vector<RenderBufferArrayLine> Continents;
 
 protected:
 
