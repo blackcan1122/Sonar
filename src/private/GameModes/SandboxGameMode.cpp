@@ -15,7 +15,7 @@ void SandboxGameMode::BeginPlay()
 
 	m_World = m_ObjectFactory->NewObject<World>();
 
-	MapDisplay = m_ObjectFactory->NewObject<Map>(400, 400);
+	MapDisplay = m_ObjectFactory->NewObject<Map>(800, 800);
 	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,150 });
 
 	MapDisplay.TryLoad()->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)

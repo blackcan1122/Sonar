@@ -4,6 +4,9 @@
 #include "Events/AllPurposeEvent.h"
 #include "Events/MapClickEventData.hpp"
 
+const float WORLD_WIDTH = 20037508.34f * 2;  // Web Mercator: -20037508.34 to +20037508.34
+const float WORLD_HEIGHT = 20037508.34f * 2; // Same for Y
+
 class ContextMenu;
 class Player;
 

@@ -229,13 +229,28 @@ void Map::Tick(float DeltaTime)
         {
             IsDragging = false;
         }
-        if (IsDragging) 
+        if (IsDragging)
         {
             Vector2 delta = Vector2Scale(
                 Vector2Subtract(GetMousePosition(), LastMousePosition),
-                1.0f / ZoomLevel
-            );
+                1.0f / ZoomLevel);
             CameraWorldPosition = Vector2Subtract(CameraWorldPosition, delta);
+            std::cout << "X:" << CameraWorldPosition.x << std::endl;
+            std::cout << "Y:" << CameraWorldPosition.y << std::endl;
+            // Wrap horizontally (longitude wraps around)
+            const float halfWidth = WORLD_WIDTH / 2.0f;
+            while (CameraWorldPosition.x < -halfWidth)
+                CameraWorldPosition.x += WORLD_WIDTH;
+            while (CameraWorldPosition.x > halfWidth)
+                CameraWorldPosition.x -= WORLD_WIDTH;
+
+            // Clamp vertically (latitude has limits)
+            const float halfHeight = WORLD_HEIGHT / 6.0f;
+            if (CameraWorldPosition.y < -halfHeight)
+                CameraWorldPosition.y = -halfHeight;
+            else if (CameraWorldPosition.y > halfHeight)
+                CameraWorldPosition.y = halfHeight;
+
             LastMousePosition = GetMousePosition();
         }
     }
@@ -243,7 +258,6 @@ void Map::Tick(float DeltaTime)
     {
         IsDragging = false;
     }
-
 
     BorderRect = { DestinationRect.x - 15, DestinationRect.y - 15, DestinationRect.width + 30, DestinationRect.height + 30 };
 
@@ -261,7 +275,7 @@ void Map::Init()
 {
     shader = LoadShader("src/shaders/basic.vs", "src/shaders/basic.fs");
     locMVP = glGetUniformLocation(shader.id, "uMVP");
-    
+    auto lol = GetAsiaBB();
     try
     {
         LoadRessources();
