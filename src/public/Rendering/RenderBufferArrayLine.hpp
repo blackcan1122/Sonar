@@ -46,7 +46,7 @@ public:
         {
             glDeleteVertexArrays(1, &vao);
         }
-        
+
         this->Vertices = Other.Vertices;
         this->Counts = Other.Counts;
         this->Offsets = Other.Offsets;
@@ -61,9 +61,12 @@ public:
     RenderBufferArrayLine(RenderBufferArrayLine&& Other) noexcept
         :vao(Other.vao),
          vbo(Other.vbo),
+         DrawCount(Other.DrawCount),
          Vertices(std::move(Other.Vertices)),
          Offsets(std::move(Other.Offsets)),
-         Counts(std::move(Other.Counts))
+         Counts(std::move(Other.Counts)),
+         GLOffsets(std::move(Other.GLOffsets)),
+         GLCounts(std::move(Other.GLCounts))
     {
         Other.vao = 0;
         Other.vbo = 0;
@@ -91,6 +94,9 @@ public:
         this->Vertices = std::move(Other.Vertices);
         this->Counts = std::move(Other.Counts);
         this->Offsets = std::move(Other.Offsets);
+        this->GLCounts = std::move(Other.GLCounts);
+        this->GLOffsets = std::move(Other.GLOffsets);
+        this->DrawCount = Other.DrawCount;
 
         Other.vao = 0;
         Other.vbo = 0;
@@ -128,5 +134,9 @@ private:
     std::vector<float> Vertices; // All the Vertices
     std::vector<unsigned int> Offsets; // The Offsets between the Arrays
     std::vector<unsigned int> Counts; // The Amount of Lines
+
+    GLsizei DrawCount;
+    std::vector<GLint>  GLOffsets;
+    std::vector<GLsizei> GLCounts;
 
 };

@@ -2,6 +2,8 @@
 
 void RenderBufferArrayLine::LoadBuffer()
 {
+    this->GLCounts.clear();
+    this->GLOffsets.clear();
     if (vbo != 0)
     {
         glDeleteBuffers(1, &vbo);
@@ -11,7 +13,6 @@ void RenderBufferArrayLine::LoadBuffer()
     {
         glDeleteVertexArrays(1, &vao);
     }
-
     
     // VBO and VAO setup
     glGenVertexArrays(1, &vao);
@@ -29,6 +30,10 @@ void RenderBufferArrayLine::LoadBuffer()
     // Set vertex attribute
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
     glEnableVertexAttribArray(0);
+
+    DrawCount = GLsizei(Counts.size());
+    GLOffsets.assign(Offsets.begin(), Offsets.end());
+    GLCounts.assign(Counts.begin(), Counts.end());
 }
 
 void RenderBufferArrayLine::RenderBuffer()
@@ -36,15 +41,12 @@ void RenderBufferArrayLine::RenderBuffer()
     if (vao == 0) return;
 
     glBindVertexArray(vao);
-    GLsizei drawCount = GLsizei(Counts.size());
-    std::vector<GLint>   firsts(Offsets.begin(), Offsets.end());
-    std::vector<GLsizei> counts(Counts.begin(), Counts.end());
 
     glMultiDrawArrays(
         GL_LINE_LOOP,
-        firsts.data(),    // array of starting vertex indices
-        counts.data(),    // array of vertex counts per loop
-        drawCount         // number of loops
+        GLOffsets.data(),    // array of starting vertex indices
+        GLCounts.data(),    // array of vertex counts per loop
+        DrawCount         // number of loops
     );
 }
 
