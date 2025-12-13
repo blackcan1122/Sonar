@@ -118,6 +118,8 @@ protected:
 	static void CreateWindow();
 	static void GameLoop();
 
+	void ChangeGameMode(std::string GameModeName);
+
 
 public:
 

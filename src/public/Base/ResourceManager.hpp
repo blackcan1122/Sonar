@@ -144,7 +144,6 @@ struct TextureResource
     void SetHeight(int Height);
     void SetWidth(int Width);
     void GenerateMipMaps();
-
     void ForceCleanup();
 
 
@@ -169,7 +168,6 @@ class ResourceManager
 {
 public:
 	void ParseJson();
-    ~ResourceManager();
     void CleanAllResources();
     std::unordered_map<std::string, TextureResource> AllResources;
 };

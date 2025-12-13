@@ -20,6 +20,7 @@
 #include "GameModes/SandboxGameMode.hpp"
 #include "GameModes/Menu.hpp"
 #include "GameModes/OptionsMode.hpp"
+#include "GameModes/ShutdownGame.hpp"
 
 // Event System
 #include "Base/EventDispatcher.hpp"
@@ -163,6 +164,7 @@ void GameInstance::GameLoop()
 {
 
 	g_ResourceManager.ParseJson();
+	g_ActiveStateMachine.RegisterState("Shutdown", [](){return new ShutDownGame(); });
 	g_ActiveStateMachine.RegisterState("Menu", []() {return new MenuMode(); });
 	g_ActiveStateMachine.RegisterState("Sandbox", []() {return new SandboxGameMode(); });
 	g_ActiveStateMachine.RegisterState("Options", []() {return new OptionsMode(); });
@@ -253,16 +255,14 @@ void GameInstance::GameLoop()
 		EndDrawing();
 	}
 
-GameInstance::GetInstance()->GetCurrentGameMode()->~GameMode();
+
+LOG_INFO(l_GAME_INSTANCE, "Waiting for resource cleanup threads...");
+GameInstance::GetInstance()->ChangeGameMode("Shutdown");
+GameInstance::g_ResourceManager.CleanAllResources();
 
 LOG_INFO(l_GAME_INSTANCE, "Processing pending tasks...");
 MainQueue.ProcessTasks();
 
-LOG_INFO(l_GAME_INSTANCE, "Waiting for resource cleanup threads...");
-g_ResourceManager.CleanAllResources();
-
-
-g_ResourceManager.AllResources.clear();
 LOG_INFO(l_GAME_INSTANCE, "Resources cleared");
 
 LOG_INFO(l_GAME_INSTANCE, "Closing audio and window...");
@@ -278,3 +278,13 @@ spdlog::shutdown();
 
 }
 
+void GameInstance::ChangeGameMode(std::string GameModeName)
+{
+	g_ActiveStateMachine.ChangeState(GameModeName);
+	MainQueue.ProcessTasks();
+	if (g_ActiveStateMachine.isPendingKillLastMode())
+	{
+		g_ActiveStateMachine.KillLastGameMode();
+	}
+	g_ActiveStateMachine.UpdateGameMode();
+}
