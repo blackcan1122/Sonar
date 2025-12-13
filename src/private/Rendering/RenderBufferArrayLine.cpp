@@ -1,9 +1,18 @@
 #include "Rendering/RenderBufferArrayLine.hpp"
 
-
-
 void RenderBufferArrayLine::LoadBuffer()
 {
+    if (vbo != 0)
+    {
+        glDeleteBuffers(1, &vbo);
+    }
+
+    if (vao != 0)
+    {
+        glDeleteVertexArrays(1, &vao);
+    }
+
+    
     // VBO and VAO setup
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -13,12 +22,12 @@ void RenderBufferArrayLine::LoadBuffer()
 
     // Upload vertex data
     glBufferData(GL_ARRAY_BUFFER,
-        Vertices.size() * sizeof(Vertices[0]),
-        Vertices.data(),
-        GL_STATIC_DRAW);
+                 Vertices.size() * sizeof(Vertices[0]),
+                 Vertices.data(),
+                 GL_STATIC_DRAW);
 
     // Set vertex attribute
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
     glEnableVertexAttribArray(0);
 }
 
