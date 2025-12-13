@@ -32,7 +32,7 @@ void World::Initialize()
         buffer.AddOffsets(offsets);
         buffer.AddCounts(counts);
         buffer.LoadBuffer();
-        return std::move(buffer);
+        return buffer;
     };
 
     // Asia
