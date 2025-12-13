@@ -121,3 +121,8 @@ SharedTexture2D::operator Texture2D* ()
 	m_Texture->width = m_Outter->width;
 	return m_Texture;
 }
+
+bool SharedTexture2D::isValid() const
+{
+    return m_Outter != nullptr;
+}

@@ -42,6 +42,8 @@ public:
 	operator Texture2D();
 	operator Texture2D* ();
 
+	bool isValid() const;
+
 
 private:
 
