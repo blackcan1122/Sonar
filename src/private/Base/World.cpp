@@ -23,69 +23,49 @@ void World::Tick(float Deltatime)
 
 void World::Initialize()
 {
+    auto CreateBuffer = [](const std::vector<float>& vertices,
+                           const std::vector<unsigned int>& offsets,
+                           const std::vector<unsigned int>& counts) noexcept -> RenderBufferArrayLine
+    {
+        RenderBufferArrayLine buffer;
+        buffer.AddVertices(vertices);
+        buffer.AddOffsets(offsets);
+        buffer.AddCounts(counts);
+        buffer.LoadBuffer();
+        return std::move(buffer);
+    };
+
     // Asia
-    RenderBufferArrayLine RBAsia;
-    RBAsia.AddVertices(AsiaVertices);
-    RBAsia.AddOffsets(AsiaOffsets);
-    RBAsia.AddCounts(AsiaCounts);
-    RBAsia.LoadBuffer();
-    Continents.push_back(RBAsia);
+    RenderBufferArrayLine RBAsia = CreateBuffer(AsiaVertices, AsiaOffsets, AsiaCounts);
+    Continents.push_back(std::move(RBAsia));
 
     // South America
-    RenderBufferArrayLine RBSouthAmerica;
-    RBSouthAmerica.AddVertices(SouthAmericaVertices);
-    RBSouthAmerica.AddOffsets(SouthAmericaOffsets);
-    RBSouthAmerica.AddCounts(SouthAmericaCounts);
-    RBSouthAmerica.LoadBuffer();
-    Continents.push_back(RBSouthAmerica);
+    RenderBufferArrayLine RBSouthAmerica = CreateBuffer(SouthAmericaVertices, SouthAmericaOffsets, SouthAmericaCounts);
+    Continents.push_back(std::move(RBSouthAmerica));
 
     // Africa
-    RenderBufferArrayLine RBAfrica;
-    RBAfrica.AddVertices(AfricaVertices);
-    RBAfrica.AddOffsets(AfricaOffsets);
-    RBAfrica.AddCounts(AfricaCounts);
-    RBAfrica.LoadBuffer();
-    Continents.push_back(RBAfrica);
+    RenderBufferArrayLine RBAfrica = CreateBuffer(AfricaVertices, AfricaOffsets, AfricaCounts);
+    Continents.push_back(std::move(RBAfrica));
 
     // Europe
-    RenderBufferArrayLine RBEurope;
-    RBEurope.AddVertices(EuropeVertices);
-    RBEurope.AddOffsets(EuropeOffsets);
-    RBEurope.AddCounts(EuropeCounts);
-    RBEurope.LoadBuffer();
-    Continents.push_back(RBEurope);
+    RenderBufferArrayLine RBEurope = CreateBuffer(EuropeVertices, EuropeOffsets, EuropeCounts);
+    Continents.push_back(std::move(RBEurope));
 
     // North America
-    RenderBufferArrayLine RBNorthAmerica;
-    RBNorthAmerica.AddVertices(NorthAmericaVertices);
-    RBNorthAmerica.AddOffsets(NorthAmericaOffsets);
-    RBNorthAmerica.AddCounts(NorthAmericaCounts);
-    RBNorthAmerica.LoadBuffer();
-    Continents.push_back(RBNorthAmerica);
+    RenderBufferArrayLine RBNorthAmerica = CreateBuffer(NorthAmericaVertices, NorthAmericaOffsets, NorthAmericaCounts);
+    Continents.push_back(std::move(RBNorthAmerica));
 
     // Oceania
-    RenderBufferArrayLine RBOceania;
-    RBOceania.AddVertices(OceaniaVertices);
-    RBOceania.AddOffsets(OceaniaOffsets);
-    RBOceania.AddCounts(OceaniaCounts);
-    RBOceania.LoadBuffer();
-    Continents.push_back(RBOceania);
+    RenderBufferArrayLine RBOceania = CreateBuffer(OceaniaVertices, OceaniaOffsets, OceaniaCounts);
+    Continents.push_back(std::move(RBOceania));
 
     // Antarctica
-    RenderBufferArrayLine RBAntarctica;
-    RBAntarctica.AddVertices(AntarcticaVertices);
-    RBAntarctica.AddOffsets(AntarcticaOffsets);
-    RBAntarctica.AddCounts(AntarcticaCounts);
-    RBAntarctica.LoadBuffer();
-    Continents.push_back(RBAntarctica);
+    RenderBufferArrayLine RBAntarctica = CreateBuffer(AntarcticaVertices, AntarcticaOffsets, AntarcticaCounts);
+    Continents.push_back(std::move(RBAntarctica));
 
     // Seven Seas
-    RenderBufferArrayLine RBSevenseas;
-    RBSevenseas.AddVertices(SevenseasVertices);
-    RBSevenseas.AddOffsets(SevenseasOffsets);
-    RBSevenseas.AddCounts(SevenseasCounts);
-    RBSevenseas.LoadBuffer();
-    Continents.push_back(RBSevenseas);
+    RenderBufferArrayLine RBSevenseas = CreateBuffer(SevenseasVertices, SevenseasOffsets, SevenseasCounts);
+    Continents.push_back(std::move(RBSevenseas));
 }
 
 std::vector<int> World::GetAmbientLevel() const

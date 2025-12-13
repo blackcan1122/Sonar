@@ -1,6 +1,5 @@
 #include "Rendering/RenderBufferArrayLine.hpp"
 
-#include "external/glad.h"
 
 
 void RenderBufferArrayLine::LoadBuffer()
@@ -38,4 +37,16 @@ void RenderBufferArrayLine::RenderBuffer()
         counts.data(),    // array of vertex counts per loop
         drawCount         // number of loops
     );
+}
+
+RenderBufferArrayLine::~RenderBufferArrayLine()
+{
+    if (vbo != 0) {
+        glDeleteBuffers(1, &vbo);
+        vbo = 0;
+    }
+    if (vao != 0) {
+        glDeleteVertexArrays(1, &vao);
+        vao = 0;
+    }
 }
