@@ -32,10 +32,6 @@ Map::Map(int X, int Y)
 
 Map::~Map()
 {
-    unsigned int vaos[] = { vaoAfrica, vaoEurope, vaoAsia, vaoNA, vaoOceania, vaoSA, vaoAntarctica, vaoSevenSeas };
-    unsigned int vbos[] = { vboAfrica, vboEurope, vboAsia, vboNA, vboOceania, vboSA, vboAntarctica, vboSevenSeas };
-    glDeleteVertexArrays(8, vaos);
-    glDeleteBuffers(8, vbos);
     UnloadTexture(PlayerIcon);
     UnloadTexture(ShipIcon);
     UnloadShader(shader);
@@ -95,14 +91,10 @@ void Map::Draw()
     glUseProgram(shader.id);
     glUniformMatrix4fv(locMVP, 1, GL_TRUE, &viewProj.m0); // GL_TRUE = transpose for raylib's Matrix
 
-    RenderOpenGLBuffer(vaoAfrica, &AfricaVertices, &AfricaOffsets, &AfricaCounts);
-    RenderOpenGLBuffer(vaoEurope, &EuropeVertices, &EuropeOffsets, &EuropeCounts);
-    RenderOpenGLBuffer(vaoAsia, &AsiaVertices, &AsiaOffsets, &AsiaCounts);
-    RenderOpenGLBuffer(vaoNA, &NorthAmericaVertices, &NorthAmericaOffsets, &NorthAmericaCounts);
-    RenderOpenGLBuffer(vaoSA, &SouthAmericaVertices, &SouthAmericaOffsets, &SouthAmericaCounts);
-    RenderOpenGLBuffer(vaoOceania, &OceaniaVertices, &OceaniaOffsets, &OceaniaCounts);
-    RenderOpenGLBuffer(vaoAntarctica, &AntarcticaVertices, &AntarcticaOffsets, &AntarcticaCounts);
-    RenderOpenGLBuffer(vaoSevenSeas, &SevenseasVertices, &SevenseasOffsets, &SevenseasCounts);
+    for (auto& Continent : this->GetOutter()->GetWorld().TryLoad()->Continents)
+    {
+        Continent.RenderBuffer();
+    }
 
     glBindVertexArray(0);
     glUseProgram(rlGetShaderIdDefault());
@@ -270,15 +262,6 @@ void Map::Init()
     shader = LoadShader("src/shaders/basic.vs", "src/shaders/basic.fs");
     locMVP = glGetUniformLocation(shader.id, "uMVP");
     
-    LoadBuffer(vaoAfrica, vboAfrica, &AfricaVertices);
-    LoadBuffer(vaoEurope, vboEurope, &EuropeVertices);
-    LoadBuffer(vaoAsia, vboAsia, &AsiaVertices);
-    LoadBuffer(vaoNA, vboNA, &NorthAmericaVertices);
-    LoadBuffer(vaoSA, vboSA, &SouthAmericaVertices);
-    LoadBuffer(vaoOceania, vboOceania, &OceaniaVertices);
-    LoadBuffer(vaoAntarctica, vboAntarctica, &AntarcticaVertices);
-    LoadBuffer(vaoSevenSeas, vboSevenSeas, &SevenseasVertices);
-
     try
     {
         LoadRessources();
@@ -480,41 +463,6 @@ Vector2 Map::ConvertScreenPosToWorld(Vector2 VectorToConver) const
 inline Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters)
 {
     return { SizeInMeters.x / UsedTexture->width, SizeInMeters.y / UsedTexture->height };
-}
-
-void Map::LoadBuffer(unsigned int& VAO, unsigned int& VBO, const std::vector<float>* PointArray) const
-{
-    // VBO and VAO setup
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    // Upload vertex data
-    glBufferData(GL_ARRAY_BUFFER,
-        PointArray->size() * sizeof((*PointArray)[0]),
-        PointArray->data(),
-        GL_STATIC_DRAW);
-
-    // Set vertex attribute
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glEnableVertexAttribArray(0);
-}
-
-void Map::RenderOpenGLBuffer(unsigned int& VAO, const std::vector<float>* PointArray, const std::vector<unsigned int>* Offset, const std::vector<unsigned int>* Counts) const
-{
-    GLsizei drawCount = GLsizei(Counts->size());
-    std::vector<GLint>   firsts(Offset->begin(), Offset->end());
-    std::vector<GLsizei> counts(Counts->begin(), Counts->end());
-
-    glBindVertexArray(VAO);
-    glMultiDrawArrays(
-        GL_LINE_LOOP,
-        firsts.data(),    // array of starting vertex indices
-        counts.data(),    // array of vertex counts per loop
-        drawCount         // number of loops
-    );
 }
 
 Matrix Map::GetViewProjectionMatrix() const

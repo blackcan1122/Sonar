@@ -42,6 +42,7 @@ public:
 	static SClass* StaticClass() { return  &m_SClass; };
 
 	virtual void Tick(float DeltaTime) = 0;
+	virtual void Initialize(){}; // TODO: Should be marked abstracted in future maybe?
 
 	GameMode* GetOutter();
 

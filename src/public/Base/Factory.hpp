@@ -89,7 +89,8 @@ public:
 				}
 			});
 		LOG_INFO(l_FACTORY, TEXT("Class: '{}' subscribed to OnMouseEvent", CastedObj->m_Name));
-
+		CastedObj->Initialize();
+		LOG_INFO(l_FACTORY, TEXT("Class: '{}' Called 'Initialize()'", CastedObj->m_Name));
 		m_Outter->RegisterObject(Obj);
 
 		// we just return a SoftObjectPath
