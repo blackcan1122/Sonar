@@ -1,5 +1,7 @@
 #pragma once
 #include "Base/Core.h"
+#include "external/glad.h"
+
 
 /**
  * @file RenderBufferArrayLine.hpp
@@ -15,6 +17,71 @@ class RenderBufferArrayLine
 {
 public:
     RenderBufferArrayLine() = default;
+    ~RenderBufferArrayLine();
+
+    
+    // Copy Constructor
+    RenderBufferArrayLine(const RenderBufferArrayLine& Other)
+        :Vertices(Other.Vertices),
+        Offsets(Other.Offsets),
+        Counts(Other.Counts)
+    {
+        this->LoadBuffer(); // Important to make sure we got a unique vao and vbo
+    }
+
+    // Copy Assignment
+    RenderBufferArrayLine& operator=(const RenderBufferArrayLine& Other)
+    {
+        this->Vertices = Other.Vertices;
+        this->Counts = Other.Counts;
+        this->Offsets = Other.Offsets;
+
+        LoadBuffer();
+
+        return *this;
+    }
+
+
+    // Move Constructor
+    RenderBufferArrayLine(RenderBufferArrayLine&& Other) noexcept
+        :vao(Other.vao),
+         vbo(Other.vbo),
+         Vertices(std::move(Other.Vertices)),
+         Offsets(std::move(Other.Offsets)),
+         Counts(std::move(Other.Counts))
+    {
+        Other.vao = 0;
+        Other.vbo = 0;
+    }
+
+    // Move Assignment
+    RenderBufferArrayLine& operator=(RenderBufferArrayLine&& Other) noexcept
+    {
+        if (this == &Other)
+        {
+            return *this;
+        }
+        if (vbo != 0)
+        {
+            glDeleteBuffers(1, &vbo);
+        }
+        if (vao != 0)
+        {
+            glDeleteBuffers(1, &vao);
+        }
+
+        this->vao = Other.vao;
+        this->vbo = Other.vbo;
+        this->Vertices = std::move(Other.Vertices);
+        this->Counts = std::move(Other.Counts);
+        this->Offsets = std::move(Other.Offsets);
+
+        Other.vao = 0;
+        Other.vbo = 0;
+
+
+        return *this;
+    }
 
     unsigned int vao = 0;
     unsigned int vbo = 0;
