@@ -34,6 +34,7 @@ void Display::RenderToMainBuffer()
 {
 	DrawTexturePro(ActiveRenderTarget.texture, SourceRect, DestinationRect, { 0,0 }, 0, WHITE);
 	DrawResizeHandle();
+	DrawMoveHandle();
 }
 
 void Display::ResizeDisplay(int NewWidth, int NewHeight)
@@ -64,6 +65,7 @@ void Display::ResizeDisplay(int NewWidth, int NewHeight)
 
 void Display::Tick(float DeltaTime)
 {
+	HandleMoveInteraction();
 	HandleResizeInteraction();
 }
 
@@ -152,5 +154,77 @@ Rectangle Display::GetResizeHandleRect() const
 		DestinationRect.y + DestinationRect.height - m_ResizeHandleSize,
 		(float)m_ResizeHandleSize,
 		(float)m_ResizeHandleSize
+	};
+}
+
+void Display::HandleMoveInteraction()
+{
+	if (!bIsMovable)
+	{
+		return;
+	}
+	
+	Vector2 MousePos = GetMousePosition();
+	Rectangle HandleRect = GetMoveHandleRect();
+	
+	// Check if mouse is over move handle
+	bool IsOverHandle = CheckCollisionPointRec(MousePos, HandleRect);
+	
+	// Start moving
+	if (IsOverHandle && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+	{
+		bIsMoving = true;
+		m_MoveStartMousePos = MousePos;
+		m_MoveStartPos = { DestinationRect.x, DestinationRect.y };
+	}
+	
+	// Continue moving
+	if (bIsMoving)
+	{
+		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+		{
+			// Calculate new position based on mouse delta
+			float DeltaX = MousePos.x - m_MoveStartMousePos.x;
+			float DeltaY = MousePos.y - m_MoveStartMousePos.y;
+			
+			DestinationRect.x = m_MoveStartPos.x + DeltaX;
+			DestinationRect.y = m_MoveStartPos.y + DeltaY;
+		}
+		else
+		{
+			// Stop moving when mouse released
+			bIsMoving = false;
+		}
+	}
+}
+
+void Display::DrawMoveHandle()
+{
+	if (!bIsMovable)
+	{
+		return;
+	}
+	
+	Rectangle HandleRect = GetMoveHandleRect();
+	
+	Color GripColor = bIsMoving ? YELLOW : GRAY;
+	
+	float CenterX = HandleRect.x + HandleRect.width / 2;
+	float CenterY = HandleRect.y + HandleRect.height / 2;
+	float Spacing = 3.0f;
+	
+	DrawCircle((int)CenterX, (int)(CenterY - Spacing), 2, GripColor);
+	DrawCircle((int)CenterX, (int)(CenterY + Spacing), 2, GripColor);
+	DrawCircle((int)(CenterX - Spacing), (int)CenterY, 2, GripColor);
+	DrawCircle((int)(CenterX + Spacing), (int)CenterY, 2, GripColor);
+}
+
+Rectangle Display::GetMoveHandleRect() const
+{
+	return {
+		DestinationRect.x,
+		DestinationRect.y,
+		(float)m_MoveHandleSize,
+		(float)m_MoveHandleSize
 	};
 }
