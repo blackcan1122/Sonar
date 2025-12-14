@@ -12,8 +12,18 @@ void World::ReceiveSound(std::shared_ptr<IEvent> Event)
     if (*(Event->GetStaticClass()) << SoundEvent::StaticClass())
     {
         std::shared_ptr<SoundEvent> CastedSoundEvent = std::dynamic_pointer_cast<SoundEvent>(Event);
-        std::cout << CastedSoundEvent->Sender.ToString() << std::endl;
+        Signals CurrentSignal;
+        CurrentSignal.SenderPosition = CastedSoundEvent->SoundOrigin;
+        CurrentSignal.Strength = CastedSoundEvent->SignalStrength;
+        m_Signals.push_back(CurrentSignal);
+
     }
+}
+
+std::vector<Signals> World::GetSignals()
+{
+    // Return copy, don't clear - let Tick clean up at start of each frame
+    return m_Signals;
 }
 
 std::vector<int> World::CreateAmbientNoise(int NumberOfData)
@@ -29,6 +39,10 @@ std::vector<int> World::CreateAmbientNoise(int NumberOfData)
 
 void World::Tick(float Deltatime)
 {
+    // Clear signals from last frame at the start of this frame
+    // All consumers have had a chance to read them
+    m_Signals.clear();
+    
     m_CurrentAmbientLevel = CreateAmbientNoise(360);
 }
 
