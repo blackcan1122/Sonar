@@ -24,7 +24,12 @@ public:
 
 	void SetEntityLocation(Vector2 NewLocation) { m_Position = NewLocation; };
 	void SetEntityVelocity(Vector2 NewVelocity) { m_Velocity = NewVelocity; };
-	void SetEntityRotation(float Angle) { m_Rotation = std::fmod(Angle, 360.f); };
+	void SetEntityRotation(float Angle)
+	{ 
+		m_Rotation = std::fmod(Angle, 360.f); 
+		m_DesiredCourse = m_Rotation;
+		m_CurrentCourse = m_Rotation;
+	};
 
 	virtual void ConvertAngleToVector();
 	Vector2 GetFacingVector() const { return m_FacingVector; };
