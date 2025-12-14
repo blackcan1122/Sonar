@@ -209,6 +209,20 @@ void Map::Draw()
 
 void Map::Tick(float DeltaTime)
 {
+    // Handle resize interaction from base class
+    Super::Tick(DeltaTime);
+    
+    // Skip other interactions if currently resizing
+    if (bIsResizing)
+    {
+        BorderRect = { DestinationRect.x - 15, DestinationRect.y - 15, DestinationRect.width + 30, DestinationRect.height + 30 };
+        Draw();
+        RenderToMainBuffer();
+        RightClickMenu.TryLoad()->Tick(DeltaTime);
+        SpeedMenu.TryLoad()->Tick(DeltaTime);
+        return;
+    }
+    
     if (CheckCollisionPointRec(GetMousePosition(), DestinationRect)) 
     {
         int Multiply = 100.f;

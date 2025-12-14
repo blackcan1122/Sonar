@@ -40,6 +40,9 @@ Waterfall::~Waterfall()
 
 void Waterfall::Tick(float DeltaTime) 
 {
+    // Handle resize interaction from base class
+    Super::Tick(DeltaTime);
+    
     auto CurrentWorld = GetOutter()->GetWorld().TryLoad();
     m_CurrentAmbientLevel.clear();
     if (CurrentWorld)
@@ -168,6 +171,51 @@ void Waterfall::MarkForDestruction()
 
     LogInfo(l_HOUSE_KEEPING, TEXT("Cleaned Up Waterfall now Calling: {}", Super::GetStaticClass()->ClassName));
     Super::MarkForDestruction();
+}
+
+void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
+{
+    if (NewWidth <= 0 || NewHeight <= 0)
+    {
+        return;
+    }
+    
+    // Don't resize if same size
+    if (NewWidth == static_cast<int>(GetWidth()) && 
+        NewHeight == static_cast<int>(GetHeight()))
+    {
+        return;
+    }
+    
+    // Wait for any pending worker to finish before resizing
+    if (WorkerFuture.valid())
+    {
+        WorkerFuture.wait();
+    }
+    
+    // Unload old texture
+    UnloadTexture(FrontTexture);
+    
+    // Recreate buffers with new size
+    FrontBuffer = std::make_shared<PixelBuffer>(NewWidth, NewHeight);
+    BackBuffer = std::make_shared<PixelBuffer>(NewWidth, NewHeight);
+    
+    // Recreate texture
+    Image frontImg = GenImageColor(NewWidth, NewHeight, BLACK);
+    FrontTexture = LoadTextureFromImage(frontImg);
+    UnloadImage(frontImg);
+    
+    // Reset accumulated data since buffer dimensions changed
+    m_AccumulatedSignals.clear();
+    Counter = 0;
+    AccDelta = 0;
+    
+    // Call base class resize (handles ActiveRenderTarget)
+    Super::ResizeDisplay(NewWidth, NewHeight);
+    
+    int Size = (FrontBuffer->m_Width * FrontBuffer->m_Height * sizeof(PixelData)) / 1024;
+    LOG_INFO(l_RESOURCES, TEXT("Resized Waterfall to: {} x {} ({} KB)", 
+        NewWidth, NewHeight, Size));
 }
 
 float Waterfall::TimestepPerPixel()
