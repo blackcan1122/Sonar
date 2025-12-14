@@ -24,7 +24,7 @@ void SandboxGameMode::BeginPlay()
 		});
 
 	PlayerOne = m_ObjectFactory->NewObject<Player>();
-	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 20,30 });
+	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
 	PlayerOne.TryLoad()->SetDisplayName("U-521");
 	PlayerOne.TryLoad()->SetEntityRotation(0);
 	PlayerOne.TryLoad()->ConvertAngleToVector();
@@ -44,9 +44,16 @@ void SandboxGameMode::BeginPlay()
 	OtherSub.TryLoad()->SetDisplayName("K-21");
 	OtherSub.TryLoad()->SetInitialSpeed(15);
 
+	auto BlaSub = m_ObjectFactory->NewObject<BaseSubmarine>();
+	BlaSub.TryLoad()->SetEntityLocation(Vector2{ -300,0 });
+	BlaSub.TryLoad()->SetEntityRotation(180.f);
+	BlaSub.TryLoad()->SetDisplayName("K-212");
+	BlaSub.TryLoad()->SetInitialSpeed(15);
+
 
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
 	MapDisplay.TryLoad()->AddObjectToDraw(OtherSub.TryLoad());
+	MapDisplay.TryLoad()->AddObjectToDraw(BlaSub.TryLoad());
 
 
 	m_PlayerUI = m_ObjectFactory->NewObject<PlayerUI>(PlayerOne);
