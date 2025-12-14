@@ -42,7 +42,7 @@ void Waterfall::Tick(float DeltaTime)
 {
     // Handle resize interaction from base class
     Super::Tick(DeltaTime);
-    
+
     auto CurrentWorld = GetOutter()->GetWorld().TryLoad();
     m_CurrentAmbientLevel.clear();
     if (CurrentWorld)
@@ -76,7 +76,6 @@ void Waterfall::Tick(float DeltaTime)
     int BufferWidth = static_cast<int>(FrontBuffer->m_Width);
     int SourceSize = static_cast<int>(m_CurrentAmbientLevel.size());
     
-    // Resize accumulated signals to match buffer width (not source size)
     if (static_cast<int>(m_AccumulatedSignals.size()) != BufferWidth)
     {
         m_AccumulatedSignals.clear();
@@ -187,7 +186,6 @@ void Waterfall::ProcessBackBuffer(int LinesToShift, std::vector<int> Accumulated
     {
         BackBuffer->ShiftPixelDown();
         
-        // Write scaled data to full buffer width
         size_t SignalSize = AverageSignals.empty() ? AccumulatedSamples.size() : AverageSignals.size();
         for (int X = 0; X < BufferWidth; ++X)
         {
@@ -232,20 +230,19 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
         return;
     }
     
-    // Don't resize if same size
     if (NewWidth == static_cast<int>(GetWidth()) && 
         NewHeight == static_cast<int>(GetHeight()))
     {
         return;
     }
     
-    // Wait for any pending worker to finish before modifying buffers
     if (WorkerFuture.valid())
     {
         WorkerFuture.wait();
     }
 
-    // Get the actual displayed data from the texture (this is what's really shown)
+    WorkerDone.store(false);
+
     Image oldImage = LoadImageFromTexture(FrontTexture);
     int oldWidth = oldImage.width;
     int oldHeight = oldImage.height;
@@ -253,14 +250,11 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
     // Unload old texture
     UnloadTexture(FrontTexture);
 
-    // Create new buffers with new dimensions
     FrontBuffer = std::make_shared<PixelBuffer>(NewWidth, NewHeight);
     BackBuffer = std::make_shared<PixelBuffer>(NewWidth, NewHeight);
 
-    // Scale old image data into new buffer using bilinear interpolation
     for (int newY = 0; newY < NewHeight; ++newY) 
     {
-        // Map new Y to old Y (scale vertically)
         float oldYf = (static_cast<float>(newY) / NewHeight) * oldHeight;
         int oldY0 = std::min(static_cast<int>(oldYf), oldHeight - 1);
         int oldY1 = std::min(oldY0 + 1, oldHeight - 1);
@@ -268,7 +262,6 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
         
         for (int newX = 0; newX < NewWidth; ++newX) 
         {
-            // Map new X to old X (scale horizontally)
             float oldXf = (static_cast<float>(newX) / NewWidth) * oldWidth;
             int oldX0 = std::min(static_cast<int>(oldXf), oldWidth - 1);
             int oldX1 = std::min(oldX0 + 1, oldWidth - 1);
@@ -308,7 +301,6 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
     FrontTexture = LoadTextureFromImage(frontImg);
     UnloadImage(frontImg);
     
-    // Upload scaled pixel data to texture
     UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
 
     m_AccumulatedSignals.clear();
