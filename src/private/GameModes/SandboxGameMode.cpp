@@ -23,20 +23,21 @@ void SandboxGameMode::BeginPlay()
 			this->OnMapClickedEvent(Event);
 		});
 
-	WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 300, 10);
-	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
-
-	WaterfallDisplay2 = m_ObjectFactory->NewObject<Waterfall>(360, 300, 60);
-	WaterfallDisplay2.TryLoad()->SetPosition(Vector2{ 0,310 });
-
-	
-
 	PlayerOne = m_ObjectFactory->NewObject<Player>();
 	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 20,30 });
 	PlayerOne.TryLoad()->SetDisplayName("U-521");
 	PlayerOne.TryLoad()->SetEntityRotation(0);
 	PlayerOne.TryLoad()->ConvertAngleToVector();
 	PlayerOne.TryLoad()->SetInitialSpeed(0);
+
+	WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 300, 10);
+	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
+	WaterfallDisplay.TryLoad()->AssignPlayer(PlayerOne);
+
+	WaterfallDisplay2 = m_ObjectFactory->NewObject<Waterfall>(360, 300, 60);
+	WaterfallDisplay2.TryLoad()->SetPosition(Vector2{ 0,310 });
+	WaterfallDisplay2.TryLoad()->AssignPlayer(PlayerOne);
+
 
 	OtherSub = m_ObjectFactory->NewObject<BaseSubmarine>();
 	OtherSub.TryLoad()->SetEntityLocation(Vector2{ 800,200 });

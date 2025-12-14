@@ -1,6 +1,7 @@
 #include "UI/WaterfallDisplay.hpp"
 #include "Base/GameMode.h"
 #include "Base/World.hpp"
+#include "Entities/Player.hpp"
 #include "raylib.h"
 #include <chrono>
 #include <string>
@@ -58,19 +59,7 @@ void Waterfall::Tick(float DeltaTime)
         return;
     }
 
-    // Temp to change index of signal
-    if (IsKeyDown(KEY_A))
-    {
-        if (Index > 0) {
-            Index--;
-        }
-    }
-    else if (IsKeyDown(KEY_D))
-    {
-        if (Index < m_CurrentAmbientLevel.size() - 1) {
-            Index++;
-        }
-    }
+    auto Signals = CurrentWorld->GetSignals();
 
     // Scale ambient data to match buffer width
     int BufferWidth = static_cast<int>(FrontBuffer->m_Width);
@@ -107,25 +96,47 @@ void Waterfall::Tick(float DeltaTime)
         }
     }
 
-    // Add bounds check for Index - scale index to buffer position
-    // Since we're scaling from SourceSize to BufferWidth, one source sample
-    // may span multiple destination pixels. Calculate the range of pixels affected.
-    if (SourceSize > 0 && Index < static_cast<size_t>(SourceSize)) 
+
+auto PlayerPtr = AssignedPlayer.TryLoad();
+    if (PlayerPtr)
     {
-        float PixelsPerSample = static_cast<float>(BufferWidth) / SourceSize;
+        Vector2 ListenerPos = PlayerPtr->GetEntityLocation();
+        float ListenerRotation = PlayerPtr->GetEntityRotation();
         
-        // Calculate start and end pixel for this source index
-        int StartPixel = static_cast<int>(Index * PixelsPerSample);
-        int EndPixel = static_cast<int>((Index + 1) * PixelsPerSample);
-        
-        // Clamp to valid range
-        StartPixel = std::clamp(StartPixel, 0, BufferWidth - 1);
-        EndPixel = std::clamp(EndPixel, StartPixel + 1, BufferWidth);
-        
-        // Fill all pixels that this source sample maps to
-        for (int X = StartPixel; X < EndPixel; ++X)
+        for (const auto& Signal : Signals)
         {
-            m_AccumulatedSignals[X] += 255;
+            Vector2 Delta = Signal.SenderPosition - ListenerPos;
+            
+            // Calculate angle in degrees (0-360, where 0 is North)
+            float AngleRad = std::atan2(Delta.x, -Delta.y);  // -y because screen Y is inverted
+            float AngleDeg = AngleRad * (180.0f / PI);
+            if (AngleDeg < 0) AngleDeg += 360.0f;
+            
+            // Convert to relative bearing based on player's heading
+            // Waterfall shows -180 to +180 relative bearing
+            float RelativeBearing = AngleDeg - ListenerRotation;
+            while (RelativeBearing > 180.0f) RelativeBearing -= 360.0f;
+            while (RelativeBearing < -180.0f) RelativeBearing += 360.0f;
+            
+            // Map relative bearing (-180 to +180) to buffer position (0 to BufferWidth)
+            float NormalizedBearing = (RelativeBearing + 180.0f) / 360.0f;
+            int CenterPixel = static_cast<int>(NormalizedBearing * BufferWidth);
+            
+            // Calculate signal intensity
+            int Intensity = static_cast<int>(Signal.Strength);
+            Intensity = std::clamp(Intensity, 0, 255);
+            
+            // Spread the signal across multiple pixels based on scaling
+            float PixelsPerSample = static_cast<float>(BufferWidth) / SourceSize;
+            int HalfWidth = std::max(1, static_cast<int>(PixelsPerSample / 2));
+            
+            int StartPixel = std::clamp(CenterPixel - HalfWidth, 0, BufferWidth - 1);
+            int EndPixel = std::clamp(CenterPixel + HalfWidth + 1, 0, BufferWidth);
+            
+            for (int X = StartPixel; X < EndPixel; ++X)
+            {
+                m_AccumulatedSignals[X] += Intensity;
+            }
         }
     }
     ++Counter;
@@ -316,6 +327,11 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
     int Size = (FrontBuffer->m_Width * FrontBuffer->m_Height * sizeof(PixelData)) / 1024;
     LOG_INFO(l_RESOURCES, TEXT("Resized Waterfall to: {} x {} ({} KB)", 
         NewWidth, NewHeight, Size));
+}
+
+void Waterfall::AssignPlayer(SoftObjectPath<Player> inPlayer)
+{
+    this->AssignedPlayer = inPlayer;
 }
 
 float Waterfall::TimestepPerPixel()

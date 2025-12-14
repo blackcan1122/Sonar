@@ -1,9 +1,17 @@
 #pragma once
 #include "Base/Core.h"
 #include "Rendering/RenderBufferArrayLine.hpp"
+#include "Base/NavalTypedefs.h"
 
 // Need a Base Class and a interface with specific payloads
 // For now we just keep it in this class
+
+// For later we should Refactor this into a Soundprofile
+struct Signals
+{
+	Vector2 SenderPosition;
+	NavalUnits::Hz Strength;
+};
 
 enum class ETimeZone
 {
@@ -83,6 +91,7 @@ public:
 	virtual void Initialize() override;
 
 	std::vector<int> GetAmbientLevel() const;
+	std::vector<Signals> GetSignals();
 	std::vector<RenderBufferArrayLine> Continents;
 	
 	void ReceiveSound(std::shared_ptr<IEvent> Event);
@@ -91,6 +100,8 @@ protected:
 
 	std::vector<int> CreateAmbientNoise(int NumberOfData);
 	std::vector<int> m_CurrentAmbientLevel;
+
+	std::vector<Signals> m_Signals;
 
 
 };

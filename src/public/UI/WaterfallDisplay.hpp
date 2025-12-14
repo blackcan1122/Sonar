@@ -3,8 +3,11 @@
 #include "UI/Display.hpp"
 #include <atomic>
 #include <future>
+#include "Base/SoftObject.hpp"
+
 
 class Entity;
+class Player;
 
 struct PixelData
 {
@@ -106,6 +109,8 @@ public:
 	virtual void MarkForDestruction() override;
 	virtual void ResizeDisplay(int NewWidth, int NewHeight) override;
 
+	void AssignPlayer(SoftObjectPath<Player> inPlayer);
+
 private:
 
 	float AccDelta = 0;
@@ -122,8 +127,6 @@ private:
 
 	int TimeFrameInSec;
 
-	size_t Index = 0;
-
 	std::vector<int> m_AccumulatedSignals;
 	int Counter = 0;
 
@@ -134,4 +137,6 @@ private:
 	std::weak_ptr<Entity> Listener;
 
 	float TimestepPerPixel();
+
+	SoftObjectPath<Player> AssignedPlayer;
 };
