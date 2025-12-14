@@ -1,6 +1,25 @@
 #include "Base/Entity.hpp"
+#include "Base/EventDispatcher.hpp"
+#include "Base/GameMode.h"
+#include "Base/World.hpp"
+#include "Events/SoundEvent.hpp"
+#include "Base/SoftObject.hpp"
 
-void Entity::ConvertAngleToVector()
+void Entity::Initialize()
+{
+	SoundDispatcher = std::make_shared<EventDispatcher>();
+	std::weak_ptr<World> myWorld = this->GetOutter()->GetWorld().TryLoad();
+	SoundDispatcher->AddListener("Sound Event", SoundEvent::StaticClass(),
+								 [myWorld](std::shared_ptr<IEvent> Event)
+								 {
+									 if (myWorld.expired() == false)
+									 {
+										 myWorld.lock()->ReceiveSound(Event);
+									 }
+								 });
+}
+
+void Entity::ConvertAngleToVector() 
 {
 	// Rotate around 90, to accomodate for math radians
 	float RadianAngle = (m_Rotation + 90.f) * (PI / 180.f);

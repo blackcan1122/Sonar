@@ -3,6 +3,7 @@
 #include "Entities/BaseSubmarine.hpp"
 #include "Base/Factory.hpp"
 #include "Base/World.hpp"
+#include "Events/SoundEvent.hpp"
 
 SandboxGameMode::SandboxGameMode()
 {
@@ -14,7 +15,6 @@ void SandboxGameMode::BeginPlay()
 {
 
 	m_World = m_ObjectFactory->NewObject<World>();
-
 	MapDisplay = m_ObjectFactory->NewObject<Map>(400, 400);
 	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,150 });
 

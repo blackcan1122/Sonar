@@ -1,9 +1,20 @@
 #include "Base/World.hpp"
 #include "Base/Helper.hpp"
+#include "Base/Event.hpp"
+#include "Events/SoundEvent.hpp"
 #include "omp.h"
 
 // Continents
 #include "CountryMap/continent_outline.h"
+
+void World::ReceiveSound(std::shared_ptr<IEvent> Event)
+{
+    if (*(Event->GetStaticClass()) << SoundEvent::StaticClass())
+    {
+        std::shared_ptr<SoundEvent> CastedSoundEvent = std::dynamic_pointer_cast<SoundEvent>(Event);
+        std::cout << CastedSoundEvent->Sender.ToString() << std::endl;
+    }
+}
 
 std::vector<int> World::CreateAmbientNoise(int NumberOfData)
 {
