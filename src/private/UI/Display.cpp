@@ -50,6 +50,8 @@ void Display::ResizeDisplay(int NewWidth, int NewHeight)
 	{
 		return;
 	}
+
+	std::lock_guard<std::mutex> lock(m_ResizeMutex);
 	
 	// Unload old render texture
 	UnloadRenderTexture(ActiveRenderTarget);

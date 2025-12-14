@@ -2,6 +2,8 @@
 #include "Base/Core.h"
 #include "Base/BaseUI.h"
 
+#include <mutex>
+
 class Display : public BaseUI
 {
 	AUTOBODY(Display, BaseUI)
@@ -35,22 +37,19 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	// Called during Tick to handle resize corner interaction
+
+	mutable std::mutex m_ResizeMutex;
+
 	void HandleResizeInteraction();
 	
-	// Called during Tick to handle move handle interaction
 	void HandleMoveInteraction();
 	
-	// Draws the resize corner handle
 	void DrawResizeHandle();
 	
-	// Draws the move handle (top-left corner)
 	void DrawMoveHandle();
 	
-	// Get the resize handle rectangle
 	Rectangle GetResizeHandleRect() const;
 	
-	// Get the move handle rectangle
 	Rectangle GetMoveHandleRect() const;
 
 	RenderTexture2D ActiveRenderTarget;
@@ -58,7 +57,6 @@ protected:
 	Rectangle SourceRect;
 	Rectangle DestinationRect;
 	
-	// Resize handle properties
 	bool bIsResizable = true;
 	bool bIsResizing = false;
 	Vector2 m_ResizeStartMousePos = { 0, 0 };
@@ -67,7 +65,6 @@ protected:
 	int m_MinWidth = 100;
 	int m_MinHeight = 100;
 	
-	// Move handle properties
 	bool bIsMovable = true;
 	bool bIsMoving = false;
 	Vector2 m_MoveStartMousePos = { 0, 0 };
