@@ -84,10 +84,13 @@ public:
 
 	std::vector<int> GetAmbientLevel() const;
 	std::vector<RenderBufferArrayLine> Continents;
+	
+	void ReceiveSound(std::shared_ptr<IEvent> Event);
 
 protected:
 
 	std::vector<int> CreateAmbientNoise(int NumberOfData);
 	std::vector<int> m_CurrentAmbientLevel;
+
 
 };

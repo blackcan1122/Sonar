@@ -1,4 +1,6 @@
 ﻿#include "Entities/BaseSubmarine.hpp"
+#include "Base/EventDispatcher.hpp"
+#include "Events/SoundEvent.hpp"
 
 
 void BaseSubmarine::Tick(float DeltaTime)
@@ -8,6 +10,14 @@ void BaseSubmarine::Tick(float DeltaTime)
     Turning();
     CalculateSpeed(DeltaTime);
     Accel(DeltaTime);
+    if (m_CurrentKnots != 0)
+    {
+        std::shared_ptr<SoundEvent> CurrentSoundEvent = std::make_shared<SoundEvent>();
+        CurrentSoundEvent->Sender = SoftObjectPath<BaseSubmarine>(this->GetName());
+        CurrentSoundEvent->SignalStrength = 20;
+        CurrentSoundEvent->SoundOrigin = m_Position;
+        SoundDispatcher->Dispatch(CurrentSoundEvent, "Sound Event");
+    }
 }
 
 void BaseSubmarine::CalculateSpeed(float Deltatime)

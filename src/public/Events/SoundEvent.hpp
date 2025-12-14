@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Core.h"
 #include "Base/Event.hpp"
-#include "SoftObject.hpp"
+#include "Base/SoftObject.hpp"
 
 class SoundEvent : public Event
 {

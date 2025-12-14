@@ -1,6 +1,8 @@
 #pragma once
 #include "Base/Core.h"
 
+class EventDispatcher;
+
 /*
 	Base class for all entities in the game world.
 	TODO:
@@ -17,6 +19,9 @@ class Entity : public Object
 	AUTOBODY(Entity, Object)
 
 public:
+
+	virtual void Initialize() override;
+
 	void SetEntityLocation(Vector2 NewLocation) { m_Position = NewLocation; };
 	void SetEntityVelocity(Vector2 NewVelocity) { m_Velocity = NewVelocity; };
 	void SetEntityRotation(float Angle) { m_Rotation = std::fmod(Angle, 360.f); };
@@ -73,6 +78,9 @@ protected:
 	float m_FullSpeedZone = 45.0f;
 
 	float m_BaseTurningRate = 6.f;
+
+	// This is the used Event Dispatcher for Sound Events for this Entity
+	std::shared_ptr<EventDispatcher> SoundDispatcher;
 
 
 
