@@ -249,8 +249,7 @@ void Map::Tick(float DeltaTime)
                 Vector2Subtract(GetMousePosition(), LastMousePosition),
                 1.0f / ZoomLevel);
             CameraWorldPosition = Vector2Subtract(CameraWorldPosition, delta);
-            std::cout << "X:" << CameraWorldPosition.x << std::endl;
-            std::cout << "Y:" << CameraWorldPosition.y << std::endl;
+
             // Wrap horizontally (longitude wraps around)
             const float halfWidth = WORLD_WIDTH / 2.0f;
             while (CameraWorldPosition.x < -halfWidth)
@@ -289,7 +288,6 @@ void Map::Init()
 {
     shader = LoadShader("src/shaders/basic.vs", "src/shaders/basic.fs");
     locMVP = glGetUniformLocation(shader.id, "uMVP");
-    auto lol = GetAsiaBB();
     try
     {
         LoadRessources();
