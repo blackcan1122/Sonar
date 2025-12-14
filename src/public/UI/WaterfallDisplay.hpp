@@ -104,6 +104,7 @@ public:
 	virtual void Tick(float Deltatime) override;
 	virtual void Draw() override;
 	virtual void MarkForDestruction() override;
+	virtual void ResizeDisplay(int NewWidth, int NewHeight) override;
 
 private:
 

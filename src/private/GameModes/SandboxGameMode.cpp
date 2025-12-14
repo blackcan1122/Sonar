@@ -15,7 +15,7 @@ void SandboxGameMode::BeginPlay()
 
 	m_World = m_ObjectFactory->NewObject<World>();
 
-	MapDisplay = m_ObjectFactory->NewObject<Map>(800, 800);
+	MapDisplay = m_ObjectFactory->NewObject<Map>(400, 400);
 	MapDisplay.TryLoad()->SetPosition(Vector2{ 400,150 });
 
 	MapDisplay.TryLoad()->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
@@ -70,6 +70,11 @@ void SandboxGameMode::Update()
 		if (IsKeyPressed(KEY_K))
 		{
 			GameInstance::GetInstance()->g_ActiveStateMachine.ChangeState("Menu");
+		}
+
+		if (IsKeyPressed(KEY_L))
+		{
+			MapDisplay.TryLoad()->ResizeDisplay(600, 600);
 		}
 }
 
