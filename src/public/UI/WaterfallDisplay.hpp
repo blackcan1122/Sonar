@@ -129,6 +129,7 @@ private:
 
 	void ProcessBackBuffer(int LinesToShift, std::vector<int> AccumulatedSamples, int AmountOfSamples);
 	void GenerateBearings();
+	void GenerateTimeScale();
 
 	std::weak_ptr<Entity> Listener;
 
