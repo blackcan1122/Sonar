@@ -15,14 +15,14 @@ void World::ReceiveSound(std::shared_ptr<IEvent> Event)
         Signals CurrentSignal;
         CurrentSignal.SenderPosition = CastedSoundEvent->SoundOrigin;
         CurrentSignal.Strength = CastedSoundEvent->SignalStrength;
-        m_Signals.push_back(CurrentSignal);
-
+        // Add to pending signals (will be available next frame)
+        m_PendingSignals.push_back(CurrentSignal);
     }
 }
 
 std::vector<Signals> World::GetSignals()
 {
-    // Return copy, don't clear - let Tick clean up at start of each frame
+    // Return the snapshot from last frame (complete data)
     return m_Signals;
 }
 
@@ -39,9 +39,10 @@ std::vector<int> World::CreateAmbientNoise(int NumberOfData)
 
 void World::Tick(float Deltatime)
 {
-    // Clear signals from last frame at the start of this frame
-    // All consumers have had a chance to read them
-    m_Signals.clear();
+    // Swap pending signals to current signals
+    // This ensures all consumers get a complete snapshot
+    m_Signals = std::move(m_PendingSignals);
+    m_PendingSignals.clear();
     
     m_CurrentAmbientLevel = CreateAmbientNoise(360);
 }

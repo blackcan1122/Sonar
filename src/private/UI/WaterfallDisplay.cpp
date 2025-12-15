@@ -101,25 +101,19 @@ auto PlayerPtr = AssignedPlayer.TryLoad();
     if (PlayerPtr)
     {
         Vector2 ListenerPos = PlayerPtr->GetEntityLocation();
-        float ListenerRotation = PlayerPtr->GetEntityRotation();
         
         for (const auto& Signal : Signals)
         {
             Vector2 Delta = Signal.SenderPosition - ListenerPos;
             
-            // Calculate angle in degrees (0-360, where 0 is North)
+            // Calculate absolute bearing in degrees (0-360, where 0 is North)
             float AngleRad = std::atan2(Delta.x, -Delta.y);  // -y because screen Y is inverted
-            float AngleDeg = AngleRad * (180.0f / PI);
-            if (AngleDeg < 0) AngleDeg += 360.0f;
+            float AbsoluteBearing = AngleRad * (180.0f / PI);
+            if (AbsoluteBearing < 0) AbsoluteBearing += 360.0f;
             
-            // Convert to relative bearing based on player's heading
-            // Waterfall shows -180 to +180 relative bearing
-            float RelativeBearing = AngleDeg - ListenerRotation;
-            while (RelativeBearing > 180.0f) RelativeBearing -= 360.0f;
-            while (RelativeBearing < -180.0f) RelativeBearing += 360.0f;
-            
-            // Map relative bearing (-180 to +180) to buffer position (0 to BufferWidth)
-            float NormalizedBearing = (RelativeBearing + 180.0f) / 360.0f;
+            // Map absolute bearing (0 to 360) to buffer position (0 to BufferWidth)
+            // 0° (North) is at center, -180° (South) at left edge, +180° (South) at right edge
+            float NormalizedBearing = AbsoluteBearing / 360.0f;
             int CenterPixel = static_cast<int>(NormalizedBearing * BufferWidth);
             
             // Calculate signal intensity

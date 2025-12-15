@@ -9,14 +9,13 @@ void Entity::Initialize()
 {
 	SoundDispatcher = std::make_shared<EventDispatcher>();
 	std::weak_ptr<World> myWorld = this->GetOutter()->GetWorld().TryLoad();
-	SoundDispatcher->AddListener("Sound Event", SoundEvent::StaticClass(),
-								 [myWorld](std::shared_ptr<IEvent> Event)
-								 {
-									 if (myWorld.expired() == false)
-									 {
-										 myWorld.lock()->ReceiveSound(Event);
-									 }
-								 });
+	SoundDispatcher->AddListener("Sound Event", SoundEvent::StaticClass(), [myWorld](std::shared_ptr<IEvent> Event)
+	{
+		if (myWorld.expired() == false)
+		{
+			myWorld.lock()->ReceiveSound(Event);
+		}
+	});
 }
 
 void Entity::ConvertAngleToVector() 
