@@ -27,6 +27,7 @@ void SandboxGameMode::BeginPlay()
 	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
 	PlayerOne.TryLoad()->SetDisplayName("U-521");
 	PlayerOne.TryLoad()->SetInitialSpeed(15);
+	PlayerOne.TryLoad()->SetEntityRotationAndCourse(90);
 
 	WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 300, 10);
 	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
@@ -38,20 +39,14 @@ void SandboxGameMode::BeginPlay()
 
 
 	OtherSub = m_ObjectFactory->NewObject<BaseSubmarine>();
-	OtherSub.TryLoad()->SetEntityLocation(Vector2{ 800,200 });
+	OtherSub.TryLoad()->SetEntityLocation(Vector2{ 400,200 });
 	OtherSub.TryLoad()->SetDisplayName("K-21");
 	OtherSub.TryLoad()->SetInitialSpeed(15);
-
-	auto BlaSub = m_ObjectFactory->NewObject<BaseSubmarine>();
-	BlaSub.TryLoad()->SetEntityLocation(Vector2{ -300,0 });
-	BlaSub.TryLoad()->SetEntityRotation(180.f);
-	BlaSub.TryLoad()->SetDisplayName("K-212");
-	BlaSub.TryLoad()->SetInitialSpeed(15);
+	OtherSub.TryLoad()->SetEntityRotationAndCourse(270);
 
 
 	MapDisplay.TryLoad()->AddObjectToDraw(PlayerOne.TryLoad());
 	MapDisplay.TryLoad()->AddObjectToDraw(OtherSub.TryLoad());
-	MapDisplay.TryLoad()->AddObjectToDraw(BlaSub.TryLoad());
 
 
 	m_PlayerUI = m_ObjectFactory->NewObject<PlayerUI>(PlayerOne);

@@ -105,9 +105,15 @@ auto PlayerPtr = AssignedPlayer.TryLoad();
         for (const auto& Signal : Signals)
         {
             Vector2 Delta = Signal.SenderPosition - ListenerPos;
+
+            // TODO: just a temp solution
+            if (Signal.SenderPosition == AssignedPlayer.TryLoad()->GetEntityLocation())
+            {
+                continue;
+            }
             
             // Calculate absolute bearing in degrees (0-360, where 0 is North)
-            float AngleRad = std::atan2(Delta.x, -Delta.y);  // -y because screen Y is inverted
+            float AngleRad = std::atan2(Delta.x, Delta.y);  // -y because screen Y is inverted
             float AbsoluteBearing = AngleRad * (180.0f / PI);
             if (AbsoluteBearing < 0) AbsoluteBearing += 360.0f;
             

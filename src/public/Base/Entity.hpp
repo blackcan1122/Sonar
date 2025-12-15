@@ -28,6 +28,12 @@ public:
 	{ 
 		m_Rotation = std::fmod(Angle, 360.f); 
 	};
+	void SetEntityRotationAndCourse(float Angle)
+	{
+		m_Rotation = std::fmod(Angle, 360.f);
+		m_DesiredCourse = m_Rotation;
+		m_CurrentCourse = m_Rotation;
+	};
 
 
 	virtual void ConvertAngleToVector();
