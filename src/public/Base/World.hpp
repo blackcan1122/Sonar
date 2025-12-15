@@ -85,7 +85,6 @@ class World : public Object
 public:
 
 	TimeOfDay m_TimeOfDay;
-	int i = 0;
 
 	virtual void Tick(float Deltatime) override;
 	virtual void Initialize() override;
