@@ -14,7 +14,7 @@ void BaseSubmarine::Tick(float DeltaTime)
     {
         std::shared_ptr<SoundEvent> CurrentSoundEvent = std::make_shared<SoundEvent>();
         CurrentSoundEvent->Sender = SoftObjectPath<BaseSubmarine>(this->GetName());
-        CurrentSoundEvent->SignalStrength = 20;
+        CurrentSoundEvent->SignalStrength = m_CurrentKnots * 10;
         CurrentSoundEvent->SoundOrigin = m_Position;
         SoundDispatcher->Dispatch(CurrentSoundEvent, "Sound Event");
     }

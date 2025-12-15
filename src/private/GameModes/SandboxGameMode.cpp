@@ -26,9 +26,7 @@ void SandboxGameMode::BeginPlay()
 	PlayerOne = m_ObjectFactory->NewObject<Player>();
 	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
 	PlayerOne.TryLoad()->SetDisplayName("U-521");
-	PlayerOne.TryLoad()->SetEntityRotation(0);
-	PlayerOne.TryLoad()->ConvertAngleToVector();
-	PlayerOne.TryLoad()->SetInitialSpeed(0);
+	PlayerOne.TryLoad()->SetInitialSpeed(15);
 
 	WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 300, 10);
 	WaterfallDisplay.TryLoad()->SetPosition({ 0, 0 });
