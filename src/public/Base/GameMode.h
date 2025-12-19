@@ -3,6 +3,8 @@
 #include "Base/World.hpp"
 #include "Base/Core.h"
 
+class GridLayoutManager;
+
 
 /**
  * @class GameMode
@@ -65,6 +67,17 @@ public:
 
 		return false;
 	}
+	
+	// Grid Layout Manager access
+	GridLayoutManager* GetGridLayoutManager() const { return m_GridLayoutManager.get(); }
+	
+	/**
+	 * @brief Creates a GridLayoutManager for this GameMode
+	 * @param rows Initial number of rows
+	 * @param columns Initial number of columns
+	 * @return Pointer to the created GridLayoutManager
+	 */
+	GridLayoutManager* CreateGridLayout(int rows, int columns);
 
 
 protected:
@@ -83,5 +96,8 @@ protected:
 
 	// Optional
 	SoftObjectPath<World> m_World;
+	
+	// Grid Layout Manager for Display positioning
+	std::unique_ptr<GridLayoutManager> m_GridLayoutManager;
 
 };

@@ -6,6 +6,8 @@
 #include "Entities/Player.hpp"
 #include "Base/EventDispatcher.hpp"
 #include "UI/PlayerUI.hpp"
+#include "UI/GridLayoutManager.hpp"
+#include <list>
 
 class SandboxGameMode : public GameMode
 {
@@ -21,6 +23,10 @@ public:
 	void OnMapClickedEvent(std::shared_ptr<IEvent> Event);
 
 	void DrawFocusPlayer();
+	
+	// Display management callbacks
+	void OnDeleteDisplay(Display* display);
+	void OnCreateDisplay(const GridCell& cell, const DisplaySpawnInfo& spawnInfo);
 
 	std::string GetName() override;
 
@@ -37,4 +43,10 @@ protected:
 	SoftObjectPath<Entity> FocusedUnit;
 
 	SoftObjectPath<PlayerUI> m_PlayerUI;
+	
+	// Track all waterfall displays for dynamic add/remove
+	std::list<SoftObjectPath<Waterfall>> m_WaterfallDisplays;
+	
+	// Counter for unique display frequencies
+	int m_NextWaterfallFrequency = 100;
 };
