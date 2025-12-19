@@ -1,4 +1,5 @@
 #include "UI/Display.hpp"
+#include "UI/GridLayoutManager.hpp"
 
 Display::Display(int Width, int Height)
 {
@@ -108,6 +109,45 @@ void Display::HandleResizeInteraction()
 			newWidth = (newWidth < m_MinWidth) ? m_MinWidth : newWidth;
 			newHeight = (newHeight < m_MinHeight) ? m_MinHeight : newHeight;
 			
+			// If using grid layout, clamp size to stay within grid bounds
+			if (m_UseGridLayout && m_GridLayoutManager)
+			{
+				int gridWidth = m_GridLayoutManager->GetWindowWidth();
+				int gridHeight = m_GridLayoutManager->GetWindowHeight();
+				
+				// Calculate maximum size that keeps display within grid
+				int maxWidth = gridWidth - static_cast<int>(DestinationRect.x);
+				int maxHeight = gridHeight - static_cast<int>(DestinationRect.y);
+				
+				newWidth = std::min(newWidth, maxWidth);
+				newHeight = std::min(newHeight, maxHeight);
+				
+				// Calculate and show preview of which cells will be occupied
+				int cellWidth = m_GridLayoutManager->GetCellWidth();
+				int cellHeight = m_GridLayoutManager->GetCellHeight();
+				
+				if (cellWidth > 0 && cellHeight > 0)
+				{
+					const GridCell* currentCell = m_GridLayoutManager->GetDisplayCell(this);
+					if (currentCell)
+					{
+						// Calculate how many cells this size would occupy
+						int previewColSpan = std::max(1, static_cast<int>(std::round(newWidth / static_cast<float>(cellWidth))));
+						int previewRowSpan = std::max(1, static_cast<int>(std::round(newHeight / static_cast<float>(cellHeight))));
+						
+						// Clamp span to not exceed grid bounds
+						previewColSpan = std::min(previewColSpan, m_GridLayoutManager->GetColumns() - currentCell->column);
+						previewRowSpan = std::min(previewRowSpan, m_GridLayoutManager->GetRows() - currentCell->row);
+						
+						GridCell previewCell = *currentCell;
+						previewCell.colSpan = previewColSpan;
+						previewCell.rowSpan = previewRowSpan;
+						
+						m_GridLayoutManager->SetDisplayResizing(this, true, previewCell);
+					}
+				}
+			}
+			
 			// Only resize if size actually changed
 			if (newWidth != GetWidth() || newHeight != GetHeight())
 			{
@@ -118,6 +158,29 @@ void Display::HandleResizeInteraction()
 		{
 			// Stop resizing when mouse released
 			bIsResizing = false;
+			
+			// Clear the resize preview
+			if (m_UseGridLayout && m_GridLayoutManager)
+			{
+				m_GridLayoutManager->SetDisplayResizing(this, false, {});
+			}
+			
+			// If using grid layout, calculate new span based on final size
+			if (m_UseGridLayout && m_GridLayoutManager)
+			{
+				int cellWidth = m_GridLayoutManager->GetCellWidth();
+				int cellHeight = m_GridLayoutManager->GetCellHeight();
+				
+				if (cellWidth > 0 && cellHeight > 0)
+				{
+					// Calculate how many cells this size would occupy
+					int newColSpan = std::max(1, static_cast<int>(std::round(DestinationRect.width / static_cast<float>(cellWidth))));
+					int newRowSpan = std::max(1, static_cast<int>(std::round(DestinationRect.height / static_cast<float>(cellHeight))));
+					
+					// Try to resize the span (this will fail if overlapping)
+					m_GridLayoutManager->ResizeDisplaySpan(this, newRowSpan, newColSpan);
+				}
+			}
 		}
 	}
 }
@@ -189,13 +252,38 @@ void Display::HandleMoveInteraction()
 			float DeltaX = MousePos.x - m_MoveStartMousePos.x;
 			float DeltaY = MousePos.y - m_MoveStartMousePos.y;
 			
-			DestinationRect.x = m_MoveStartPos.x + DeltaX;
-			DestinationRect.y = m_MoveStartPos.y + DeltaY;
+			float newX = m_MoveStartPos.x + DeltaX;
+			float newY = m_MoveStartPos.y + DeltaY;
+			
+			// If using grid layout, clamp position within grid bounds
+			if (m_UseGridLayout && m_GridLayoutManager)
+			{
+				int gridWidth = m_GridLayoutManager->GetWindowWidth();
+				int gridHeight = m_GridLayoutManager->GetWindowHeight();
+				
+				// Clamp to keep display within grid bounds
+				newX = std::max(0.0f, std::min(newX, static_cast<float>(gridWidth - DestinationRect.width)));
+				newY = std::max(0.0f, std::min(newY, static_cast<float>(gridHeight - DestinationRect.height)));
+				
+				// Calculate preview cell and register for overlay drawing
+				m_PreviewCell = m_GridLayoutManager->SnapToGrid(this, MousePos, true);
+				m_GridLayoutManager->SetDisplayDragging(this, true, m_PreviewCell);
+			}
+			
+			DestinationRect.x = newX;
+			DestinationRect.y = newY;
 		}
 		else
 		{
 			// Stop moving when mouse released
 			bIsMoving = false;
+			
+			// Snap to grid on release and unregister from dragging
+			if (m_UseGridLayout && m_GridLayoutManager)
+			{
+				m_GridLayoutManager->SetDisplayDragging(this, false, m_PreviewCell);
+				m_GridLayoutManager->MoveDisplayToCell(this, m_PreviewCell);
+			}
 		}
 	}
 }

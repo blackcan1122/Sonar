@@ -4,6 +4,26 @@
 
 #include <mutex>
 
+class GridLayoutManager;
+
+/**
+ * @struct GridCell
+ * @brief Represents a cell assignment for a Display in the grid.
+ */
+struct GridCell
+{
+	int row = 0;         // Starting row (0-indexed)
+	int column = 0;      // Starting column (0-indexed)
+	int rowSpan = 1;     // Number of rows this display occupies
+	int colSpan = 1;     // Number of columns this display occupies
+	
+	bool operator==(const GridCell& other) const
+	{
+		return row == other.row && column == other.column && 
+		       rowSpan == other.rowSpan && colSpan == other.colSpan;
+	}
+};
+
 class Display : public BaseUI
 {
 	AUTOBODY(Display, BaseUI)
@@ -35,6 +55,17 @@ public:
 	void SetMinSize(int MinWidth, int MinHeight) { m_MinWidth = MinWidth; m_MinHeight = MinHeight; }
 
 	virtual void Tick(float DeltaTime) override;
+	
+	// Grid Layout Support
+	void SetGridLayoutManager(GridLayoutManager* manager) { m_GridLayoutManager = manager; }
+	GridLayoutManager* GetGridLayoutManager() const { return m_GridLayoutManager; }
+	
+	// Enable/disable grid snapping (when disabled, uses free positioning)
+	void SetUseGridLayout(bool useGrid) { m_UseGridLayout = useGrid; }
+	bool UsesGridLayout() const { return m_UseGridLayout; }
+	
+	// Get the current destination rect (for external layout managers)
+	Rectangle GetDestinationRect() const { return DestinationRect; }
 
 protected:
 
@@ -70,5 +101,10 @@ protected:
 	Vector2 m_MoveStartMousePos = { 0, 0 };
 	Vector2 m_MoveStartPos = { 0, 0 };
 	int m_MoveHandleSize = 15;
+	
+	// Grid layout support
+	GridLayoutManager* m_GridLayoutManager = nullptr;
+	bool m_UseGridLayout = true;
+	GridCell m_PreviewCell;  // Used during drag to show where display will snap
 
 };

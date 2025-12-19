@@ -1,6 +1,8 @@
 #include "Base/GameMode.h"
 #include "Base/Factory.hpp"
 #include "Base/Core.h"
+#include "UI/GridLayoutManager.hpp"
+#include "Base/GameInstance.h"
 
 GameMode::GameMode()
 {
@@ -114,4 +116,13 @@ bool GameMode::DestroyObjectExplicitly(std::shared_ptr<IObject> InObject)
 		return true;
 	}
 	return false;
+}
+
+GridLayoutManager* GameMode::CreateGridLayout(int rows, int columns)
+{
+	WindowProperties props = GameInstance::GetInstance()->GetWindowProperties();
+	m_GridLayoutManager = std::make_unique<GridLayoutManager>(
+		rows, columns, props.m_ScreenWidth, props.m_ScreenHeight
+	);
+	return m_GridLayoutManager.get();
 }
