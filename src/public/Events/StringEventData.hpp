@@ -8,7 +8,6 @@ class StringEventData : public EventData
 {
 	AUTOBODY(StringEventData, EventData)
 public:
-	// TODO: Should be changed to use SoftObjectPath
 	std::string String;
 
 };

@@ -18,6 +18,14 @@ public:
 
 	void AddListener(const std::string& Identifier, SClass* EventClass, EventCallback Callback);
 
+	template<typename T>
+	void AddListener(const std::string& Identifier, SClass* EventClass, T* Object, void (T::* MemberFunc)(std::shared_ptr<IEvent>))
+	{
+		AddListener(Identifier, EventClass, [Object, MemberFunc](std::shared_ptr<IEvent> Event) {
+			(Object->*MemberFunc)(Event);
+			});
+	}
+
 	bool RemoveListener(const std::string& Identifier, SClass* EventClass);
 
 	// General Purpose Dispatcher or Specific Identifier Dispatcher

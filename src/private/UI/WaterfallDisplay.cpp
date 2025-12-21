@@ -106,8 +106,7 @@ auto PlayerPtr = AssignedPlayer.TryLoad();
         {
             Vector2 Delta = Signal.SenderPosition - ListenerPos;
 
-            // TODO: just a temp solution
-            if (Signal.SenderPosition == AssignedPlayer.TryLoad()->GetEntityLocation())
+            if (Signal.SenderEntity.ToString() == AssignedPlayer.ToString())
             {
                 continue;
             }

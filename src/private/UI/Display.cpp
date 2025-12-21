@@ -1,5 +1,6 @@
 #include "UI/Display.hpp"
-#include "UI/GridLayoutManager.hpp"
+#include "Events/AllPurposeEvent.h"
+
 
 Display::Display(int Width, int Height)
 {
@@ -10,6 +11,7 @@ Display::Display(int Width, int Height)
 
 Display::~Display()
 {
+
 	UnloadRenderTexture(ActiveRenderTarget);
 }
 
@@ -23,6 +25,19 @@ void Display::Draw()
 void Display::MarkForDestruction()
 {
 	Super::MarkForDestruction();
+}
+
+void Display::Initialize()
+{
+	ResizeEvent = std::make_shared<AllPurposeEvent>();
+	ResizeEventComplete = std::make_shared<AllPurposeEvent>();
+
+	MoveEvent = std::make_shared<AllPurposeEvent>();
+	MoveEventComplete = std::make_shared<AllPurposeEvent>();
+
+	ResizeData = std::make_shared<DisplayResizeData>();
+	MoveData = std::make_shared<DisplayMoveData>();
+
 }
 
 void Display::SetPosition(Vector2 NewPosition)
@@ -54,16 +69,14 @@ void Display::ResizeDisplay(int NewWidth, int NewHeight)
 
 	std::lock_guard<std::mutex> lock(m_ResizeMutex);
 	
-	// Unload old render texture
 	UnloadRenderTexture(ActiveRenderTarget);
 	
-	// Create new render texture with new dimensions
 	ActiveRenderTarget = LoadRenderTexture(NewWidth, NewHeight);
 	
-	// Update rectangles
 	SourceRect = { 0, 0, (float)NewWidth, -(float)NewHeight };
 	DestinationRect.width = (float)NewWidth;
 	DestinationRect.height = (float)NewHeight;
+
 }
 
 void Display::Tick(float DeltaTime)
@@ -98,89 +111,42 @@ void Display::HandleResizeInteraction()
 	{
 		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
 		{
-			// Calculate new size based on mouse delta
 			float deltaX = mousePos.x - m_ResizeStartMousePos.x;
 			float deltaY = mousePos.y - m_ResizeStartMousePos.y;
+			int OldWidth = static_cast<int>(DestinationRect.width);
+			int OldHeight = static_cast<int>(DestinationRect.height);
 			
-			int newWidth = static_cast<int>(m_ResizeStartSize.x + deltaX);
-			int newHeight = static_cast<int>(m_ResizeStartSize.y + deltaY);
+			int NewWidth = static_cast<int>(m_ResizeStartSize.x + deltaX);
+			int NewHeight = static_cast<int>(m_ResizeStartSize.y + deltaY);
 			
-			// Clamp to minimum size
-			newWidth = (newWidth < m_MinWidth) ? m_MinWidth : newWidth;
-			newHeight = (newHeight < m_MinHeight) ? m_MinHeight : newHeight;
+			NewWidth = (NewWidth < m_MinWidth) ? m_MinWidth : NewWidth;
+			NewHeight = (NewHeight < m_MinHeight) ? m_MinHeight : NewHeight;
 			
-			// If using grid layout, clamp size to stay within grid bounds
-			if (m_UseGridLayout && m_GridLayoutManager)
-			{
-				int gridWidth = m_GridLayoutManager->GetWindowWidth();
-				int gridHeight = m_GridLayoutManager->GetWindowHeight();
-				
-				// Calculate maximum size that keeps display within grid
-				int maxWidth = gridWidth - static_cast<int>(DestinationRect.x);
-				int maxHeight = gridHeight - static_cast<int>(DestinationRect.y);
-				
-				newWidth = std::min(newWidth, maxWidth);
-				newHeight = std::min(newHeight, maxHeight);
-				
-				// Calculate and show preview of which cells will be occupied
-				int cellWidth = m_GridLayoutManager->GetCellWidth();
-				int cellHeight = m_GridLayoutManager->GetCellHeight();
-				
-				if (cellWidth > 0 && cellHeight > 0)
-				{
-					const GridCell* currentCell = m_GridLayoutManager->GetDisplayCell(this);
-					if (currentCell)
-					{
-						// Calculate how many cells this size would occupy
-						int previewColSpan = std::max(1, static_cast<int>(std::round(newWidth / static_cast<float>(cellWidth))));
-						int previewRowSpan = std::max(1, static_cast<int>(std::round(newHeight / static_cast<float>(cellHeight))));
-						
-						// Clamp span to not exceed grid bounds
-						previewColSpan = std::min(previewColSpan, m_GridLayoutManager->GetColumns() - currentCell->column);
-						previewRowSpan = std::min(previewRowSpan, m_GridLayoutManager->GetRows() - currentCell->row);
-						
-						GridCell previewCell = *currentCell;
-						previewCell.colSpan = previewColSpan;
-						previewCell.rowSpan = previewRowSpan;
-						
-						m_GridLayoutManager->SetDisplayResizing(this, true, previewCell);
-					}
-				}
-			}
-			
-			// Only resize if size actually changed
-			if (newWidth != GetWidth() || newHeight != GetHeight())
-			{
-				ResizeDisplay(newWidth, newHeight);
-			}
+			ResizeData->DisplayToResize = SoftObjectPath<Display>(this->m_Name);
+			ResizeData->NewWidth = NewWidth;
+			ResizeData->NewHeight = NewHeight;
+			ResizeData->OldWidth = OldWidth;
+			ResizeData->OldHeight = OldHeight;
+			ResizeData->bIsResizeComplete = false;
+			ResizeEvent->Payload = ResizeData;
+
+			OnResize.Dispatch(ResizeEvent);
 		}
 		else
 		{
 			// Stop resizing when mouse released
 			bIsResizing = false;
 			
-			// Clear the resize preview
-			if (m_UseGridLayout && m_GridLayoutManager)
-			{
-				m_GridLayoutManager->SetDisplayResizing(this, false, {});
-			}
-			
-			// If using grid layout, calculate new span based on final size
-			if (m_UseGridLayout && m_GridLayoutManager)
-			{
-				int cellWidth = m_GridLayoutManager->GetCellWidth();
-				int cellHeight = m_GridLayoutManager->GetCellHeight();
-				
-				if (cellWidth > 0 && cellHeight > 0)
-				{
-					// Calculate how many cells this size would occupy
-					int newColSpan = std::max(1, static_cast<int>(std::round(DestinationRect.width / static_cast<float>(cellWidth))));
-					int newRowSpan = std::max(1, static_cast<int>(std::round(DestinationRect.height / static_cast<float>(cellHeight))));
-					
-					// Try to resize the span (this will fail if overlapping)
-					m_GridLayoutManager->ResizeDisplaySpan(this, newRowSpan, newColSpan);
-				}
-			}
+			// Dispatch resize complete event - GridLayoutManager will handle snapping
+			ResizeData->DisplayToResize = SoftObjectPath<Display>(this->m_Name);
+			ResizeData->NewWidth = static_cast<int>(DestinationRect.width);
+			ResizeData->NewHeight = static_cast<int>(DestinationRect.height);
+			ResizeData->OldWidth = static_cast<int>(m_ResizeStartSize.x);
+			ResizeData->OldHeight = static_cast<int>(m_ResizeStartSize.y);
+			ResizeData->bIsResizeComplete = true;
+			ResizeEventComplete->Payload = ResizeData;
+
+			OnResize.Dispatch(ResizeEventComplete);
 		}
 	}
 }
@@ -232,10 +198,8 @@ void Display::HandleMoveInteraction()
 	Vector2 MousePos = GetMousePosition();
 	Rectangle HandleRect = GetMoveHandleRect();
 	
-	// Check if mouse is over move handle
 	bool IsOverHandle = CheckCollisionPointRec(MousePos, HandleRect);
 	
-	// Start moving
 	if (IsOverHandle && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
 		bIsMoving = true;
@@ -255,35 +219,36 @@ void Display::HandleMoveInteraction()
 			float newX = m_MoveStartPos.x + DeltaX;
 			float newY = m_MoveStartPos.y + DeltaY;
 			
-			// If using grid layout, clamp position within grid bounds
-			if (m_UseGridLayout && m_GridLayoutManager)
-			{
-				int gridWidth = m_GridLayoutManager->GetWindowWidth();
-				int gridHeight = m_GridLayoutManager->GetWindowHeight();
-				
-				// Clamp to keep display within grid bounds
-				newX = std::max(0.0f, std::min(newX, static_cast<float>(gridWidth - DestinationRect.width)));
-				newY = std::max(0.0f, std::min(newY, static_cast<float>(gridHeight - DestinationRect.height)));
-				
-				// Calculate preview cell and register for overlay drawing
-				m_PreviewCell = m_GridLayoutManager->SnapToGrid(this, MousePos, true);
-				m_GridLayoutManager->SetDisplayDragging(this, true, m_PreviewCell);
-			}
-			
-			DestinationRect.x = newX;
-			DestinationRect.y = newY;
+			// Dispatch move event - let listeners handle constraints and previews
+			MoveData->DisplayToMove = SoftObjectPath<Display>(this->m_Name);
+			MoveData->NewX = newX;
+			MoveData->NewY = newY;
+			MoveData->MouseX = MousePos.x;
+			MoveData->MouseY = MousePos.y;
+			MoveData->DisplayWidth = DestinationRect.width;
+			MoveData->DisplayHeight = DestinationRect.height;
+			MoveData->bIsMoveComplete = false;
+			MoveEvent->Payload = MoveData;
+
+			OnMove.Dispatch(MoveEvent);
 		}
 		else
 		{
 			// Stop moving when mouse released
 			bIsMoving = false;
 			
-			// Snap to grid on release and unregister from dragging
-			if (m_UseGridLayout && m_GridLayoutManager)
-			{
-				m_GridLayoutManager->SetDisplayDragging(this, false, m_PreviewCell);
-				m_GridLayoutManager->MoveDisplayToCell(this, m_PreviewCell);
-			}
+			// Dispatch move complete event
+			MoveData->DisplayToMove = SoftObjectPath<Display>(this->m_Name);
+			MoveData->NewX = DestinationRect.x;
+			MoveData->NewY = DestinationRect.y;
+			MoveData->MouseX = MousePos.x;
+			MoveData->MouseY = MousePos.y;
+			MoveData->DisplayWidth = DestinationRect.width;
+			MoveData->DisplayHeight = DestinationRect.height;
+			MoveData->bIsMoveComplete = true;
+			MoveEventComplete->Payload = MoveData;
+
+			OnMove.Dispatch(MoveEventComplete);
 		}
 	}
 }
