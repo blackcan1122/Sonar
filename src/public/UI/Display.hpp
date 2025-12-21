@@ -1,10 +1,11 @@
 #pragma once
 #include "Base/Core.h"
 #include "Base/BaseUI.h"
-
+#include "Base/EventDispatcher.hpp"
 #include <mutex>
 
-class GridLayoutManager;
+#include "Events/DisplayResizeData.hpp"
+#include "Events/DisplayMoveData.hpp"
 
 /**
  * @struct GridCell
@@ -35,6 +36,8 @@ public:
 	virtual void Draw();
 	virtual void  MarkForDestruction() override;
 
+	virtual void Initialize() override;
+
 	void SetPosition(Vector2 NewPosition);
 	void RenderToMainBuffer();
 	
@@ -56,16 +59,11 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	
-	// Grid Layout Support
-	void SetGridLayoutManager(GridLayoutManager* manager) { m_GridLayoutManager = manager; }
-	GridLayoutManager* GetGridLayoutManager() const { return m_GridLayoutManager; }
-	
-	// Enable/disable grid snapping (when disabled, uses free positioning)
-	void SetUseGridLayout(bool useGrid) { m_UseGridLayout = useGrid; }
-	bool UsesGridLayout() const { return m_UseGridLayout; }
-	
 	// Get the current destination rect (for external layout managers)
 	Rectangle GetDestinationRect() const { return DestinationRect; }
+
+	EventDispatcher OnResize;
+	EventDispatcher OnMove;
 
 protected:
 
@@ -87,7 +85,16 @@ protected:
 
 	Rectangle SourceRect;
 	Rectangle DestinationRect;
-	
+
+	std::shared_ptr<AllPurposeEvent> ResizeEvent;
+	std::shared_ptr<AllPurposeEvent> ResizeEventComplete;
+
+	std::shared_ptr<AllPurposeEvent> MoveEvent;
+	std::shared_ptr<AllPurposeEvent> MoveEventComplete;
+
+	std::shared_ptr<DisplayResizeData> ResizeData;
+	std::shared_ptr<DisplayMoveData> MoveData;
+
 	bool bIsResizable = true;
 	bool bIsResizing = false;
 	Vector2 m_ResizeStartMousePos = { 0, 0 };
@@ -101,10 +108,5 @@ protected:
 	Vector2 m_MoveStartMousePos = { 0, 0 };
 	Vector2 m_MoveStartPos = { 0, 0 };
 	int m_MoveHandleSize = 15;
-	
-	// Grid layout support
-	GridLayoutManager* m_GridLayoutManager = nullptr;
-	bool m_UseGridLayout = true;
-	GridCell m_PreviewCell;  // Used during drag to show where display will snap
 
 };

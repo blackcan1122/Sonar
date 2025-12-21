@@ -15,6 +15,7 @@ void World::ReceiveSound(std::shared_ptr<IEvent> Event)
         Signals CurrentSignal;
         CurrentSignal.SenderPosition = CastedSoundEvent->SoundOrigin;
         CurrentSignal.Strength = CastedSoundEvent->SignalStrength;
+		CurrentSignal.SenderEntity = CastedSoundEvent->Sender;
         // Add to pending signals (will be available next frame)
         m_PendingSignals.push_back(CurrentSignal);
     }

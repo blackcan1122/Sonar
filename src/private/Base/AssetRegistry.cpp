@@ -92,19 +92,20 @@ bool AssetRegistry::UnregisterAsset(const std::string name)
 	return true;
 }
 
+// TODO: refactor this to generate unique names
 std::string AssetRegistry::GenerateNextAvaiableName(const std::string base_name)
 {
 	const auto& numbers = g_AssetRegistry[base_name];
 	if (numbers.empty()) {
-		return base_name; // Use base name first
+		return base_name;
 	}
-
-	// Find first gap starting from 0
 	int expected = 0;
-	for (int num : numbers)
+	auto it = numbers.lower_bound(expected);
+
+	while (it != numbers.end() && *it == expected)
 	{
-		if (num > expected) break;
 		expected++;
+		++it;
 	}
 
 	if (expected == 0)

@@ -4,6 +4,7 @@
 #include "Base/Factory.hpp"
 #include "Base/World.hpp"
 #include "Events/SoundEvent.hpp"
+#include "Events/DisplayResizeData.hpp"
 #include "UI/GridLayoutManager.hpp"
 
 SandboxGameMode::SandboxGameMode()
@@ -14,13 +15,13 @@ SandboxGameMode::SandboxGameMode()
 
 void SandboxGameMode::BeginPlay()
 {
-	// Create a 2x3 grid layout (2 rows, 3 columns)
 	GridLayoutManager* gridLayout = CreateGridLayout(2, 3);
-	
+
 	// Set up callbacks for display management
-	gridLayout->SetDeleteDisplayCallback([this](Display* display) {
+	gridLayout->SetDeleteDisplayCallback([this](SoftObjectPath<Display> display) {
 		this->OnDeleteDisplay(display);
 	});
+
 	gridLayout->SetCreateDisplayCallback([this](const GridCell& cell, const DisplaySpawnInfo& spawnInfo) {
 		this->OnCreateDisplay(cell, spawnInfo);
 	});
@@ -31,13 +32,15 @@ void SandboxGameMode::BeginPlay()
 	MapDisplay = m_ObjectFactory->NewObject<Map>(400, 400);
 	if (auto map = MapDisplay.TryLoad())
 	{
-		map->SetGridLayoutManager(gridLayout);
-		gridLayout->RegisterDisplay(map.get(), GridCell{0, 1, 1, 1}); // Row 0, Col 1
+		gridLayout->RegisterDisplay(MapDisplay, GridCell{0, 1, 1, 1}); // Row 0, Col 1
 		
 		map->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
 		{
 			this->OnMapClickedEvent(Event);
 		});
+
+		map->OnResize.AddListener("SandboxGameMode Map Resize Listener", AllPurposeEvent::StaticClass(), gridLayout, &GridLayoutManager::OnDisplayResize);
+		map->OnMove.AddListener("SandboxGameMode Map Move Listener", AllPurposeEvent::StaticClass(), gridLayout, &GridLayoutManager::OnDisplayMove);
 	}
 
 	PlayerOne = m_ObjectFactory->NewObject<Player>();
@@ -50,21 +53,23 @@ void SandboxGameMode::BeginPlay()
 	WaterfallDisplay = m_ObjectFactory->NewObject<Waterfall>(360, 300, 10);
 	if (auto waterfall = WaterfallDisplay.TryLoad())
 	{
-		waterfall->SetGridLayoutManager(gridLayout);
-		gridLayout->RegisterDisplay(waterfall.get(), GridCell{0, 0, 1, 1}); // Row 0, Col 0
+		gridLayout->RegisterDisplay(WaterfallDisplay, GridCell{0, 0, 1, 1}); // Row 0, Col 0
 		waterfall->AssignPlayer(PlayerOne);
+		waterfall->OnResize.AddListener("SandboxGameMode Waterfall Resize Listener", AllPurposeEvent::StaticClass(), gridLayout, &GridLayoutManager::OnDisplayResize);
+		waterfall->OnMove.AddListener("SandboxGameMode Waterfall Move Listener", AllPurposeEvent::StaticClass(), gridLayout, &GridLayoutManager::OnDisplayMove);
 	}
-	m_WaterfallDisplays.push_back(WaterfallDisplay);
+	m_AllDisplays.push_back(WaterfallDisplay);
 
 	// Create WaterfallDisplay2 and register with grid
 	WaterfallDisplay2 = m_ObjectFactory->NewObject<Waterfall>(360, 300, 60);
 	if (auto waterfall2 = WaterfallDisplay2.TryLoad())
 	{
-		waterfall2->SetGridLayoutManager(gridLayout);
-		gridLayout->RegisterDisplay(waterfall2.get(), GridCell{1, 0, 1, 1}); // Row 1, Col 0
+		gridLayout->RegisterDisplay(WaterfallDisplay2, GridCell{1, 0, 1, 1}); // Row 1, Col 0
 		waterfall2->AssignPlayer(PlayerOne);
+		waterfall2->OnResize.AddListener("SandboxGameMode Waterfall2 Resize Listener", AllPurposeEvent::StaticClass(), gridLayout, &GridLayoutManager::OnDisplayResize);
+		waterfall2->OnMove.AddListener("SandboxGameMode Waterfall2 Move Listener", AllPurposeEvent::StaticClass(), gridLayout, &GridLayoutManager::OnDisplayMove);
 	}
-	m_WaterfallDisplays.push_back(WaterfallDisplay2);
+	m_AllDisplays.push_back(WaterfallDisplay2);
 
 
 	OtherSub = m_ObjectFactory->NewObject<BaseSubmarine>();
@@ -97,7 +102,6 @@ void SandboxGameMode::Update()
 
 		GameMode::Update();
 
-		// Draw snap previews on top of all displays
 		if (m_GridLayoutManager)
 		{
 			m_GridLayoutManager->DrawSnapPreviews();
@@ -108,14 +112,6 @@ void SandboxGameMode::Update()
 		{
 			m_GridLayoutManager->DrawGridControls();
 		}
-
-		// Draw debug grid overlay in debug mode
-#if DEBUG
-		// if (m_GridLayoutManager)
-		// {
-		// 	m_GridLayoutManager->DrawDebugGrid();
-		// }
-#endif
 
 		DrawFocusPlayer();
 
@@ -131,31 +127,6 @@ void SandboxGameMode::Update()
 		if (IsKeyPressed(KEY_L))
 		{
 			MapDisplay.TryLoad()->ResizeDisplay(600, 600);
-		}
-		
-		// Grid layout controls
-		if (m_GridLayoutManager)
-		{
-			// Add row with Ctrl+Plus
-			if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_EQUAL))
-			{
-				m_GridLayoutManager->AddRow();
-			}
-			// Remove row with Ctrl+Minus
-			if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_MINUS))
-			{
-				m_GridLayoutManager->RemoveRow();
-			}
-			// Add column with Shift+Plus
-			if (IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_EQUAL))
-			{
-				m_GridLayoutManager->AddColumn();
-			}
-			// Remove column with Shift+Minus
-			if (IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_MINUS))
-			{
-				m_GridLayoutManager->RemoveColumn();
-			}
 		}
 }
 
@@ -192,41 +163,27 @@ void SandboxGameMode::DrawFocusPlayer()
 {
 }
 
-void SandboxGameMode::OnDeleteDisplay(Display* display)
+void SandboxGameMode::OnDeleteDisplay(SoftObjectPath<Display> InDisplay)
 {
-	if (!display || !m_GridLayoutManager)
+	if (!InDisplay || !m_GridLayoutManager)
 	{
 		return;
 	}
 	
 	// Unregister from grid first
-	m_GridLayoutManager->UnregisterDisplay(display);
+	m_GridLayoutManager->UnregisterDisplay(InDisplay);
 	
-	// Find and remove from our tracking list
-	for (auto it = m_WaterfallDisplays.begin(); it != m_WaterfallDisplays.end(); ++it)
+	for (auto it = m_AllDisplays.begin(); it != m_AllDisplays.end(); ++it)
 	{
-		if (auto waterfall = it->TryLoad())
+		if (*it == InDisplay)
 		{
-			if (waterfall.get() == display)
-			{
-				// Mark for destruction - the Factory deleter will handle cleanup
-				waterfall->MarkForDestruction();
-				m_WaterfallDisplays.erase(it);
-				return;
-			}
+			m_AllDisplays.erase(it);
+			break;
 		}
 	}
-	
-	// Check if it's the map display
-	if (auto map = MapDisplay.TryLoad())
-	{
-		if (map.get() == display)
-		{
-			map->MarkForDestruction();
-			MapDisplay = SoftObjectPath<Map>(); // Clear the reference
-			return;
-		}
-	}
+
+	InDisplay.TryLoad()->MarkForDestruction();
+	this->DestroyObjectExplicitly<Display>(InDisplay);
 }
 
 void SandboxGameMode::OnCreateDisplay(const GridCell& cell, const DisplaySpawnInfo& spawnInfo)
@@ -244,8 +201,7 @@ void SandboxGameMode::OnCreateDisplay(const GridCell& cell, const DisplaySpawnIn
 			MapDisplay = m_ObjectFactory->NewObject<Map>(400, 400);
 			if (auto map = MapDisplay.TryLoad())
 			{
-				map->SetGridLayoutManager(m_GridLayoutManager.get());
-				m_GridLayoutManager->RegisterDisplay(map.get(), cell);
+				m_GridLayoutManager->RegisterDisplay(MapDisplay, cell);
 				
 				// Re-add entities to the new map
 				if (auto player = PlayerOne.TryLoad())
@@ -257,10 +213,12 @@ void SandboxGameMode::OnCreateDisplay(const GridCell& cell, const DisplaySpawnIn
 					map->AddObjectToDraw(otherSub);
 				}
 				
-				map->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
-				{
-					this->OnMapClickedEvent(Event);
-				});
+				map->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(),
+					this, &SandboxGameMode::OnMapClickedEvent);
+				map->OnResize.AddListener("SandboxGameMode Map Resize Listener", AllPurposeEvent::StaticClass(), m_GridLayoutManager.get(), &GridLayoutManager::OnDisplayResize);
+				map->OnMove.AddListener("SandboxGameMode Map Move Listener", AllPurposeEvent::StaticClass(), m_GridLayoutManager.get(), &GridLayoutManager::OnDisplayMove);
+
+				m_AllDisplays.push_back(MapDisplay);
 			}
 			break;
 		}
@@ -271,10 +229,11 @@ void SandboxGameMode::OnCreateDisplay(const GridCell& cell, const DisplaySpawnIn
 			
 			if (auto waterfall = newWaterfall.TryLoad())
 			{
-				waterfall->SetGridLayoutManager(m_GridLayoutManager.get());
-				m_GridLayoutManager->RegisterDisplay(waterfall.get(), cell);
+				m_GridLayoutManager->RegisterDisplay(newWaterfall, cell);
 				waterfall->AssignPlayer(PlayerOne);
-				m_WaterfallDisplays.push_back(newWaterfall);
+				waterfall->OnResize.AddListener("SandboxGameMode Waterfall Resize Listener", AllPurposeEvent::StaticClass(), m_GridLayoutManager.get(), &GridLayoutManager::OnDisplayResize);
+				waterfall->OnMove.AddListener("SandboxGameMode Waterfall Move Listener", AllPurposeEvent::StaticClass(), m_GridLayoutManager.get(), &GridLayoutManager::OnDisplayMove);
+				m_AllDisplays.push_back(newWaterfall);
 			}
 			break;
 		}

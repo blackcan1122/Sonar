@@ -1,6 +1,7 @@
 #pragma once
 #include "Base/GameInstance.h"
 #include "Base/AssetRegistry.hpp"
+#include <functional>
 
 
 /**
@@ -33,6 +34,11 @@ struct SoftObjectPath
     {
     }
 
+    bool IsValid() const
+    {
+        return GameInstance::GetAssetRegistry()->LoadAssetFromSoftObjectPath(*this) != nullptr;
+	}
+
     std::shared_ptr<T> TryLoad()
     {
         return std::dynamic_pointer_cast<T>(GameInstance::GetAssetRegistry()->LoadAssetFromSoftObjectPath(*this));
@@ -43,6 +49,33 @@ struct SoftObjectPath
         return m_Path;
     }
 
+    bool operator==(const SoftObjectPath<T>& other) const
+    {
+        return m_Path == other.m_Path;
+    }
+
+    bool operator!=(const SoftObjectPath<T>& other) const
+    {
+        return !(*this == other);
+    }
+
+    operator bool() const
+    {
+        return IsValid();
+	}
+
 protected:
     std::string m_Path;
 };
+
+namespace std
+{
+    template <typename T>
+    struct hash<SoftObjectPath<T>>
+    {
+        size_t operator()(const SoftObjectPath<T>& path) const
+        {
+            return std::hash<std::string>{}(path.ToString());
+        }
+    };
+}

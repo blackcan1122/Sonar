@@ -8,6 +8,10 @@ void EventDispatcher::AddListener(const std::string& Identifier, SClass* EventCl
 
 bool EventDispatcher::RemoveListener(const std::string& Identifier, SClass* EventClass)
 {
+	if (m_Listener.empty())
+	{
+		return false;
+	}
 	auto ClassIt = m_Listener.find(EventClass);
 	if (ClassIt == m_Listener.end()) return false;
 

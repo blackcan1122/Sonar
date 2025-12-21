@@ -2,7 +2,7 @@
 #define RAYGUI_IMPLEMENTATION
 #endif // !RAYGUI_IMPLEMENTATION
 
-#define Version "DEV-0.1.1"
+#define Version "DEV-0.1.5"
 
 #include "Base/Core.h"
 

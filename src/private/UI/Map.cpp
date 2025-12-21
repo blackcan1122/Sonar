@@ -35,7 +35,6 @@ Map::~Map()
     UnloadTexture(PlayerIcon);
     UnloadTexture(ShipIcon);
     UnloadShader(shader);
-    Display::~Display();
 }
 
 void Map::Draw()
@@ -212,7 +211,7 @@ void Map::Tick(float DeltaTime)
     // Handle resize interaction from base class
     Super::Tick(DeltaTime);
     
-    if (bIsResizing)
+    if (bIsResizing || bIsMoving)
     {
         BorderRect = { DestinationRect.x - 15, DestinationRect.y - 15, DestinationRect.width + 30, DestinationRect.height + 30 };
         Draw();

@@ -40,6 +40,8 @@ void InitLogger();
 #undef far
 #endif
 
+#define nullpath SoftObjectPath<IObject>()
+
 
 
 // Own Class Forward
