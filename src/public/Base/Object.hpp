@@ -10,12 +10,12 @@ class GameMode;
 class Factory;
 class EventDispatcher;
 
-struct CallbackEntry
-{
-	std::weak_ptr<EventDispatcher> EventDispatcher;
-	std::string Identifier;
-	SClass* EventClass;
-};	
+//struct CallbackEntry
+//{
+//	std::weak_ptr<EventDispatcher> EventDispatcher;
+//	std::string Identifier;
+//	SClass* EventClass;
+//};	
 
 /**
  * @class IObject
@@ -48,19 +48,19 @@ public:
 	using EventCallback = std::function<void(std::shared_ptr<IEvent>)>;
 
 	IObject() = default;
-	~IObject();
+	//~IObject();
 
-	// Copy constructor - does NOT copy callbacks (new object has fresh callback state)
-	IObject(const IObject& Other);
+	//// Copy constructor - does NOT copy callbacks (new object has fresh callback state)
+	//IObject(const IObject& Other);
 
-	// Copy assignment operator - does NOT copy callbacks, clears existing callbacks first
-	IObject& operator=(const IObject& Other);
+	//// Copy assignment operator - does NOT copy callbacks, clears existing callbacks first
+	//IObject& operator=(const IObject& Other);
 
-	// Move constructor - transfers callback ownership from source
-	IObject(IObject&& Other) noexcept;
+	//// Move constructor - transfers callback ownership from source
+	//IObject(IObject&& Other) noexcept;
 
-	// Move assignment operator - transfers callback ownership, clears existing callbacks first
-	IObject& operator=(IObject&& Other) noexcept;
+	//// Move assignment operator - transfers callback ownership, clears existing callbacks first
+	//IObject& operator=(IObject&& Other) noexcept;
 
 	virtual SClass* GetStaticClass() { return &m_SClass; };
 	static SClass* StaticClass() { return  &m_SClass; };
@@ -103,7 +103,7 @@ protected:
 	std::string m_Name;
 	std::string m_DisplayName = "Unit";
 
-	std::vector<CallbackEntry> m_RegisteredCallbacks;
+	//std::vector<CallbackEntry> m_RegisteredCallbacks;
 
 private:
 

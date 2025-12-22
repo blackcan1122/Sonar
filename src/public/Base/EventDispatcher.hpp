@@ -57,5 +57,4 @@ private:
 	// EventType to {Identifier to Callback}
 	std::unordered_map<SClass*, std::unordered_map<std::string, EventCallback>> m_Listener;
 
-	
 };

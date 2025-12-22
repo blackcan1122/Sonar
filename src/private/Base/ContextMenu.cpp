@@ -93,8 +93,8 @@ void ContextMenu::CalculateSize()
 		Height += Entry.FontSize + (PaddingY * 2);
 	}
 
-	Window.width = MaxLength;
-	Window.height = Height;
+	Window.width = static_cast<float>(MaxLength);
+	Window.height = static_cast<float>(Height);
 }
 
 void ContextMenu::Draw() const
@@ -105,11 +105,11 @@ void ContextMenu::Draw() const
 	{
 		if (CheckCollisionPointRec(GetMousePosition(), Entry.ContextMenuEntryRec) == false)
 		{
-			DrawRectangle(Entry.ContextMenuEntryRec.x, Entry.ContextMenuEntryRec.y, Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, BLANK);
+			DrawRectangle(FTOI(Entry.ContextMenuEntryRec.x), FTOI(Entry.ContextMenuEntryRec.y), Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, BLANK);
 		}
 		else
 		{
-			DrawRectangle(Entry.ContextMenuEntryRec.x, Entry.ContextMenuEntryRec.y, Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, BLACK);
+			DrawRectangle(FTOI(Entry.ContextMenuEntryRec.x), Entry.ContextMenuEntryRec.y, Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, BLACK);
 		}
 
 		DrawText(Entry.GetDisplayName().c_str(), Entry.ContextMenuEntryRec.x, Entry.ContextMenuEntryRec.y, Entry.FontSize, GREEN);

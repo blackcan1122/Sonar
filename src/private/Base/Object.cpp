@@ -5,82 +5,82 @@
 #include "Events/MouseEvent.hpp"
 #include "Base/EventDispatcher.hpp"
 
-IObject::~IObject()
-{
-	for (const auto& entry : m_RegisteredCallbacks)
-	{
-		if (auto DispatcherPtr = entry.EventDispatcher.lock())
-		{
-			DispatcherPtr->RemoveListener(entry.Identifier, entry.EventClass);
-		}
-	}
-}
-
-// Copy constructor - copies basic properties but NOT callbacks
-IObject::IObject(const IObject& Other)
-	: m_Name(Other.m_Name)
-	, m_DisplayName(Other.m_DisplayName)
-	, bIsMarkedForDestruction(Other.bIsMarkedForDestruction)
-{
-}
-
-IObject& IObject::operator=(const IObject& Other)
-{
-	if (this != &Other)
-	{
-		// First, unregister all existing callbacks from this object
-		for (const auto& entry : m_RegisteredCallbacks)
-		{
-			if (auto DispatcherPtr = entry.EventDispatcher.lock())
-			{
-				DispatcherPtr->RemoveListener(entry.Identifier, entry.EventClass);
-			}
-		}
-		m_RegisteredCallbacks.clear();
-
-		m_Name = Other.m_Name;
-		m_DisplayName = Other.m_DisplayName;
-		bIsMarkedForDestruction = Other.bIsMarkedForDestruction;
-		
-	}
-	return *this;
-}
-
-IObject::IObject(IObject&& Other) noexcept
-	: m_Name(std::move(Other.m_Name))
-	, m_DisplayName(std::move(Other.m_DisplayName))
-	, m_RegisteredCallbacks(std::move(Other.m_RegisteredCallbacks))
-	, bIsMarkedForDestruction(Other.bIsMarkedForDestruction)
-{
-	// Clear the source's destruction flag to prevent double-unregistration
-	Other.bIsMarkedForDestruction = false;
-}
-
-// Move assignment operator
-IObject& IObject::operator=(IObject&& Other) noexcept
-{
-	if (this != &Other)
-	{
-		// First, unregister all existing callbacks from this object
-		for (const auto& entry : m_RegisteredCallbacks)
-		{
-			if (auto DispatcherPtr = entry.EventDispatcher.lock())
-			{
-				DispatcherPtr->RemoveListener(entry.Identifier, entry.EventClass);
-			}
-		}
-
-		// Move properties from source
-		m_Name = std::move(Other.m_Name);
-		m_DisplayName = std::move(Other.m_DisplayName);
-		m_RegisteredCallbacks = std::move(Other.m_RegisteredCallbacks);
-		bIsMarkedForDestruction = Other.bIsMarkedForDestruction;
-
-		// Clear source's destruction flag
-		Other.bIsMarkedForDestruction = false;
-	}
-	return *this;
-}
+//IObject::~IObject()
+//{
+//	for (const auto& entry : m_RegisteredCallbacks)
+//	{
+//		if (auto DispatcherPtr = entry.EventDispatcher.lock())
+//		{
+//			DispatcherPtr->RemoveListener(entry.Identifier, entry.EventClass);
+//		}
+//	}
+//}
+//
+//// Copy constructor - copies basic properties but NOT callbacks
+//IObject::IObject(const IObject& Other)
+//	: m_Name(Other.m_Name)
+//	, m_DisplayName(Other.m_DisplayName)
+//	, bIsMarkedForDestruction(Other.bIsMarkedForDestruction)
+//{
+//}
+//
+//IObject& IObject::operator=(const IObject& Other)
+//{
+//	if (this != &Other)
+//	{
+//		// First, unregister all existing callbacks from this object
+//		for (const auto& entry : m_RegisteredCallbacks)
+//		{
+//			if (auto DispatcherPtr = entry.EventDispatcher.lock())
+//			{
+//				DispatcherPtr->RemoveListener(entry.Identifier, entry.EventClass);
+//			}
+//		}
+//		m_RegisteredCallbacks.clear();
+//
+//		m_Name = Other.m_Name;
+//		m_DisplayName = Other.m_DisplayName;
+//		bIsMarkedForDestruction = Other.bIsMarkedForDestruction;
+//		
+//	}
+//	return *this;
+//}
+//
+//IObject::IObject(IObject&& Other) noexcept
+//	: m_Name(std::move(Other.m_Name))
+//	, m_DisplayName(std::move(Other.m_DisplayName))
+//	, m_RegisteredCallbacks(std::move(Other.m_RegisteredCallbacks))
+//	, bIsMarkedForDestruction(Other.bIsMarkedForDestruction)
+//{
+//	// Clear the source's destruction flag to prevent double-unregistration
+//	Other.bIsMarkedForDestruction = false;
+//}
+//
+//// Move assignment operator
+//IObject& IObject::operator=(IObject&& Other) noexcept
+//{
+//	if (this != &Other)
+//	{
+//		// First, unregister all existing callbacks from this object
+//		for (const auto& entry : m_RegisteredCallbacks)
+//		{
+//			if (auto DispatcherPtr = entry.EventDispatcher.lock())
+//			{
+//				DispatcherPtr->RemoveListener(entry.Identifier, entry.EventClass);
+//			}
+//		}
+//
+//		// Move properties from source
+//		m_Name = std::move(Other.m_Name);
+//		m_DisplayName = std::move(Other.m_DisplayName);
+//		m_RegisteredCallbacks = std::move(Other.m_RegisteredCallbacks);
+//		bIsMarkedForDestruction = Other.bIsMarkedForDestruction;
+//
+//		// Clear source's destruction flag
+//		Other.bIsMarkedForDestruction = false;
+//	}
+//	return *this;
+//}
 
 GameMode* IObject::GetOutter()
 {
