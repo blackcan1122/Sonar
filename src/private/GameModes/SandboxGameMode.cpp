@@ -6,7 +6,6 @@
 #include "Events/SoundEvent.hpp"
 #include "Events/DisplayResizeData.hpp"
 #include "UI/GridLayoutManager.hpp"
-#include "Base/GameInstance.h"
 
 SandboxGameMode::SandboxGameMode()
 {
@@ -36,12 +35,7 @@ void SandboxGameMode::BeginPlay()
 	{
 		LayoutManagerObj->RegisterDisplay(MapDisplay, GridCell{0, 1, 1, 1}); // Row 0, Col 1
 		
-		map->AddCallbackToEventDispatcherTemp(map->MapEventDispatcher, "Map Events", AllPurposeEvent::StaticClass(), this, &SandboxGameMode::OnMapClickedEvent);
-		//map->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event)
-		//{
-		//	this->OnMapClickedEvent(Event);
-		//});
-
+		map->MapEventDispatcher->AddListener("SandboxGameMode Map Click Listener", AllPurposeEvent::StaticClass(), this, &SandboxGameMode::OnMapClickedEvent);
 		map->OnResize.AddListener("SandboxGameMode Map Resize Listener", AllPurposeEvent::StaticClass(), LayoutManager, &GridLayoutManager::OnDisplayResize);
 		map->OnMove.AddListener("SandboxGameMode Map Move Listener", AllPurposeEvent::StaticClass(), LayoutManager, &GridLayoutManager::OnDisplayMove);
 	}
@@ -110,7 +104,6 @@ void SandboxGameMode::Update()
 			return;
 		}
 
-		// Draw empty tile backgrounds first (beneath displays)
 		if (GLMOBJ)
 		{
 			GLMOBJ->DrawEmptyTiles();
@@ -128,9 +121,6 @@ void SandboxGameMode::Update()
 		{
 			GLMOBJ->DrawGridControls();
 		}
-
-		DrawFocusPlayer();
-
 
 #if DEBUG
 		DrawFPS(GameInstance::GetInstance()->GetWindowProperties().m_ScreenWidth - 100, 20);
@@ -173,10 +163,6 @@ void SandboxGameMode::OnMapClickedEvent(std::shared_ptr<IEvent> Event)
 
 	std::shared_ptr<MapClickEventData> tempEventData = std::dynamic_pointer_cast<MapClickEventData>(CastedEvent->Payload);
 	FocusedUnit = tempEventData->ClickedObject;
-}
-
-void SandboxGameMode::DrawFocusPlayer()
-{
 }
 
 void SandboxGameMode::OnDeleteDisplay(SoftObjectPath<Display> InDisplay)

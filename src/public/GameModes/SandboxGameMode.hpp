@@ -25,8 +25,6 @@ public:
 	virtual void BeginPlay() override;
 
 	void OnMapClickedEvent(std::shared_ptr<IEvent> Event);
-
-	void DrawFocusPlayer();
 	
 	// Display management callbacks
 	void OnDeleteDisplay(SoftObjectPath<Display> display);
