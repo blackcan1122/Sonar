@@ -42,6 +42,9 @@ void InitLogger();
 
 #define nullpath SoftObjectPath<IObject>()
 
+#define FTOI(x) static_cast<int>(x)
+#define ITOF(x) static_cast<float>(x)
+
 
 
 // Own Class Forward
