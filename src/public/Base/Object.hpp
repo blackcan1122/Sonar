@@ -79,16 +79,20 @@ public:
 	virtual std::string GetDisplayName() const { return m_DisplayName; };
 	virtual void SetDisplayName(std::string NewName) { m_DisplayName = NewName; };
 
-	virtual void AddCallbackToEventDispatcher(std::weak_ptr<EventDispatcher> Dispatcher, const std::string& Identifier, SClass* EventClass, EventCallback Callback);
+	// Maybe for later implementations
+	// Right now i dont see the usecase sadly
+	// My Thought was to have a easy cleanup method so no event dispatcher callbacks could leak
+	// but in reality most of the objects subscribe to their own Dispatchers or Global ones, so they can't really leak
+	//virtual void AddCallbackToEventDispatcher(std::weak_ptr<EventDispatcher> Dispatcher, const std::string& Identifier, SClass* EventClass, EventCallback Callback);
 
-	template <typename T>
-	void AddCallbackToEventDispatcherTemp(std::weak_ptr<EventDispatcher> Dispatcher, const std::string& Identifier, SClass* EventClass, T* Object, void (T::* MemberFunc)(std::shared_ptr<IEvent>))
-	{
-		AddCallbackToEventDispatcher(Dispatcher, Identifier, EventClass, [Object, MemberFunc](std::shared_ptr<IEvent> Event)
-			{
-				(Object->*MemberFunc)(Event);
-			});
-	}
+	//template <typename T>
+	//void AddCallbackToEventDispatcherTemp(std::weak_ptr<EventDispatcher> Dispatcher, const std::string& Identifier, SClass* EventClass, T* Object, void (T::* MemberFunc)(std::shared_ptr<IEvent>))
+	//{
+	//	AddCallbackToEventDispatcher(Dispatcher, Identifier, EventClass, [Object, MemberFunc](std::shared_ptr<IEvent> Event)
+	//		{
+	//			(Object->*MemberFunc)(Event);
+	//		});
+	//}
 
 protected:
 

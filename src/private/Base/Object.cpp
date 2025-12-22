@@ -100,15 +100,15 @@ bool IObject::IsMarkedForDestruction()
 	return bIsMarkedForDestruction;
 }
 
-void IObject::AddCallbackToEventDispatcher(std::weak_ptr<EventDispatcher> Dispatcher, const std::string& Identifier, SClass* EventClass, EventCallback Callback)
-{
-	if (auto DispatcherPtr = Dispatcher.lock())
-	{
-		DispatcherPtr->AddListener(Identifier, EventClass, Callback);
-		CallbackEntry entry;
-		entry.EventDispatcher = Dispatcher;
-		entry.Identifier = Identifier;
-		entry.EventClass = EventClass;
-		this->m_RegisteredCallbacks.push_back(entry);
-	}
-}
+//void IObject::AddCallbackToEventDispatcher(std::weak_ptr<EventDispatcher> Dispatcher, const std::string& Identifier, SClass* EventClass, EventCallback Callback)
+//{
+//	if (auto DispatcherPtr = Dispatcher.lock())
+//	{
+//		DispatcherPtr->AddListener(Identifier, EventClass, Callback);
+//		CallbackEntry entry;
+//		entry.EventDispatcher = Dispatcher;
+//		entry.Identifier = Identifier;
+//		entry.EventClass = EventClass;
+//		this->m_RegisteredCallbacks.push_back(entry);
+//	}
+//}
