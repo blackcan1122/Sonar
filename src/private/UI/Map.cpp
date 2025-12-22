@@ -302,10 +302,10 @@ void Map::Init()
     MapClickEvent->Payload = ClickDataPayload;
 
 
-    RightClickMenu = GetOutter()->m_ObjectFactory->NewObject<ContextMenu>();
+    RightClickMenu = GetOutter()->NewObject<ContextMenu>();
     RightClickMenu.TryLoad()->SetDisplayName("Right Click Menu");
    
-    SpeedMenu = GetOutter()->m_ObjectFactory->NewObject<ContextMenu>();
+    SpeedMenu = GetOutter()->NewObject<ContextMenu>();
     SpeedMenu.TryLoad()->SetDisplayName("Speed Menu");
 
     ContextMenuEntry FullSpeedEntry;

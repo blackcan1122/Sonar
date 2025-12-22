@@ -16,6 +16,8 @@ class SandboxGameMode : public GameMode
 public:
 	SandboxGameMode();
 
+	AUTOBODY(SandboxGameMode, GameMode)
+
 
 
 	virtual void Update() override;

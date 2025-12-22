@@ -37,6 +37,15 @@
 #include "Base/EventData.hpp"
 #include "Events/WindowResizeData.hpp"
 
+#include "Base/SoftObject.hpp"
+#include "Base/AssetRegistry.hpp"
+
+// Globale Funktion für SoftObjectPath
+std::shared_ptr<AssetRegistry> GetGlobalAssetRegistry()
+{
+    return GameInstance::GetAssetRegistry();
+}
+
 // Definition of the static member
 EventDispatcher GameInstance::UIEventDispatcher;
 EventDispatcher GameInstance::SaveStateDispatcher;

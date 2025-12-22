@@ -2,9 +2,7 @@
 #include "Base/SoftObject.hpp"
 #include "Base/World.hpp"
 #include "Base/Core.h"
-
-class GridLayoutManager;
-
+#include <utility>
 
 /**
  * @class GameMode
@@ -36,12 +34,14 @@ class AssetRegistry;
 class Factory;
 class GameInstance;
 
-class GameMode
+class GameMode : public Object
 {
 friend IObject;
 friend Factory;
 friend GameInstance;
 friend AssetRegistry;
+
+AUTOBODY(GameMode, Object)
 
 public:
 	GameMode();
@@ -68,16 +68,24 @@ public:
 		return false;
 	}
 	
-	// Grid Layout Manager access
-	GridLayoutManager* GetGridLayoutManager() const { return m_GridLayoutManager.get(); }
-	
-	/**
-	 * @brief Creates a GridLayoutManager for this GameMode
-	 * @param rows Initial number of rows
-	 * @param columns Initial number of columns
-	 * @return Pointer to the created GridLayoutManager
-	 */
-	GridLayoutManager* CreateGridLayout(int rows, int columns);
+	template<typename T, typename... Args>
+	SoftObjectPath<T> NewObject(Args&&... args);
+
+	template<typename T>
+	std::vector<SoftObjectPath<T>> GetObject()
+	{
+		std::vector<SoftObjectPath<T>> Result;
+		SClass* TargetClass = T::StaticClass();
+		auto it = m_ObjectsByType.find(TargetClass);
+		if (it != m_ObjectsByType.end())
+		{
+			for (const auto& pair : it->second)
+			{
+				Result.push_back(pair.second.Cast<T>());
+			}
+		}
+		return Result;
+	}
 
 
 protected:
@@ -86,8 +94,11 @@ protected:
 	virtual void CleanUpPendingKill();
 	virtual void RegisterObject(std::shared_ptr<IObject> InObject);
 	virtual void UnregisterObject(IObject* InObject);
+
+	std::unordered_map<SClass*, std::unordered_map<std::string, SoftObjectPath<IObject>>> m_ObjectsByType;
 	std::unordered_map<std::string, std::shared_ptr<IObject>> m_Objects;
 	std::vector<std::shared_ptr<IObject>> m_PendingKill;
+	std::vector<std::pair<std::string, SClass*>> m_ObjectsToUnregister;
 	float m_DeltaTime = 0;
 	std::string m_Name;
 	
@@ -97,7 +108,14 @@ protected:
 	// Optional
 	SoftObjectPath<World> m_World;
 	
-	// Grid Layout Manager for Display positioning
-	std::unique_ptr<GridLayoutManager> m_GridLayoutManager;
 
+};
+
+
+#include "Base/Factory.hpp"
+
+template<typename T, typename... Args>
+SoftObjectPath<T> GameMode::NewObject(Args&&... args)
+{
+	return m_ObjectFactory->NewObject<T>(std::forward<Args>(args)...);
 };

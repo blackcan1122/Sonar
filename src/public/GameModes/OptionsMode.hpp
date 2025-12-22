@@ -6,6 +6,7 @@
 
 class OptionsMode : public GameMode
 {
+AUTOBODY(OptionsMode, GameMode)
 public:
 	OptionsMode();
 	~OptionsMode();
