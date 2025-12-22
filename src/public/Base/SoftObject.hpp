@@ -1,25 +1,26 @@
 #pragma once
-#include "Base/GameInstance.h"
-#include "Base/AssetRegistry.hpp"
 #include <functional>
+#include <memory>
+#include <string>
+#include <type_traits>
 
+// Forward Declarations - KEIN #include "GameInstance.h"!
+class IObject;
+class AssetRegistry;
 
-/**
-* SoftObjectPath provides a way to reference objects by name rather than direct pointer,
-* allowing for lazy loading, improved serialization, and better memory management.
-*/
+// Globaler Zugriff auf AssetRegistry (wird in GameInstance.cpp definiert)
+std::shared_ptr<AssetRegistry> GetGlobalAssetRegistry();
+
 template <typename T>
 struct SoftObjectPath
 {
     SoftObjectPath() = default;
 
-
-    // Implicit upcast constructor (from derived to base)
     template <typename U, typename = std::enable_if_t<std::is_base_of_v<T, U>>>
-    SoftObjectPath(const SoftObjectPath<U>& other) 
-        : m_Path(other.ToString()) {}
+    SoftObjectPath(const SoftObjectPath<U>& other)
+        : m_Path(other.ToString()) {
+    }
 
-    // Explicit cast method for related types
     template <typename U>
     SoftObjectPath<U> Cast() const
     {
@@ -30,39 +31,19 @@ struct SoftObjectPath
     }
 
     SoftObjectPath(std::string SoftPath)
-        :m_Path(SoftPath)
+        : m_Path(SoftPath)
     {
     }
 
-    bool IsValid() const
-    {
-        return GameInstance::GetAssetRegistry()->LoadAssetFromSoftObjectPath(*this) != nullptr;
-	}
+    // Implementierung hier, aber mit freier Funktion statt GameInstance
+    bool IsValid() const;
+    std::shared_ptr<T> TryLoad() const;
 
-    std::shared_ptr<T> TryLoad()
-    {
-        return std::dynamic_pointer_cast<T>(GameInstance::GetAssetRegistry()->LoadAssetFromSoftObjectPath(*this));
-    }
+    std::string ToString() const { return m_Path; }
 
-    std::string ToString() const
-    {
-        return m_Path;
-    }
-
-    bool operator==(const SoftObjectPath<T>& other) const
-    {
-        return m_Path == other.m_Path;
-    }
-
-    bool operator!=(const SoftObjectPath<T>& other) const
-    {
-        return !(*this == other);
-    }
-
-    operator bool() const
-    {
-        return IsValid();
-	}
+    bool operator==(const SoftObjectPath<T>& other) const { return m_Path == other.m_Path; }
+    bool operator!=(const SoftObjectPath<T>& other) const { return !(*this == other); }
+    operator bool() const { return IsValid(); }
 
 protected:
     std::string m_Path;
@@ -78,4 +59,22 @@ namespace std
             return std::hash<std::string>{}(path.ToString());
         }
     };
+}
+
+// Template-Implementierungen nach der Klassendefinition
+#include "Base/AssetRegistry.hpp"
+
+template <typename T>
+bool SoftObjectPath<T>::IsValid() const
+{
+    auto Registry = GetGlobalAssetRegistry();
+    return Registry ? Registry->LoadAssetFromSoftObjectPath(*this) != nullptr : false;
+}
+
+template <typename T>
+std::shared_ptr<T> SoftObjectPath<T>::TryLoad() const
+{
+    auto Registry = GetGlobalAssetRegistry();
+    if (!Registry) return nullptr;
+    return std::dynamic_pointer_cast<T>(Registry->LoadAssetFromSoftObjectPath(*this));
 }

@@ -3,6 +3,7 @@
 #include "Base/BaseUI.h"
 #include "Base/EventDispatcher.hpp"
 #include <mutex>
+#include "Events/AllPurposeEvent.h"
 
 #include "Events/DisplayResizeData.hpp"
 #include "Events/DisplayMoveData.hpp"

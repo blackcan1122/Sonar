@@ -1,5 +1,6 @@
 #pragma once
 #include "Base/Core.h"
+#include "Base/SoftObject.hpp"
 /**
 * for Now we sort the Events like  
 * EventClass to {Identifier to Callback}
@@ -24,6 +25,19 @@ public:
 		AddListener(Identifier, EventClass, [Object, MemberFunc](std::shared_ptr<IEvent> Event) {
 			(Object->*MemberFunc)(Event);
 			});
+	}
+
+
+	template<typename T>
+	void AddListener(const std::string& Identifier, SClass* EventClass, const SoftObjectPath<T>& Object, void (T::* MemberFunc)(std::shared_ptr<IEvent>))
+	{
+		AddListener(Identifier, EventClass, [Object, MemberFunc](std::shared_ptr<IEvent> Event) 
+		{
+				if (auto ObjectPtr = Object.TryLoad())
+				{
+					(ObjectPtr.get()->*MemberFunc)(Event);
+				}
+		});
 	}
 
 	bool RemoveListener(const std::string& Identifier, SClass* EventClass);

@@ -5,7 +5,7 @@
 
 class ShutDownGame : public GameMode
 {
-    
+AUTOBODY(ShutDownGame, GameMode)
 public:
     ShutDownGame();
 

@@ -4,9 +4,18 @@
 #include <string>
 #include "Base/SClass.hpp"
 #include <memory>
+#include <functional>	
 
 class GameMode;
 class Factory;
+class EventDispatcher;
+
+struct CallbackEntry
+{
+	std::weak_ptr<EventDispatcher> EventDispatcher;
+	std::string Identifier;
+	SClass* EventClass;
+};	
 
 /**
  * @class IObject
@@ -34,14 +43,29 @@ class IObject
 private:
 	static inline SClass m_SClass = SClass(nullptr, "IObject");
 
+
 public:
+	using EventCallback = std::function<void(std::shared_ptr<IEvent>)>;
 
 	IObject() = default;
+	~IObject();
+
+	// Copy constructor - does NOT copy callbacks (new object has fresh callback state)
+	IObject(const IObject& Other);
+
+	// Copy assignment operator - does NOT copy callbacks, clears existing callbacks first
+	IObject& operator=(const IObject& Other);
+
+	// Move constructor - transfers callback ownership from source
+	IObject(IObject&& Other) noexcept;
+
+	// Move assignment operator - transfers callback ownership, clears existing callbacks first
+	IObject& operator=(IObject&& Other) noexcept;
 
 	virtual SClass* GetStaticClass() { return &m_SClass; };
 	static SClass* StaticClass() { return  &m_SClass; };
 
-	virtual void Tick(float DeltaTime) = 0;
+	virtual void Tick(float DeltaTime) {};
 	virtual void Initialize(){}; // TODO: Should be marked abstracted in future maybe?
 
 	GameMode* GetOutter();
@@ -55,6 +79,17 @@ public:
 	virtual std::string GetDisplayName() const { return m_DisplayName; };
 	virtual void SetDisplayName(std::string NewName) { m_DisplayName = NewName; };
 
+	virtual void AddCallbackToEventDispatcher(std::weak_ptr<EventDispatcher> Dispatcher, const std::string& Identifier, SClass* EventClass, EventCallback Callback);
+
+	template <typename T>
+	void AddCallbackToEventDispatcherTemp(std::weak_ptr<EventDispatcher> Dispatcher, const std::string& Identifier, SClass* EventClass, T* Object, void (T::* MemberFunc)(std::shared_ptr<IEvent>))
+	{
+		AddCallbackToEventDispatcher(Dispatcher, Identifier, EventClass, [Object, MemberFunc](std::shared_ptr<IEvent> Event)
+			{
+				(Object->*MemberFunc)(Event);
+			});
+	}
+
 protected:
 
 	virtual void OnKeyStroke(KeyboardKey PressedKey, Vector2 MousePosition) {};
@@ -63,6 +98,8 @@ protected:
 
 	std::string m_Name;
 	std::string m_DisplayName = "Unit";
+
+	std::vector<CallbackEntry> m_RegisteredCallbacks;
 
 private:
 
@@ -79,15 +116,5 @@ class Object : public IObject
 
 private:
 	static inline SClass m_SClass = SClass(IObject::StaticClass(), "Object");
-public:
-	Object();
 
-
-
-	
-	virtual SClass* GetStaticClass() override { return &m_SClass; }
-	static SClass* StaticClass() { return  &m_SClass; }
-private:
-
-protected:
 };

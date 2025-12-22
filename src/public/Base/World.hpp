@@ -3,6 +3,7 @@
 #include "Rendering/RenderBufferArrayLine.hpp"
 #include "Base/NavalTypedefs.h"
 #include "Base/SoftObject.hpp"
+#include "Base/Entity.hpp"
 
 // Need a Base Class and a interface with specific payloads
 // For now we just keep it in this class

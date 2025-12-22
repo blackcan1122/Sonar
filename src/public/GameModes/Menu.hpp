@@ -6,6 +6,7 @@
 
 class MenuMode : public GameMode
 {
+	AUTOBODY(MenuMode, GameMode)
 public:
 	MenuMode();
 	~MenuMode();

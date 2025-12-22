@@ -4,6 +4,13 @@
 #include "UI/GridLayoutManager.hpp"
 #include "Base/GameInstance.h"
 
+// ObjectType Defintions
+
+#include "Entities/Player.hpp"
+#include "UI/Display.hpp"
+#include "Base/World.hpp"
+#include "Base/Entity.hpp"
+
 GameMode::GameMode()
 {
 	m_ObjectFactory = std::make_shared<Factory>(this);
@@ -45,6 +52,7 @@ void GameMode::Update()
 		if (Object.second->IsMarkedForDestruction())
 		{
 			m_PendingKill.push_back(Object.second);
+			m_ObjectsToUnregister.push_back({ Object.second->GetName(), Object.second->GetStaticClass()});
 		}
 	}
 
@@ -86,9 +94,11 @@ void GameMode::CleanUpPendingKill()
 	for (int i = 0; i < m_PendingKill.size(); i++)
 	{
 		DestroyObjectExplicitly(m_PendingKill[i]);
+		m_ObjectsByType[m_ObjectsToUnregister[i].second].erase(m_ObjectsToUnregister[i].first);
 	}
 
 	m_PendingKill.clear();
+	m_ObjectsToUnregister.clear();
 }
 
 void GameMode::RegisterObject(std::shared_ptr<IObject> Object)
@@ -96,6 +106,11 @@ void GameMode::RegisterObject(std::shared_ptr<IObject> Object)
 	if (m_Objects.insert({ Object->GetName(), Object }).second == false)
 	{
 		LOG_ERROR("Couldn't Add {}, as it already registred.", Object->GetName());
+	}
+
+	if (m_ObjectsByType[Object->GetStaticClass()].insert({Object->GetName(), SoftObjectPath<IObject>(Object->GetName())}).second == false)
+	{
+		LOG_ERROR("Couldn't Add {}, as it already registred in Type Map.", Object->GetName());
 	}
 }
 
@@ -116,13 +131,4 @@ bool GameMode::DestroyObjectExplicitly(std::shared_ptr<IObject> InObject)
 		return true;
 	}
 	return false;
-}
-
-GridLayoutManager* GameMode::CreateGridLayout(int rows, int columns)
-{
-	WindowProperties props = GameInstance::GetInstance()->GetWindowProperties();
-	m_GridLayoutManager = std::make_unique<GridLayoutManager>(
-		rows, columns, props.m_ScreenWidth, props.m_ScreenHeight
-	);
-	return m_GridLayoutManager.get();
 }
