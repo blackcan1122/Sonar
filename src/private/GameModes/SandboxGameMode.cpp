@@ -43,7 +43,7 @@ void SandboxGameMode::BeginPlay()
 	PlayerOne =  NewObject<Player>();
 	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
 	PlayerOne.TryLoad()->SetDisplayName("U-521");
-	PlayerOne.TryLoad()->SetInitialSpeed(15);
+	PlayerOne.TryLoad()->SetInitialSpeed(0);
 	PlayerOne.TryLoad()->SetEntityRotationAndCourse(90);
 
 	// Create WaterfallDisplay and register with grid
@@ -91,7 +91,7 @@ void SandboxGameMode::Update()
 {
 		ClearBackground(BLACK);
 
-		auto GLM = GetObject<GridLayoutManager>();
+		auto GLM = GetObjects<GridLayoutManager>();
 		if (GLM.empty())
 		{
 			return;
@@ -171,7 +171,7 @@ void SandboxGameMode::OnDeleteDisplay(SoftObjectPath<Display> InDisplay)
 	{
 		return;
 	}
-	auto GLM = GetObject<GridLayoutManager>();
+	auto GLM = GetObjects<GridLayoutManager>();
 	if (GLM.empty())
 	{
 		return;
@@ -194,7 +194,7 @@ void SandboxGameMode::OnDeleteDisplay(SoftObjectPath<Display> InDisplay)
 void SandboxGameMode::OnCreateDisplay(const GridCell& cell, const DisplaySpawnInfo& spawnInfo)
 {
 
-	auto GLM = GetObject<GridLayoutManager>();
+	auto GLM = GetObjects<GridLayoutManager>();
 	if (GLM.empty())
 	{
 		return;

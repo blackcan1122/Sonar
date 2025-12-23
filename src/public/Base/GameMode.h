@@ -52,7 +52,6 @@ public:
 	virtual void BeginPlay();
 	virtual SoftObjectPath<World> GetWorld();
 	virtual std::string GetName();
-	std::shared_ptr<Factory> m_ObjectFactory;
 
 	virtual bool DestroyObjectExplicitly(std::shared_ptr<IObject> InObject);
 
@@ -72,7 +71,7 @@ public:
 	SoftObjectPath<T> NewObject(Args&&... args);
 
 	template<typename T>
-	std::vector<SoftObjectPath<T>> GetObject()
+	std::vector<SoftObjectPath<T>> GetObjects()
 	{
 		std::vector<SoftObjectPath<T>> Result;
 		SClass* TargetClass = T::StaticClass();
@@ -94,6 +93,8 @@ protected:
 	virtual void CleanUpPendingKill();
 	virtual void RegisterObject(std::shared_ptr<IObject> InObject);
 	virtual void UnregisterObject(IObject* InObject);
+	std::shared_ptr<Factory> m_ObjectFactory;
+
 
 	std::unordered_map<SClass*, std::unordered_map<std::string, SoftObjectPath<IObject>>> m_ObjectsByType;
 	std::unordered_map<std::string, std::shared_ptr<IObject>> m_Objects;

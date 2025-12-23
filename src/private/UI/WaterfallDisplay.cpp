@@ -74,7 +74,7 @@ void Waterfall::Tick(float DeltaTime)
     // Interpolate/scale source data to buffer width
     if (SourceSize > 0)
     {
-#pragma omp parallel for num_threads(4)
+        #pragma omp parallel for num_threads(4)
         for (int DestX = 0; DestX < BufferWidth; ++DestX)
         {
             // Map destination pixel to source sample using linear interpolation
@@ -112,7 +112,7 @@ auto PlayerPtr = AssignedPlayer.TryLoad();
             }
             
             // Calculate absolute bearing in degrees (0-360, where 0 is North)
-            float AngleRad = std::atan2(Delta.x, Delta.y);  // -y because screen Y is inverted
+            float AngleRad = std::atan2(-Delta.x, Delta.y);  // -y because screen Y is inverted
             float AbsoluteBearing = AngleRad * (180.0f / PI);
             if (AbsoluteBearing < 0) AbsoluteBearing += 360.0f;
             
