@@ -117,23 +117,32 @@ auto PlayerPtr = AssignedPlayer.TryLoad();
             if (AbsoluteBearing < 0) AbsoluteBearing += 360.0f;
             
             // Map absolute bearing (0 to 360) to buffer position (0 to BufferWidth)
-            // 0° (North) is at center, -180° (South) at left edge, +180° (South) at right edge
             float NormalizedBearing = AbsoluteBearing / 360.0f;
             int CenterPixel = static_cast<int>(NormalizedBearing * BufferWidth);
             
             // Calculate signal intensity
-            int Intensity = static_cast<int>(Signal.Strength);
-            Intensity = std::clamp(Intensity, 0, 255);
+            float BaseIntensity = std::clamp(static_cast<float>(Signal.Strength), 0.0f, 255.0f);
             
-            // Spread the signal across multiple pixels based on scaling
-            float PixelsPerSample = static_cast<float>(BufferWidth) / SourceSize;
-            int HalfWidth = std::max(1, static_cast<int>(PixelsPerSample / 2));
+            // Spread signal 6 pixels to each side (12 pixel total width)
+            int HalfWidth = 6;
             
             int StartPixel = std::clamp(CenterPixel - HalfWidth, 0, BufferWidth - 1);
             int EndPixel = std::clamp(CenterPixel + HalfWidth + 1, 0, BufferWidth);
             
             for (int X = StartPixel; X < EndPixel; ++X)
             {
+                // Calculate distance from center (0.0 at center, 1.0 at edge)
+                float DistFromCenter = std::abs(static_cast<float>(X - CenterPixel)) / static_cast<float>(HalfWidth);
+                
+                // Steep falloff using higher power - strong in center, drops sharply at edges
+                // Using x^4 curve: stays high near center, drops steeply near edges
+                float Falloff = 1.0f - (DistFromCenter * DistFromCenter * DistFromCenter * DistFromCenter);
+                Falloff = std::max(0.0f, Falloff);
+                
+                // Add slight noise variation for realism
+                float Noise = 0.85f + 0.15f * (static_cast<float>((X * 7919 + Counter * 104729) % 1000) / 1000.0f);
+                
+                int Intensity = static_cast<int>(BaseIntensity * Falloff * Noise);
                 m_AccumulatedSignals[X] += Intensity;
             }
         }

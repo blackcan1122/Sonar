@@ -6,12 +6,14 @@
 #include "UI/Display.hpp"
 #include "Base/SoftObject.hpp"
 #include "Base/LayoutManager.hpp"
+#include "Base/GridCell.hpp"
 
 #include <vector>
 #include <unordered_map>
 #include <memory>
 #include <functional>
 #include <string>
+
 
 
 enum class DisplayType
@@ -26,7 +28,6 @@ struct DisplaySpawnInfo
 	DisplayType type = DisplayType::Waterfall;
 	int waterfallTimeframeSecs = 60;  // Only used for Waterfall type
 	
-	// Helper constructors
 	static DisplaySpawnInfo CreateMap() { return {DisplayType::Map, 0}; }
 	static DisplaySpawnInfo CreateWaterfall(int timeframeSecs) { return {DisplayType::Waterfall, timeframeSecs}; }
 };
@@ -116,7 +117,7 @@ public:
 	
 	// Callback types for display management
 	using DeleteDisplayCallback = std::function<void(SoftObjectPath<Display>)>;
-	using CreateDisplayCallback = std::function<void(const GridCell&, const DisplaySpawnInfo&)>;
+	using CreateDisplayCallback = std::function<void(const SoftObjectPath<Display>, const DisplaySpawnInfo)>;
 	
 	void SetDeleteDisplayCallback(DeleteDisplayCallback callback) { m_OnDeleteDisplay = callback; }
 	void SetCreateDisplayCallback(CreateDisplayCallback callback) { m_OnCreateDisplay = callback; }
@@ -181,5 +182,8 @@ private:
 	void CloseSpawnMenu();
 	void DrawSpawnMenu();
 	bool HandleSpawnMenuInput();
+
+	void DeleteDisplay(SoftObjectPath<Display> Display);
+	void CreateDisplay(const GridCell& cell, const DisplaySpawnInfo& spawnInfo);
 };
 

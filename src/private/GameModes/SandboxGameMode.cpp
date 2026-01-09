@@ -6,6 +6,7 @@
 #include "Events/SoundEvent.hpp"
 #include "Events/DisplayResizeData.hpp"
 #include "UI/GridLayoutManager.hpp"
+#include "UI/GridLayoutManager.hpp"
 
 SandboxGameMode::SandboxGameMode()
 {
@@ -24,8 +25,8 @@ void SandboxGameMode::BeginPlay()
 		this->OnDeleteDisplay(display);
 	});
 
-	LayoutManagerObj->SetCreateDisplayCallback([this](const GridCell& cell, const DisplaySpawnInfo& spawnInfo) {
-		this->OnCreateDisplay(cell, spawnInfo);
+	LayoutManagerObj->SetCreateDisplayCallback([this](const SoftObjectPath<Display>InDisplay, const DisplaySpawnInfo InDisplaySpawnInfo) {
+		this->OnCreateDisplay(InDisplay, InDisplaySpawnInfo);
 	});
 
 	m_World =  NewObject<World>();
@@ -171,13 +172,6 @@ void SandboxGameMode::OnDeleteDisplay(SoftObjectPath<Display> InDisplay)
 	{
 		return;
 	}
-	auto GLM = GetObjects<GridLayoutManager>();
-	if (GLM.empty())
-	{
-		return;
-	}
-
-	GLM[0].TryLoad()->UnregisterDisplay(InDisplay);
 	
 	for (auto it = m_AllDisplays.begin(); it != m_AllDisplays.end(); ++it)
 	{
@@ -191,63 +185,41 @@ void SandboxGameMode::OnDeleteDisplay(SoftObjectPath<Display> InDisplay)
 	InDisplay.TryLoad()->MarkForDestruction();
 }
 
-void SandboxGameMode::OnCreateDisplay(const GridCell& cell, const DisplaySpawnInfo& spawnInfo)
+void SandboxGameMode::OnCreateDisplay(const SoftObjectPath<Display> InDisplay, const DisplaySpawnInfo inDisplayType)
 {
-
-	auto GLM = GetObjects<GridLayoutManager>();
-	if (GLM.empty())
-	{
-		return;
-	}
-
-	auto GLMOBJ = GLM[0].TryLoad();
-
-	if (!GLMOBJ)
-	{
-		return;
-	}
-	
-	switch (spawnInfo.type)
+	switch (inDisplayType.type)
 	{
 		case DisplayType::Map:
 		{
-			
-			MapDisplay =  NewObject<Map>(400, 400);
-			if (auto map = MapDisplay.TryLoad())
+			if (auto MapObj = InDisplay.Cast<Map>().TryLoad())
 			{
-				GLMOBJ->RegisterDisplay(MapDisplay, cell);
-				
-				// Re-add entities to the new map
-				if (auto player = PlayerOne.TryLoad())
+				LOG_ERROR("SandboxGameMode::OnCreateDisplay - Failed to load Map object.");
+				break;
+
+
+				if (auto playerone = PlayerOne.TryLoad())
 				{
-					map->AddObjectToDraw(player);
+					MapObj->AddObjectToDraw(playerone);
 				}
 				if (auto otherSub = OtherSub.TryLoad())
 				{
-					map->AddObjectToDraw(otherSub);
+					MapObj->AddObjectToDraw(otherSub);
 				}
-				
-				map->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(),
-					this, &SandboxGameMode::OnMapClickedEvent);
-				map->OnResize.AddListener("SandboxGameMode Map Resize Listener", AllPurposeEvent::StaticClass(), GLM[0], &GridLayoutManager::OnDisplayResize);
-				map->OnMove.AddListener("SandboxGameMode Map Move Listener", AllPurposeEvent::StaticClass(), GLM[0], &GridLayoutManager::OnDisplayMove);
 
-				m_AllDisplays.push_back(MapDisplay);
+				MapObj->MapEventDispatcher->AddListener("Map Events", AllPurposeEvent::StaticClass(),
+					this, &SandboxGameMode::OnMapClickedEvent);
+
+				m_AllDisplays.push_back(InDisplay);
 			}
 			break;
 		}
 		
 		case DisplayType::Waterfall:
-		{
-			SoftObjectPath<Waterfall> newWaterfall =  NewObject<Waterfall>(360, 300, spawnInfo.waterfallTimeframeSecs);
-			
-			if (auto waterfall = newWaterfall.TryLoad())
+		{	
+			if (auto waterfall = InDisplay.Cast<Waterfall>().TryLoad())
 			{
-				GLMOBJ->RegisterDisplay(newWaterfall, cell);
 				waterfall->AssignPlayer(PlayerOne);
-				waterfall->OnResize.AddListener("SandboxGameMode Waterfall Resize Listener", AllPurposeEvent::StaticClass(), GLM[0], &GridLayoutManager::OnDisplayResize);
-				waterfall->OnMove.AddListener("SandboxGameMode Waterfall Move Listener", AllPurposeEvent::StaticClass(), GLM[0], &GridLayoutManager::OnDisplayMove);
-				m_AllDisplays.push_back(newWaterfall);
+				m_AllDisplays.push_back(InDisplay);
 			}
 			break;
 		}
