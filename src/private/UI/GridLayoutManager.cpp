@@ -773,6 +773,7 @@ void GridLayoutManager::SwapDisplays(SoftObjectPath<Display> displayA, SoftObjec
 	ApplyLayoutToDisplay(displayB, itB->second);
 }
 
+// TODO: Refactor to use button class
 void GridLayoutManager::DrawGridControls()
 {
 	if (!m_ShowControls)
@@ -1239,6 +1240,7 @@ void GridLayoutManager::CloseSpawnMenu()
 	m_SpawnMenu.isOpen = false;
 }
 
+// TODO: Refactor to use context menu
 void GridLayoutManager::DrawSpawnMenu()
 {
 	if (!m_SpawnMenu.isOpen)
@@ -1246,7 +1248,6 @@ void GridLayoutManager::DrawSpawnMenu()
 		return;
 	}
 
-	// Update elapsed time using raylib's frame time
 	m_SpawnMenu.elapsedTime += GetFrameTime();
 
 	// Menu configuration
