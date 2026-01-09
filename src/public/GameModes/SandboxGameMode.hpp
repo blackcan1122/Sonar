@@ -28,7 +28,7 @@ public:
 	
 	// Display management callbacks
 	void OnDeleteDisplay(SoftObjectPath<Display> display);
-	void OnCreateDisplay(const GridCell& cell, const DisplaySpawnInfo& spawnInfo);
+	void OnCreateDisplay(const SoftObjectPath<Display> InDisplay, const DisplaySpawnInfo InDisplaySpawnInfo);
 
 	std::string GetName() override;
 

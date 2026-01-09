@@ -7,6 +7,9 @@
 #include <omp.h>
 #include "Events/DisplayResizeData.hpp"
 #include "Events/DisplayMoveData.hpp"
+#include "Base/GameMode.h"
+#include "UI/Map.hpp"
+#include "UI/WaterfallDisplay.hpp"
 
 GridLayoutManager::GridLayoutManager(int rows, int columns, int windowWidth, int windowHeight)
 	: m_Rows(rows)
@@ -240,7 +243,6 @@ void GridLayoutManager::OnDisplayResize(std::shared_ptr<IEvent> Event)
 	// Handle resize complete - snap to grid
 	if (ResizeData->bIsResizeComplete)
 	{
-		// Clear the resize preview
 		SetDisplayResizing(DisplayToUse, false, {});
 
 		int cellWidth = GetCellWidth();
@@ -248,11 +250,9 @@ void GridLayoutManager::OnDisplayResize(std::shared_ptr<IEvent> Event)
 
 		if (cellWidth > 0 && cellHeight > 0)
 		{
-			// Calculate how many cells this size would occupy
 			int newColSpan = std::max(1, static_cast<int>(std::round(PayloadNewWidth / static_cast<float>(cellWidth))));
 			int newRowSpan = std::max(1, static_cast<int>(std::round(PayloadNewHeight / static_cast<float>(cellHeight))));
 
-			// Try to resize the span (this will fail if overlapping)
 			ResizeDisplaySpan(DisplayToUse, newRowSpan, newColSpan);
 		}
 		return;
@@ -280,11 +280,9 @@ void GridLayoutManager::OnDisplayResize(std::shared_ptr<IEvent> Event)
 		const GridCell* currentCell = GetDisplayCell(DisplayToUse);
 		if (currentCell)
 		{
-			// Calculate how many cells this size would occupy
 			int previewColSpan = std::max(1, static_cast<int>(std::round(newWidth / static_cast<float>(cellWidth))));
 			int previewRowSpan = std::max(1, static_cast<int>(std::round(newHeight / static_cast<float>(cellHeight))));
 
-			// Clamp span to not exceed grid bounds
 			previewColSpan = std::min(previewColSpan, GetColumns() - currentCell->column);
 			previewRowSpan = std::min(previewRowSpan, GetRows() - currentCell->row);
 
@@ -296,7 +294,6 @@ void GridLayoutManager::OnDisplayResize(std::shared_ptr<IEvent> Event)
 		}
 	}
 
-	// Only resize if size actually changed
 	if (newWidth != displayObj->GetWidth() || newHeight != displayObj->GetHeight())
 	{
 		displayObj->ResizeDisplay(newWidth, newHeight);
@@ -890,7 +887,7 @@ void GridLayoutManager::DrawGridControls()
 		12, WHITE);
 
 	// Draw delete buttons on each display if enabled
-	if (m_ShowDeleteButtons && m_OnDeleteDisplay)
+	if (m_ShowDeleteButtons)
 	{
 		for (const auto& [display, cell] : m_DisplayCells)
 		{
@@ -926,7 +923,7 @@ void GridLayoutManager::DrawGridControls()
 			// Handle click
 			if (hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !m_SpawnMenu.isOpen)
 			{
-				m_OnDeleteDisplay(display);
+				DeleteDisplay(display);
 				return; // Exit early since we're modifying the collection
 			}
 		}
@@ -995,7 +992,6 @@ void GridLayoutManager::SetDisplayResizing(SoftObjectPath<Display> display, bool
 
 void GridLayoutManager::ResolveOverlaps()
 {
-	LOG_ERROR("TEST");
 	std::set<std::pair<int, int>> assignedCells;
 	std::vector<SoftObjectPath<Display>> displaysToDelete;
 
@@ -1111,10 +1107,8 @@ void GridLayoutManager::ResolveOverlaps()
 
 	for (const auto& display : displaysToDelete)
 	{
-		if (m_OnDeleteDisplay)
-		{
-			m_OnDeleteDisplay(display);
-		}
+
+		DeleteDisplay(display);
 	}
 }
 
@@ -1188,7 +1182,7 @@ void GridLayoutManager::DrawEmptyTiles() const
 				float centerX = rect.x + rect.width / 2;
 				float centerY = rect.y + rect.height / 2;
 
-				if (m_ShowAddButtons && m_OnCreateDisplay)
+				if (m_ShowAddButtons)
 				{
 					// Draw clickable add button
 					float buttonSize = std::min(std::min(rect.width, rect.height) * 0.3f, 60.0f);
@@ -1349,9 +1343,9 @@ void GridLayoutManager::DrawSpawnMenu()
 	}
 
 	// Handle selection
-	if (clickedItem >= 0 && m_OnCreateDisplay)
+	if (clickedItem >= 0)
 	{
-		m_OnCreateDisplay(m_SpawnMenu.targetCell, menuItems[clickedItem].spawnInfo);
+		CreateDisplay(m_SpawnMenu.targetCell, menuItems[clickedItem].spawnInfo);
 		CloseSpawnMenu();
 		return;
 	}
@@ -1376,4 +1370,59 @@ bool GridLayoutManager::HandleSpawnMenuInput()
 	// This method can be used if input handling needs to be separated from drawing
 	// Currently, input is handled in DrawSpawnMenu for simplicity
 	return m_SpawnMenu.isOpen;
+}
+
+void GridLayoutManager::DeleteDisplay(SoftObjectPath<Display> Display)
+{
+	if (!Display)
+	{
+		return;
+	}
+
+	UnregisterDisplay(Display);
+	if (m_OnDeleteDisplay)
+	{
+		m_OnDeleteDisplay(Display);
+	}
+}
+
+void GridLayoutManager::CreateDisplay(const GridCell& Cell, const DisplaySpawnInfo& SpawnInfo)
+{
+	switch (SpawnInfo.type)
+	{
+	case DisplayType::Map:
+	{
+
+		SoftObjectPath<Map> MapDisplay = GetOutter()->NewObject<Map>(400, 400);
+		if (auto map = MapDisplay.TryLoad())
+		{
+			RegisterDisplay(MapDisplay, Cell);
+
+			map->OnResize.AddListener("SandboxGameMode Map Resize Listener", AllPurposeEvent::StaticClass(), this, &GridLayoutManager::OnDisplayResize);
+			map->OnMove.AddListener("SandboxGameMode Map Move Listener", AllPurposeEvent::StaticClass(), this, &GridLayoutManager::OnDisplayMove);
+			if (m_OnCreateDisplay)
+			{
+				m_OnCreateDisplay(MapDisplay, SpawnInfo);
+			}
+		}
+
+		break;
+	}
+
+	case DisplayType::Waterfall:
+	{
+		SoftObjectPath<Waterfall> newWaterfall = GetOutter()->NewObject<Waterfall>(360, 300, SpawnInfo.waterfallTimeframeSecs);
+		if (auto waterfall = newWaterfall.TryLoad())
+		{
+			RegisterDisplay(newWaterfall, Cell);
+			waterfall->OnResize.AddListener("SandboxGameMode Waterfall Resize Listener", AllPurposeEvent::StaticClass(), this, &GridLayoutManager::OnDisplayResize);
+			waterfall->OnMove.AddListener("SandboxGameMode Waterfall Move Listener", AllPurposeEvent::StaticClass(), this, &GridLayoutManager::OnDisplayMove);
+			if (m_OnCreateDisplay)
+			{
+				m_OnCreateDisplay(newWaterfall, SpawnInfo);
+			}
+		}
+		break;
+	}
+	}
 }
