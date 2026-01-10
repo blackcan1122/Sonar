@@ -7,6 +7,8 @@
 #include "Base/SoftObject.hpp"
 #include "Base/LayoutManager.hpp"
 #include "Base/GridCell.hpp"
+#include "Base/ContextMenu.hpp"
+#include "Base/ContextMenuEntry.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -60,6 +62,8 @@ public:
 	virtual void Tick(float DeltaTime) override {};
 	
 	virtual void UpdateLayout() override;
+
+	virtual void Initialize() override;
 	
 	void OnWindowResize(int newWidth, int newHeight);
 
@@ -177,6 +181,8 @@ private:
 
 	SpawnMenuState m_SpawnMenu;
 	
+	SoftObjectPath<ContextMenu> m_SpawnContextMenu;
+
 
 	void OpenSpawnMenu(const GridCell& cell, Vector2 screenPos);
 	void CloseSpawnMenu();

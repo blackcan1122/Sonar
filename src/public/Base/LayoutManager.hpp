@@ -3,9 +3,9 @@
 #include "Base/SoftObject.hpp"
 #include <any>
 
-class LayoutManager : public IObject
+class LayoutManager : public Object
 {
-	AUTOBODY(LayoutManager, IObject)
+	AUTOBODY(LayoutManager, Object)
 
 public:
 

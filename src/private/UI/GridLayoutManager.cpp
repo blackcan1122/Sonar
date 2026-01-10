@@ -139,6 +139,39 @@ void GridLayoutManager::UpdateLayout()
 	}
 }
 
+void GridLayoutManager::Initialize()
+{
+	
+	m_SpawnContextMenu = GetOutter()->NewObject<ContextMenu>();
+
+	ContextMenuEntry m_SpawnMapEntryWaterfall10;
+	m_SpawnMapEntryWaterfall10.SetDisplayName("Waterfall 10 Seconds");
+	ContextMenuEntry m_SpawnMapEntryWaterfall30;
+	ContextMenuEntry m_SpawnMapEntryWaterfall60;
+	ContextMenuEntry m_SpawnMapEntryWaterfall120;
+	ContextMenuEntry m_SpawnMapEntryWaterfall300;
+
+	if (auto SpawnMenu = m_SpawnContextMenu.TryLoad())
+	{
+		SpawnMenu->SetDisplayName("Spawn Menu");
+		//SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall30);
+		//SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall60);
+		//SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall120);
+		//SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall300);
+
+		m_SpawnMapEntryWaterfall10.SetCallback([this](ContextMenuEntry* Self)
+			{
+				LOG_INFO("TEEESCHD");
+				DisplaySpawnInfo info;
+				info = DisplaySpawnInfo::CreateWaterfall(10);
+				CreateDisplay(m_SpawnMenu.targetCell, info);
+			});
+
+		SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall10);
+
+	}
+}
+
 void GridLayoutManager::OnWindowResize(int newWidth, int newHeight)
 {
 	m_WindowWidth = newWidth;
@@ -1240,7 +1273,7 @@ void GridLayoutManager::CloseSpawnMenu()
 	m_SpawnMenu.isOpen = false;
 }
 
-// TODO: Refactor to use context menu
+
 void GridLayoutManager::DrawSpawnMenu()
 {
 	if (!m_SpawnMenu.isOpen)
@@ -1248,122 +1281,13 @@ void GridLayoutManager::DrawSpawnMenu()
 		return;
 	}
 
-	m_SpawnMenu.elapsedTime += GetFrameTime();
-
-	// Menu configuration
-	const int fontSize = 14;
-	const int padding = 8;
-	const int itemHeight = fontSize + padding * 2;
-
-	// Menu items
-	struct MenuItem
-	{
-		const char* label;
-		DisplaySpawnInfo spawnInfo;
-	};
-
-	std::vector<MenuItem> menuItems = {
-		{"Map",               DisplaySpawnInfo::CreateMap()},
-		{"Waterfall (10s)",   DisplaySpawnInfo::CreateWaterfall(10)},
-		{"Waterfall (30s)",   DisplaySpawnInfo::CreateWaterfall(30)},
-		{"Waterfall (60s)",   DisplaySpawnInfo::CreateWaterfall(60)},
-		{"Waterfall (120s)",  DisplaySpawnInfo::CreateWaterfall(120)}
-	};
-
-	// Calculate menu dimensions
-	int maxTextWidth = 0;
-	for (const auto& item : menuItems)
-	{
-		int textWidth = MeasureText(item.label, fontSize);
-		if (textWidth > maxTextWidth)
-		{
-			maxTextWidth = textWidth;
-		}
-	}
-
-	int menuWidth = maxTextWidth + padding * 2;
-	int menuHeight = static_cast<int>(menuItems.size()) * itemHeight;
-
 	// Adjust position to stay within screen bounds
 	float menuX = m_SpawnMenu.menuPosition.x;
 	float menuY = m_SpawnMenu.menuPosition.y;
-
-	if (menuX + menuWidth > m_WindowWidth)
-	{
-		menuX = m_WindowWidth - menuWidth;
-	}
-	if (menuY + menuHeight > m_WindowHeight)
-	{
-		menuY = m_WindowHeight - menuHeight;
-	}
-
-	Rectangle menuRect = { menuX, menuY, static_cast<float>(menuWidth), static_cast<float>(menuHeight) };
-
-	// Draw menu background with border
-	DrawRectangleRec(menuRect, ColorAlpha(DARKGRAY, 0.95f));
-	DrawRectangleLinesEx(menuRect, 2, GREEN);
-
-	// Draw menu items
-	Vector2 mousePos = GetMousePosition();
-	int clickedItem = -1;
-
-	// Only allow clicks after the close delay (prevents the click that opened the menu from also selecting an item)
-	bool canClick = m_SpawnMenu.elapsedTime >= SpawnMenuState::CLOSE_DELAY;
-
-	for (size_t i = 0; i < menuItems.size(); ++i)
-	{
-		Rectangle itemRect = {
-			menuX,
-			menuY + static_cast<float>(i * itemHeight),
-			static_cast<float>(menuWidth),
-			static_cast<float>(itemHeight)
-		};
-
-		bool hover = CheckCollisionPointRec(mousePos, itemRect);
-
-		// Draw hover highlight
-		if (hover)
-		{
-			DrawRectangleRec(itemRect, ColorAlpha(GREEN, 0.3f));
-		}
-
-		// Draw text
-		DrawText(
-			menuItems[i].label,
-			static_cast<int>(menuX + padding),
-			static_cast<int>(itemRect.y + padding),
-			fontSize,
-			hover ? WHITE : LIGHTGRAY
-		);
-
-		// Check for click (only after delay)
-		if (canClick && hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-		{
-			clickedItem = static_cast<int>(i);
-		}
-	}
-
-	// Handle selection
-	if (clickedItem >= 0)
-	{
-		CreateDisplay(m_SpawnMenu.targetCell, menuItems[clickedItem].spawnInfo);
-		CloseSpawnMenu();
-		return;
-	}
-
-	// Handle clicking outside to close (with delay)
-	if (m_SpawnMenu.elapsedTime >= SpawnMenuState::CLOSE_DELAY)
-	{
-		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !CheckCollisionPointRec(mousePos, menuRect))
-		{
-			CloseSpawnMenu();
-		}
-		// Also close on right-click or escape
-		if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || IsKeyPressed(KEY_ESCAPE))
-		{
-			CloseSpawnMenu();
-		}
-	}
+	
+	
+	m_SpawnContextMenu.TryLoad()->OnConstruct({ menuX, menuY });
+	m_SpawnMenu.isOpen = true;
 }
 
 bool GridLayoutManager::HandleSpawnMenuInput()
@@ -1406,7 +1330,11 @@ void GridLayoutManager::CreateDisplay(const GridCell& Cell, const DisplaySpawnIn
 				m_OnCreateDisplay(MapDisplay, SpawnInfo);
 			}
 		}
-
+		if (auto CurrentSpawnMenu = m_SpawnContextMenu.TryLoad())
+		{
+			m_SpawnMenu.isOpen = false;
+			CurrentSpawnMenu->OnDelete();
+		}
 		break;
 	}
 
@@ -1423,7 +1351,13 @@ void GridLayoutManager::CreateDisplay(const GridCell& Cell, const DisplaySpawnIn
 				m_OnCreateDisplay(newWaterfall, SpawnInfo);
 			}
 		}
+		if (auto CurrentSpawnMenu = m_SpawnContextMenu.TryLoad())
+		{
+			m_SpawnMenu.isOpen = false;
+			CurrentSpawnMenu->OnDelete();
+		}
 		break;
 	}
 	}
 }
+

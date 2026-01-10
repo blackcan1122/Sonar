@@ -62,14 +62,14 @@ public:
 		std::string GeneralName = m_Outter->GetName() + "/" + ClassName;
 		CastedObj->m_Name = GameInstance::GetAssetRegistry()->RegisterAsset(GeneralName);
 
-		std::weak_ptr<IObject> WeakObj = CastedObj; // Create weak_ptr BEFORE the lambdas
+		std::weak_ptr<IObject> WeakObj = CastedObj;
 
 		GameInstance::KeyDispatcher.AddListener(
 			CastedObj->m_Name,
 			KeyEvent::StaticClass(),
 			[WeakObj](std::shared_ptr<IEvent> evt)
 			{
-				if (auto CastedObj = WeakObj.lock()) // Try to get shared_ptr
+				if (auto CastedObj = WeakObj.lock())
 				{
 					auto CastedKeyEvent = std::dynamic_pointer_cast<KeyEvent>(evt);
 					CastedObj->OnKeyStroke(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);
@@ -80,9 +80,9 @@ public:
 		GameInstance::MouseDispatcher.AddListener(
 			CastedObj->m_Name,
 			MouseEvent::StaticClass(),
-			[WeakObj](std::shared_ptr<IEvent> evt) // Capture weak_ptr instead
+			[WeakObj](std::shared_ptr<IEvent> evt)
 			{
-				if (auto CastedObj = WeakObj.lock()) // Try to get shared_ptr
+				if (auto CastedObj = WeakObj.lock())
 				{
 					auto CastedKeyEvent = std::dynamic_pointer_cast<MouseEvent>(evt);
 					CastedObj->OnMouseButtonPressed(CastedKeyEvent->KeyPressed, CastedKeyEvent->MousePos);

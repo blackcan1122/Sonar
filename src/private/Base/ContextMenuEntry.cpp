@@ -11,9 +11,13 @@ void ContextMenuEntry::Construct()
 
 void ContextMenuEntry::OnClick()
 {
-	if (Callback != nullptr)
+	if (Callback)
 	{
 		Callback(this);
+	}
+	else
+	{
+		LOG_WARN("ContextMenuEntry::OnClick - No callback set for menu entry '{}'.", GetDisplayName());
 	}
 }
 
