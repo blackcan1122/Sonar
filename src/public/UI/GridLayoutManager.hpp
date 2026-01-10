@@ -186,7 +186,6 @@ private:
 
 	void OpenSpawnMenu(const GridCell& cell, Vector2 screenPos);
 	void CloseSpawnMenu();
-	void DrawSpawnMenu();
 	bool HandleSpawnMenuInput();
 
 	void DeleteDisplay(SoftObjectPath<Display> Display);

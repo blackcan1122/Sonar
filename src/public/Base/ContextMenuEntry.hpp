@@ -16,6 +16,7 @@ public:
 	
 	int FontSize = 8;
 	int MeasuredText = 0;
+	bool CloseOnClick = true;
 
 	Rectangle ContextMenuEntryRec;
 

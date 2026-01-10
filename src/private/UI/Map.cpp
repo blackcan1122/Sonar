@@ -187,7 +187,7 @@ void Map::Draw()
                 }
                 break;
             }
-                                  // Handle Ship type
+            // Handle Ship type
         }
     }
     auto Mark = ConvertWorldToScreenPos(MarkedPos);
@@ -373,6 +373,7 @@ void Map::Init()
 
 
     ContextMenuEntry NewEntry3;
+	NewEntry3.CloseOnClick = false;
     NewEntry3.SetDisplayName("Set Speed");
     NewEntry3.SetCallback([this](ContextMenuEntry* Self)
         {
@@ -441,7 +442,6 @@ void Map::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
     if (Key == MOUSE_BUTTON_RIGHT)
     {
         RightClickMenu.TryLoad()->OnConstruct(MousePos);
-        //SpeedMenu.TryLoad()->OnConstruct(MousePos);
     }
 }
 

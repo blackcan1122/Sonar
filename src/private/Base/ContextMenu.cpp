@@ -60,8 +60,10 @@ void ContextMenu::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
 		if (CheckCollisionPointRec(MousePos, Entry.ContextMenuEntryRec))
 		{
 			Entry.OnClick();
-			//OnDelete();
-			//return;
+			if (Entry.CloseOnClick)
+			{
+				OnDelete();
+			}
 		}
 	}
 
