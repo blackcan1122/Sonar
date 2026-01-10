@@ -1262,32 +1262,29 @@ void GridLayoutManager::DrawEmptyTiles() const
 
 void GridLayoutManager::OpenSpawnMenu(const GridCell& cell, Vector2 screenPos)
 {
+
+	if (m_SpawnMenu.isOpen)
+	{
+		return;
+	}
+
 	m_SpawnMenu.isOpen = true;
 	m_SpawnMenu.targetCell = cell;
 	m_SpawnMenu.menuPosition = screenPos;
 	m_SpawnMenu.elapsedTime = 0.0f;
+
+	// Adjust position to stay within screen bounds
+	float menuX = m_SpawnMenu.menuPosition.x;
+	float menuY = m_SpawnMenu.menuPosition.y;
+
+
+	m_SpawnContextMenu.TryLoad()->OnConstruct({ menuX, menuY });
+	m_SpawnMenu.isOpen = true;
 }
 
 void GridLayoutManager::CloseSpawnMenu()
 {
 	m_SpawnMenu.isOpen = false;
-}
-
-
-void GridLayoutManager::DrawSpawnMenu()
-{
-	if (!m_SpawnMenu.isOpen)
-	{
-		return;
-	}
-
-	// Adjust position to stay within screen bounds
-	float menuX = m_SpawnMenu.menuPosition.x;
-	float menuY = m_SpawnMenu.menuPosition.y;
-	
-	
-	m_SpawnContextMenu.TryLoad()->OnConstruct({ menuX, menuY });
-	m_SpawnMenu.isOpen = true;
 }
 
 bool GridLayoutManager::HandleSpawnMenuInput()
