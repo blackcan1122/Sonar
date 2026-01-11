@@ -20,11 +20,10 @@ void ContextMenu::OnConstruct(Vector2 Position)
 
 	for (int i = 0; i < MenuEntries.size(); i++)
 	{
-		Rectangle TempRec;
-
-		TempRec = { Window.x, LastYPos + PaddingY, Window.width, (float)MenuEntries[i].FontSize };
+		Rectangle TempRec { Window.x + 10, LastYPos + PaddingY, Window.width, (float)MenuEntries[i].FontSize };
 
 		LastYPos = TempRec.y + TempRec.height + PaddingY;
+
 		MenuEntries[i].ContextMenuEntryRec = TempRec;
 
 	}
@@ -35,6 +34,20 @@ void ContextMenu::OnConstruct(Vector2 Position)
 
 void ContextMenu::OnDelete()
 {
+	auto it = OnCloseCallbacks.begin();
+	while (it != OnCloseCallbacks.end())
+	{
+		if (*it)
+		{
+			(*it)();
+			++it;
+		}
+		else
+		{
+			it = OnCloseCallbacks.erase(it);
+		}
+	}
+
 	IsConstructed = false;
 }
 
@@ -101,7 +114,7 @@ void ContextMenu::CalculateSize()
 
 void ContextMenu::Draw() const
 {
-	DrawRectangle(Window.x, Window.y, Window.width, Window.height, BackgroundColor);
+	DrawRectangle(Window.x, Window.y, Window.width + 20, Window.height, BackgroundColor);
 
 	for (auto& Entry : MenuEntries)
 	{
