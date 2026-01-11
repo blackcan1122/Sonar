@@ -14,7 +14,7 @@ public:
 	void OnClick();
 	void SetCallback(std::function<void(ContextMenuEntry* Self)> NewCallback);
 	
-	int FontSize = 8;
+	int FontSize = 14;
 	int MeasuredText = 0;
 	bool CloseOnClick = true;
 

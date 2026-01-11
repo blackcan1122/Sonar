@@ -12,6 +12,7 @@ public:
 	void Tick(float DeltaTime) override;
 	void OnConstruct(const Vector2 Position);
 	void OnDelete();
+	void AddOnCloseCallback(std::function<void()> Callback) { if (Callback) OnCloseCallbacks.push_back(Callback); };
 	virtual void OnMouseButtonPressed(MouseButton Key, Vector2 MousePos) override;
 
 	bool GetIsConstructed() const;
@@ -29,6 +30,8 @@ protected:
 	bool IsConstructed = false;
 	std::vector<ContextMenuEntry> MenuEntries;
 	Color BackgroundColor = DARKGRAY;
+
+	std::vector<std::function<void()>> OnCloseCallbacks;
 
 	float ElapsedLifetime = 0.f;
 	float const CloseDelaySecs = 0.3f;

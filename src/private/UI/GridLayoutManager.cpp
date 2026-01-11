@@ -26,24 +26,6 @@ GridLayoutManager::GridLayoutManager(int rows, int columns, int windowWidth, int
 	m_Columns = std::max(1, std::min(columns, maxCols));
 
 	RecalculateCellDimensions();
-
-	m_WindowResizeListenerId = "GridLayoutManager_" + std::to_string(reinterpret_cast<uintptr_t>(this));
-	GameInstance::AllPurposeDispatcher.AddListener(m_WindowResizeListenerId, AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> event)
-		{
-			auto allPurposeEvent = std::dynamic_pointer_cast<AllPurposeEvent>(event);
-			if (allPurposeEvent && allPurposeEvent->Payload)
-			{
-				if (allPurposeEvent->Payload->GetStaticClass() == WindowResizeData::StaticClass())
-				{
-					auto resizeData = std::dynamic_pointer_cast<WindowResizeData>(allPurposeEvent->Payload);
-					if (resizeData)
-					{
-						OnWindowResize(resizeData->width, resizeData->height);
-					}
-				}
-			}
-		}
-	);
 }
 
 GridLayoutManager::~GridLayoutManager()
@@ -143,21 +125,27 @@ void GridLayoutManager::Initialize()
 {
 	
 	m_SpawnContextMenu = GetOutter()->NewObject<ContextMenu>();
+	m_SpawnContextMenu.TryLoad()->AddOnCloseCallback(std::bind(&GridLayoutManager::CloseSpawnMenu, this));
+
 
 	ContextMenuEntry m_SpawnMapEntryWaterfall10;
 	m_SpawnMapEntryWaterfall10.SetDisplayName("Waterfall 10 Seconds");
 	ContextMenuEntry m_SpawnMapEntryWaterfall30;
+	m_SpawnMapEntryWaterfall30.SetDisplayName("Waterfall 30 Seconds");
 	ContextMenuEntry m_SpawnMapEntryWaterfall60;
+	m_SpawnMapEntryWaterfall60.SetDisplayName("Waterfall 60 Seconds");
 	ContextMenuEntry m_SpawnMapEntryWaterfall120;
+	m_SpawnMapEntryWaterfall120.SetDisplayName("Waterfall 120 Seconds");
 	ContextMenuEntry m_SpawnMapEntryWaterfall300;
+	m_SpawnMapEntryWaterfall300.SetDisplayName("Waterfall 300 Seconds");
+
+	ContextMenuEntry m_SpawnMapEntryMap;
+	m_SpawnMapEntryMap.SetDisplayName("Map");
 
 	if (auto SpawnMenu = m_SpawnContextMenu.TryLoad())
 	{
 		SpawnMenu->SetDisplayName("Spawn Menu");
-		//SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall30);
-		//SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall60);
-		//SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall120);
-		//SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall300);
+
 
 		m_SpawnMapEntryWaterfall10.SetCallback([this](ContextMenuEntry* Self)
 			{
@@ -167,84 +155,75 @@ void GridLayoutManager::Initialize()
 				CreateDisplay(m_SpawnMenu.targetCell, info);
 			});
 
+		m_SpawnMapEntryWaterfall30.SetCallback([this](ContextMenuEntry* Self)
+			{
+				LOG_INFO("TEEESCHD");
+				DisplaySpawnInfo info;
+				info = DisplaySpawnInfo::CreateWaterfall(30);
+				CreateDisplay(m_SpawnMenu.targetCell, info);
+		});
+		m_SpawnMapEntryWaterfall60.SetCallback([this](ContextMenuEntry* Self)
+			{
+				LOG_INFO("TEEESCHD");
+				DisplaySpawnInfo info;
+				info = DisplaySpawnInfo::CreateWaterfall(60);
+				CreateDisplay(m_SpawnMenu.targetCell, info);
+			});
+		m_SpawnMapEntryWaterfall120.SetCallback([this](ContextMenuEntry* Self)
+			{
+				LOG_INFO("TEEESCHD");
+				DisplaySpawnInfo info;
+				info = DisplaySpawnInfo::CreateWaterfall(120);
+				CreateDisplay(m_SpawnMenu.targetCell, info);
+			});
+		m_SpawnMapEntryWaterfall300.SetCallback([this](ContextMenuEntry* Self)
+			{
+				LOG_INFO("TEEESCHD");
+				DisplaySpawnInfo info;
+				info = DisplaySpawnInfo::CreateWaterfall(300);
+				CreateDisplay(m_SpawnMenu.targetCell, info);
+			});
+
+		m_SpawnMapEntryMap.SetCallback([this](ContextMenuEntry* Self)
+			{
+				LOG_INFO("MAP SPAWNED");
+				DisplaySpawnInfo info;
+				info = DisplaySpawnInfo::CreateMap();
+				CreateDisplay(m_SpawnMenu.targetCell, info);
+			});
+
+		SpawnMenu->AddMenuEntry(m_SpawnMapEntryMap);
 		SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall10);
+		SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall30);
+		SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall60);
+		SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall120);
+		SpawnMenu->AddMenuEntry(m_SpawnMapEntryWaterfall300);
 
 	}
+
+	m_WindowResizeListenerId = "GridLayoutManager_" + std::to_string(reinterpret_cast<uintptr_t>(this));
+	GameInstance::AllPurposeDispatcher.AddListener(m_WindowResizeListenerId, AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> event)
+		{
+			auto allPurposeEvent = std::dynamic_pointer_cast<AllPurposeEvent>(event);
+			if (allPurposeEvent && allPurposeEvent->Payload)
+			{
+				if (allPurposeEvent->Payload->GetStaticClass() == WindowResizeData::StaticClass())
+				{
+					auto resizeData = std::dynamic_pointer_cast<WindowResizeData>(allPurposeEvent->Payload);
+					if (resizeData)
+					{
+						OnWindowResize(resizeData->width, resizeData->height);
+					}
+				}
+			}
+		}
+	);
 }
 
 void GridLayoutManager::OnWindowResize(int newWidth, int newHeight)
 {
 	m_WindowWidth = newWidth;
 	m_WindowHeight = newHeight;
-
-
-	int numDisplays = static_cast<int>(m_DisplayCells.size());
-	int minCells = std::max(4, numDisplays);
-
-	int minGridSize = static_cast<int>(std::ceil(std::sqrt(static_cast<double>(minCells))));
-	int minRows = std::max(2, minGridSize);
-	int minCols = std::max(2, minGridSize);
-
-	int maxRows = newHeight / MIN_TILE_SIZE;
-	int maxCols = newWidth / MIN_TILE_SIZE;
-
-	if (m_Rows > maxRows && maxRows >= minRows)
-	{
-		m_Rows = maxRows;
-	}
-	else if (m_Rows > maxRows)
-	{
-		m_Rows = minRows;
-	}
-
-	if (m_Columns > maxCols && maxCols >= minCols)
-	{
-		m_Columns = maxCols;
-	}
-	else if (m_Columns > maxCols)
-	{
-		m_Columns = minCols;
-	}
-
-	m_Rows = std::max(m_Rows, minRows);
-	m_Columns = std::max(m_Columns, minCols);
-
-
-	const int count = static_cast<int>(m_DisplayCells.size());
-	std::vector<SoftObjectPath<Display>> displayKeys;
-	displayKeys.reserve(count);
-	for (const auto& [display, cell] : m_DisplayCells)
-	{
-		displayKeys.push_back(display);
-	}
-
-	for (int i = 0; i < count; ++i)
-	{
-		auto& cell = m_DisplayCells[displayKeys[i]];
-
-		if (cell.rowSpan > m_Rows)
-		{
-			cell.rowSpan = m_Rows;
-		}
-
-		if (cell.colSpan > m_Columns)
-		{
-			cell.colSpan = m_Columns;
-		}
-
-		if (cell.row + cell.rowSpan > m_Rows)
-		{
-			cell.row = m_Rows - cell.rowSpan;
-		}
-
-		if (cell.column + cell.colSpan > m_Columns)
-		{
-			cell.column = m_Columns - cell.colSpan;
-		}
-
-		cell.row = std::max(0, cell.row);
-		cell.column = std::max(0, cell.column);
-	}
 
 	ResolveOverlaps();
 
@@ -962,9 +941,6 @@ void GridLayoutManager::DrawGridControls()
 			}
 		}
 	}
-
-	// Draw spawn menu on top of everything
-	const_cast<GridLayoutManager*>(this)->DrawSpawnMenu();
 }
 
 void GridLayoutManager::DrawSnapPreviews() const
