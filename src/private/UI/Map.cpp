@@ -280,6 +280,12 @@ void Map::Tick(float DeltaTime)
 
 }
 
+void Map::Initialize()
+{
+	Super::Initialize();
+	Init();
+}
+
 void Map::Init()
 {
     shader = LoadShader("src/shaders/basic.vs", "src/shaders/basic.fs");

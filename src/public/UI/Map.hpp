@@ -49,6 +49,7 @@ public:
 	virtual ~Map() override;
 
 	virtual void Tick(float DeltaTime) override;
+	virtual void Initialize() override;
 	virtual void Draw() override;
 	void Init();
 

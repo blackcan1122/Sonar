@@ -124,7 +124,7 @@ auto PlayerPtr = AssignedPlayer.TryLoad();
             float BaseIntensity = std::clamp(static_cast<float>(Signal.Strength), 0.0f, 255.0f);
             
             // Spread signal 6 pixels to each side (12 pixel total width)
-            int HalfWidth = 6;
+            int HalfWidth = 2;
             
             int StartPixel = std::clamp(CenterPixel - HalfWidth, 0, BufferWidth - 1);
             int EndPixel = std::clamp(CenterPixel + HalfWidth + 1, 0, BufferWidth);
@@ -185,6 +185,11 @@ auto PlayerPtr = AssignedPlayer.TryLoad();
 
     Draw();
     RenderToMainBuffer();
+}
+
+void Waterfall::Initialize()
+{
+	Super::Initialize();
 }
 
 void Waterfall::ProcessBackBuffer(int LinesToShift, std::vector<int> AccumulatedSamples, int AmountOfSamples) 

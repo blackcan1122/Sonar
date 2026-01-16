@@ -105,6 +105,7 @@ public:
 	virtual ~Waterfall() override;
 
 	virtual void Tick(float Deltatime) override;
+	virtual void Initialize() override;
 	virtual void Draw() override;
 	virtual void MarkForDestruction() override;
 	virtual void ResizeDisplay(int NewWidth, int NewHeight) override;
