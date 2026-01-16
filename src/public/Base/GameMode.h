@@ -2,6 +2,7 @@
 #include "Base/SoftObject.hpp"
 #include "Base/World.hpp"
 #include "Base/Core.h"
+#include "Base/TickGroup.hpp"
 #include <utility>
 
 /**
@@ -97,6 +98,7 @@ protected:
 
 
 	std::unordered_map<SClass*, std::unordered_map<std::string, SoftObjectPath<IObject>>> m_ObjectsByType;
+	std::unordered_map<ETickGroup, std::vector<SoftObjectPath<IObject>>> m_ObjectsByTickGroup;
 	std::unordered_map<std::string, std::shared_ptr<IObject>> m_Objects;
 	std::vector<std::shared_ptr<IObject>> m_PendingKill;
 	std::vector<std::pair<std::string, SClass*>> m_ObjectsToUnregister;

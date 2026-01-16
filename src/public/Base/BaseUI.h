@@ -9,12 +9,11 @@ public:
 
 	// Methods
 
-	BaseUI() = default;
+	BaseUI() { m_TickGroup.SetTickGroup(ETickGroup::Rendering); };
 	virtual void MarkForDestruction() override;
 	virtual ~BaseUI() = default;
 
 
-private:
-
+protected:
 };
 

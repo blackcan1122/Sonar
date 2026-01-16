@@ -4,7 +4,8 @@
 #include <string>
 #include "Base/SClass.hpp"
 #include <memory>
-#include <functional>	
+#include <functional>
+#include "Base/TickGroup.hpp"
 
 class GameMode;
 class Factory;
@@ -79,6 +80,10 @@ public:
 	virtual std::string GetDisplayName() const { return m_DisplayName; };
 	virtual void SetDisplayName(std::string NewName) { m_DisplayName = NewName; };
 
+	virtual const ETickGroup GetTickGroup() const { return m_TickGroup.GetTickGroup(); };
+	virtual void SetTickGroup(ETickGroup NewGroup) { m_TickGroup = NewGroup; };
+
+
 	// Maybe for later implementations
 	// Right now i dont see the usecase sadly
 	// My Thought was to have a easy cleanup method so no event dispatcher callbacks could leak
@@ -99,6 +104,7 @@ protected:
 	virtual void OnKeyStroke(KeyboardKey PressedKey, Vector2 MousePosition) {};
 	virtual void OnMouseButtonPressed(MouseButton PressedKey, Vector2 MousePosition) {};
 
+	TickGroup m_TickGroup{ETickGroup::DefaultTick};
 
 	std::string m_Name;
 	std::string m_DisplayName = "Unit";

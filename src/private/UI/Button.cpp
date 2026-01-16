@@ -1,6 +1,7 @@
 #include "UI/Button.h"
 #include "Events/UIEvent.h"
 #include "Base/EventDispatcher.hpp"
+#include "Base/GameInstance.h"
 
 Button::Button(int X, int Y, int Width, int Height, std::string InitialText, Color BackgroundColor)
 {
@@ -41,6 +42,15 @@ Button& Button::SetEventDispatcher(std::shared_ptr<EventDispatcher> UsedDispatch
 {
     UsedEventDispatcher = UsedDispatcher;
     return *this;
+}
+
+Button& Button::SetEventDispatcher(std::weak_ptr<EventDispatcher> UsedDispatcher)
+{
+    if (auto DispatcherPtr = UsedDispatcher.lock())
+    {
+        UsedEventDispatcher = DispatcherPtr;
+	}
+	return *this;
 }
 
 Button& Button::SetEventPayload(std::string Payload)
@@ -126,6 +136,32 @@ Button& Button::UpdateFontSize(int NewFontSize)
     return *this;
 }
 
+Button& Button::SetStickyPosition(Vector2 StickyPos)
+{
+    auto Wp = GameInstance::GetInstance()->GetWindowProperties();
+
+    this->m_StickyPosition = StickyPos;
+    this->UpdateButtonPosition(StickyPos);
+	this->m_OffsetPosition = {StickyPos.x - Wp.m_ScreenWidth, StickyPos.y - Wp.m_ScreenHeight};
+
+    return *this;
+}
+
+Button& Button::SetStickyPosition(int X, int Y)
+{
+	this->SetStickyPosition({ static_cast<float>(X), static_cast<float>(Y) });
+
+    return *this;
+}
+
+Button& Button::CalculateRelativePosition()
+{
+    auto Wp = GameInstance::GetInstance()->GetWindowProperties();
+	Vector2 CurrentPos = { Wp.m_ScreenWidth + m_OffsetPosition.x, Wp.m_ScreenHeight + m_OffsetPosition.y };
+	this->UpdateButtonPosition(CurrentPos);
+
+    return *this;
+}
 
 Button& Button::OnHover(std::function<void(Button* ButtonClass)> callback)
 {

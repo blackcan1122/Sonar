@@ -7,6 +7,7 @@ Display::Display(int Width, int Height)
 	ActiveRenderTarget = LoadRenderTexture(Width, Height);
 	SourceRect = {0,0, (float)Width, -(float)Height};
 	DestinationRect = {0,0, (float)Width, (float)Height};
+	m_TickGroup.SetTickGroup(ETickGroup::PostTick);
 }
 
 Display::~Display()
