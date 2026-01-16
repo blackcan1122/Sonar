@@ -21,6 +21,9 @@ public:
 	virtual Button& Construct(int X, int Y, int Width, int Height, std::string InitialText, Color BackgroundColor, bool Rounded, float Roundness);
 	
 	virtual Button& SetEventDispatcher(std::shared_ptr<EventDispatcher> UsedDispatcher);
+	virtual Button& SetEventDispatcher(std::weak_ptr<EventDispatcher> UsedDispatcher);
+
+
 	virtual Button& SetEventPayload(std::string GameModeName);
 
 	virtual Button& UpdateTextPosition(Vector2 NewPos);
@@ -32,6 +35,10 @@ public:
 	virtual Button& UpdateText(std::string NewText);
 	virtual Button& UpdateTextColor(Color NewTextColor);
 	virtual Button& UpdateFontSize(int NewFontSize);
+	virtual Button& SetStickyPosition(Vector2 StickyPos);
+	virtual Button& SetStickyPosition(int X, int Y);
+
+	virtual Button& CalculateRelativePosition();
 
 	virtual Button& OnHover(std::function<void(Button* ButtonClass)> callback);
 
@@ -66,6 +73,9 @@ private:
 	Rectangle ButtonDim;
 	Color m_BackgroundColor;
 	Color m_TextColor = BLACK;
+
+	Vector2 m_StickyPosition = { -1, -1 };
+	Vector2 m_OffsetPosition = { -1, -1 };
 
 	NPatchInfo m_NpatchTextureInfo;
 	SharedTexture2D m_Texture;

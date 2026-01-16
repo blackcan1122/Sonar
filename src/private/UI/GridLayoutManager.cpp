@@ -10,6 +10,8 @@
 #include "Base/GameMode.h"
 #include "UI/Map.hpp"
 #include "UI/WaterfallDisplay.hpp"
+#include "UI/Button.h"
+#include "Events/UIEvent.h"
 
 GridLayoutManager::GridLayoutManager(int rows, int columns, int windowWidth, int windowHeight)
 	: m_Rows(rows)
@@ -19,8 +21,7 @@ GridLayoutManager::GridLayoutManager(int rows, int columns, int windowWidth, int
 	, m_CellWidth(0)
 	, m_CellHeight(0)
 {
-	int maxRows = windowHeight / MIN_TILE_SIZE;
-	int maxCols = windowWidth / MIN_TILE_SIZE;
+
 
 	m_Rows = std::max(1, std::min(rows, maxRows));
 	m_Columns = std::max(1, std::min(columns, maxCols));
@@ -127,6 +128,8 @@ void GridLayoutManager::Initialize()
 	m_SpawnContextMenu = GetOutter()->NewObject<ContextMenu>();
 	m_SpawnContextMenu.TryLoad()->AddOnCloseCallback(std::bind(&GridLayoutManager::CloseSpawnMenu, this));
 
+	GridLayoutUIDispatcher = std::make_shared<EventDispatcher>();
+
 
 	ContextMenuEntry m_SpawnMapEntryWaterfall10;
 	m_SpawnMapEntryWaterfall10.SetDisplayName("Waterfall 10 Seconds");
@@ -201,6 +204,11 @@ void GridLayoutManager::Initialize()
 
 	}
 
+	// The Rectangle for the Panel Controls
+	ResizePanelRect();
+
+	InitializeControlButtons();
+
 	m_WindowResizeListenerId = "GridLayoutManager_" + std::to_string(reinterpret_cast<uintptr_t>(this));
 	GameInstance::AllPurposeDispatcher.AddListener(m_WindowResizeListenerId, AllPurposeEvent::StaticClass(), [this](std::shared_ptr<IEvent> event)
 		{
@@ -229,6 +237,8 @@ void GridLayoutManager::OnWindowResize(int newWidth, int newHeight)
 
 	RecalculateCellDimensions();
 	UpdateLayout();
+	ResizePanelRect();
+	UpdateButtonPositions();
 }
 
 void GridLayoutManager::OnDisplayResize(std::shared_ptr<IEvent> Event)
@@ -535,16 +545,62 @@ bool GridLayoutManager::ResizeDisplaySpan(SoftObjectPath<Display> InDisplay, int
 	return true;
 }
 
+void GridLayoutManager::AddRowEvent(std::shared_ptr<IEvent> Event)
+{
+	if (*(Event->GetStaticClass()) << UIEvent::StaticClass())
+	{
+		auto CastedEvent = std::dynamic_pointer_cast<UIEvent>(Event);
+		if (CastedEvent->Payload == "AddRow")
+		{
+			AddRow();
+			return;
+		}
+	}
+}
+
+void GridLayoutManager::AddColumnEvent(std::shared_ptr<IEvent> Event)
+{
+	if (*(Event->GetStaticClass()) << UIEvent::StaticClass())
+	{
+		auto CastedEvent = std::dynamic_pointer_cast<UIEvent>(Event);
+		if (CastedEvent->Payload == "AddCol")
+		{
+			AddColumn();
+			return;
+		}
+	}
+}
+
+void GridLayoutManager::RemoveRowEvent(std::shared_ptr<IEvent> Event)
+{
+	if (*(Event->GetStaticClass()) << UIEvent::StaticClass())
+	{
+		auto CastedEvent = std::dynamic_pointer_cast<UIEvent>(Event);
+		if (CastedEvent->Payload == "RemoveRow")
+		{
+			RemoveRow();
+			return;
+		}
+	}
+}
+
+void GridLayoutManager::RemoveColumnEvent(std::shared_ptr<IEvent> Event)
+{
+	if (*(Event->GetStaticClass()) << UIEvent::StaticClass())
+	{
+		auto CastedEvent = std::dynamic_pointer_cast<UIEvent>(Event);
+		if (CastedEvent->Payload == "RemoveCol")
+		{
+			RemoveColumn();
+			return;
+		}
+	}
+}
+
 bool GridLayoutManager::AddRow()
 {
 	int newRows = m_Rows + 1;
 	int newCellHeight = m_WindowHeight / newRows;
-
-	if (newCellHeight < MIN_TILE_SIZE)
-	{
-		SPDLOG_WARN("GridLayoutManager: Cannot add row - would violate minimum tile size of {}", MIN_TILE_SIZE);
-		return false;
-	}
 
 	m_Rows = newRows;
 	RecalculateCellDimensions();
@@ -557,12 +613,6 @@ bool GridLayoutManager::AddColumn()
 {
 	int newColumns = m_Columns + 1;
 	int newCellWidth = m_WindowWidth / newColumns;
-
-	if (newCellWidth < MIN_TILE_SIZE)
-	{
-		SPDLOG_WARN("GridLayoutManager: Cannot add column - would violate minimum tile size of {}", MIN_TILE_SIZE);
-		return false;
-	}
 
 	m_Columns = newColumns;
 	RecalculateCellDimensions();
@@ -639,12 +689,12 @@ bool GridLayoutManager::RemoveColumn()
 
 int GridLayoutManager::GetMaxRows() const
 {
-	return m_WindowHeight / MIN_TILE_SIZE;
+	return maxRows;
 }
 
 int GridLayoutManager::GetMaxColumns() const
 {
-	return m_WindowWidth / MIN_TILE_SIZE;
+	return maxCols;
 }
 
 const GridCell* GridLayoutManager::GetDisplayCell(SoftObjectPath<Display> InDisplay) const
@@ -793,112 +843,6 @@ void GridLayoutManager::DrawGridControls()
 		return;
 	}
 
-	Vector2 mousePos = GetMousePosition();
-
-	// Control panel position (bottom-right corner)
-	int panelX = m_WindowWidth - (CONTROL_BUTTON_SIZE * 2 + CONTROL_BUTTON_MARGIN * 3);
-	int panelY = m_WindowHeight - (CONTROL_BUTTON_SIZE * 2 + CONTROL_BUTTON_MARGIN * 3);
-
-	// Draw semi-transparent background panel
-	Rectangle panelRect = {
-		static_cast<float>(panelX - CONTROL_BUTTON_MARGIN),
-		static_cast<float>(panelY - CONTROL_BUTTON_MARGIN),
-		static_cast<float>(CONTROL_BUTTON_SIZE * 2 + CONTROL_BUTTON_MARGIN * 4),
-		static_cast<float>(CONTROL_BUTTON_SIZE * 2 + CONTROL_BUTTON_MARGIN * 4)
-	};
-	DrawRectangleRec(panelRect, ColorAlpha(DARKGRAY, 0.8f));
-	DrawRectangleLinesEx(panelRect, 1, LIGHTGRAY);
-
-	// Row controls (top row of panel)
-	// Add Row button (+)
-	Rectangle addRowRect = {
-		static_cast<float>(panelX),
-		static_cast<float>(panelY),
-		static_cast<float>(CONTROL_BUTTON_SIZE),
-		static_cast<float>(CONTROL_BUTTON_SIZE)
-	};
-	bool canAddRow = (m_WindowHeight / (m_Rows + 1)) >= MIN_TILE_SIZE;
-	Color addRowColor = canAddRow ? GREEN : GRAY;
-	bool hoverAddRow = CheckCollisionPointRec(mousePos, addRowRect);
-
-	DrawRectangleRec(addRowRect, hoverAddRow && canAddRow ? ColorAlpha(addRowColor, 0.9f) : ColorAlpha(addRowColor, 0.6f));
-	DrawRectangleLinesEx(addRowRect, 1, WHITE);
-	DrawText("+R", static_cast<int>(addRowRect.x + 4), static_cast<int>(addRowRect.y + 8), 14, WHITE);
-
-	if (hoverAddRow && canAddRow && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-	{
-		AddRow();
-	}
-
-	// Remove Row button (-)
-	Rectangle removeRowRect = {
-		static_cast<float>(panelX + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN),
-		static_cast<float>(panelY),
-		static_cast<float>(CONTROL_BUTTON_SIZE),
-		static_cast<float>(CONTROL_BUTTON_SIZE)
-	};
-	bool canRemoveRow = m_Rows > 1;
-	Color removeRowColor = canRemoveRow ? RED : GRAY;
-	bool hoverRemoveRow = CheckCollisionPointRec(mousePos, removeRowRect);
-
-	DrawRectangleRec(removeRowRect, hoverRemoveRow && canRemoveRow ? ColorAlpha(removeRowColor, 0.9f) : ColorAlpha(removeRowColor, 0.6f));
-	DrawRectangleLinesEx(removeRowRect, 1, WHITE);
-	DrawText("-R", static_cast<int>(removeRowRect.x + 4), static_cast<int>(removeRowRect.y + 8), 14, WHITE);
-
-	if (hoverRemoveRow && canRemoveRow && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-	{
-		RemoveRow();
-	}
-
-	// Column controls (bottom row of panel)
-	// Add Column button (+)
-	Rectangle addColRect = {
-		static_cast<float>(panelX),
-		static_cast<float>(panelY + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN),
-		static_cast<float>(CONTROL_BUTTON_SIZE),
-		static_cast<float>(CONTROL_BUTTON_SIZE)
-	};
-	bool canAddCol = (m_WindowWidth / (m_Columns + 1)) >= MIN_TILE_SIZE;
-	Color addColColor = canAddCol ? GREEN : GRAY;
-	bool hoverAddCol = CheckCollisionPointRec(mousePos, addColRect);
-
-	DrawRectangleRec(addColRect, hoverAddCol && canAddCol ? ColorAlpha(addColColor, 0.9f) : ColorAlpha(addColColor, 0.6f));
-	DrawRectangleLinesEx(addColRect, 1, WHITE);
-	DrawText("+C", static_cast<int>(addColRect.x + 4), static_cast<int>(addColRect.y + 8), 14, WHITE);
-
-	if (hoverAddCol && canAddCol && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-	{
-		AddColumn();
-	}
-
-	// Remove Column button (-)
-	Rectangle removeColRect = {
-		static_cast<float>(panelX + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN),
-		static_cast<float>(panelY + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN),
-		static_cast<float>(CONTROL_BUTTON_SIZE),
-		static_cast<float>(CONTROL_BUTTON_SIZE)
-	};
-	bool canRemoveCol = m_Columns > 1;
-	Color removeColColor = canRemoveCol ? RED : GRAY;
-	bool hoverRemoveCol = CheckCollisionPointRec(mousePos, removeColRect);
-
-	DrawRectangleRec(removeColRect, hoverRemoveCol && canRemoveCol ? ColorAlpha(removeColColor, 0.9f) : ColorAlpha(removeColColor, 0.6f));
-	DrawRectangleLinesEx(removeColRect, 1, WHITE);
-	DrawText("-C", static_cast<int>(removeColRect.x + 4), static_cast<int>(removeColRect.y + 8), 14, WHITE);
-
-	if (hoverRemoveCol && canRemoveCol && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-	{
-		RemoveColumn();
-	}
-
-	// Draw current grid info
-	std::string gridInfo = std::to_string(m_Rows) + "x" + std::to_string(m_Columns);
-	int textWidth = MeasureText(gridInfo.c_str(), 12);
-	DrawText(gridInfo.c_str(),
-		static_cast<int>(panelRect.x + panelRect.width / 2 - textWidth / 2),
-		static_cast<int>(panelRect.y - 15),
-		12, WHITE);
-
 	// Draw delete buttons on each display if enabled
 	if (m_ShowDeleteButtons)
 	{
@@ -916,7 +860,7 @@ void GridLayoutManager::DrawGridControls()
 				buttonSize
 			};
 
-			bool hover = CheckCollisionPointRec(mousePos, deleteButtonRect);
+			bool hover = CheckCollisionPointRec(GetMonitorPosition(0), deleteButtonRect);
 			Color buttonColor = hover ? ColorAlpha(RED, 0.9f) : ColorAlpha(RED, 0.6f);
 			Color iconColor = WHITE;
 
@@ -1234,6 +1178,150 @@ void GridLayoutManager::DrawEmptyTiles() const
 			}
 		}
 	}
+}
+
+void GridLayoutManager::InitializeControlButtons()
+{
+	Rectangle AddRowButtonRect = {
+	static_cast<float>(PanelRect.x),
+	static_cast<float>(PanelRect.y),
+	static_cast<float>(CONTROL_BUTTON_SIZE),
+	static_cast<float>(CONTROL_BUTTON_SIZE)
+	};
+
+	AddRowButton = this->GetOutter()->NewObject<Button>();
+	RemoveRowButton = this->GetOutter()->NewObject<Button>();
+	AddColumnButton = this->GetOutter()->NewObject<Button>();
+	RemoveColumnButton = this->GetOutter()->NewObject<Button>();
+
+	m_AllUIButtons.push_back(AddRowButton);
+	m_AllUIButtons.push_back(RemoveRowButton);
+	m_AllUIButtons.push_back(AddColumnButton);
+	m_AllUIButtons.push_back(RemoveColumnButton);
+
+
+	if (auto ButtonPtr = AddRowButton.TryLoad())
+	{
+		ButtonPtr->Construct(AddRowButtonRect, "+R", GREEN)
+			.CenterText()
+			.UpdateFontSize(14)
+			.UpdateColor(ColorAlpha(GREEN, 0.6f))
+			.OnHover([this](Button* ButtonClass)
+				{
+					ButtonClass->UpdateColor(ColorAlpha(GREEN, 0.9f));
+				})
+			.OnHoverLeave([this](Button* ButtonClass)
+				{
+					ButtonClass->UpdateColor(ColorAlpha(GREEN, 0.6f));
+				})
+			.SetEventDispatcher(GridLayoutUIDispatcher)
+			.SetEventPayload("AddRow")
+			.SetStickyPosition({ PanelRect.x, PanelRect.y });
+	}
+
+	if (auto ButtonPtr = RemoveRowButton.TryLoad())
+	{
+		ButtonPtr->Construct({
+			static_cast<float>(PanelRect.x + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN),
+			static_cast<float>(PanelRect.y),
+			static_cast<float>(CONTROL_BUTTON_SIZE),
+			static_cast<float>(CONTROL_BUTTON_SIZE)
+			}, "-R", RED)
+			.CenterText()
+			.UpdateFontSize(14)
+			.UpdateColor(ColorAlpha(RED, 0.6f))
+			.OnHover([this](Button* ButtonClass)
+				{
+					ButtonClass->UpdateColor(ColorAlpha(RED, 0.9f));
+				})
+			.OnHoverLeave([this](Button* ButtonClass)
+				{
+					ButtonClass->UpdateColor(ColorAlpha(RED, 0.6f));
+				})
+			.SetEventDispatcher(GridLayoutUIDispatcher)
+			.SetEventPayload("RemoveRow")
+			.SetStickyPosition({ PanelRect.x + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN, PanelRect.y });
+	}
+
+	if (auto ButtonPtr = AddColumnButton.TryLoad())
+	{
+		ButtonPtr->Construct({
+			static_cast<float>(PanelRect.x),
+			static_cast<float>(PanelRect.y + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN),
+			static_cast<float>(CONTROL_BUTTON_SIZE),
+			static_cast<float>(CONTROL_BUTTON_SIZE)
+			}, "+C", GREEN)
+			.CenterText()
+			.UpdateFontSize(14)
+			.UpdateColor(ColorAlpha(GREEN, 0.6f))
+			.OnHover([this](Button* ButtonClass)
+				{
+					ButtonClass->UpdateColor(ColorAlpha(GREEN, 0.9f));
+				})
+			.OnHoverLeave([this](Button* ButtonClass)
+				{
+					ButtonClass->UpdateColor(ColorAlpha(GREEN, 0.6f));
+				})
+			.SetEventDispatcher(GridLayoutUIDispatcher)
+			.SetEventPayload("AddCol")
+			.SetStickyPosition({ PanelRect.x, PanelRect.y + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN });
+	}
+
+	if (auto ButtonPtr = RemoveColumnButton.TryLoad())
+	{
+		ButtonPtr->Construct({
+			static_cast<float>(PanelRect.x + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN),
+			static_cast<float>(PanelRect.y + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN),
+			static_cast<float>(CONTROL_BUTTON_SIZE),
+			static_cast<float>(CONTROL_BUTTON_SIZE)
+			}, "-C", RED)
+			.CenterText()
+			.UpdateFontSize(14)
+			.UpdateColor(ColorAlpha(RED, 0.6f))
+			.OnHover([this](Button* ButtonClass)
+				{
+					ButtonClass->UpdateColor(ColorAlpha(RED, 0.9f));
+				})
+			.OnHoverLeave([this](Button* ButtonClass)
+				{
+					ButtonClass->UpdateColor(ColorAlpha(RED, 0.6f));
+				})
+			.SetEventDispatcher(GridLayoutUIDispatcher)
+			.SetEventPayload("RemoveCol")
+			.SetStickyPosition({ PanelRect.x + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN, PanelRect.y + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN });
+	}
+
+
+	GridLayoutUIDispatcher->AddListener("AddRow", UIEvent::StaticClass(), this, &GridLayoutManager::AddRowEvent);
+	GridLayoutUIDispatcher->AddListener("RemoveRow", UIEvent::StaticClass(), this, &GridLayoutManager::RemoveRowEvent);
+	GridLayoutUIDispatcher->AddListener("AddCol", UIEvent::StaticClass(), this, &GridLayoutManager::AddColumnEvent);
+	GridLayoutUIDispatcher->AddListener("RemoveCol", UIEvent::StaticClass(), this, &GridLayoutManager::RemoveColumnEvent);
+}
+
+void GridLayoutManager::UpdateButtonPositions()
+{
+	for (const auto& Button : m_AllUIButtons)
+	{
+		Button.TryLoad()->CalculateRelativePosition();
+	}
+}
+
+void GridLayoutManager::UpdateButtonPosition(SoftObjectPath<Button> inButton, Vector2 NewPos)
+{
+	inButton.TryLoad()->UpdateButtonPosition(NewPos);
+}
+
+void GridLayoutManager::ResizePanelRect()
+{
+	int panelX = m_WindowWidth - (CONTROL_BUTTON_SIZE * 2 + CONTROL_BUTTON_MARGIN * 3);
+	int panelY = m_WindowHeight - (CONTROL_BUTTON_SIZE * 2 + CONTROL_BUTTON_MARGIN * 3);
+
+	PanelRect = {
+		static_cast<float>(panelX),
+		static_cast<float>(panelY),
+		static_cast<float>(CONTROL_BUTTON_SIZE * 2 + CONTROL_BUTTON_MARGIN * 3),
+		static_cast<float>(CONTROL_BUTTON_SIZE * 2 + CONTROL_BUTTON_MARGIN * 3)
+	};
 }
 
 void GridLayoutManager::OpenSpawnMenu(const GridCell& cell, Vector2 screenPos)

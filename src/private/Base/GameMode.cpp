@@ -3,6 +3,7 @@
 #include "Base/Core.h"
 #include "UI/GridLayoutManager.hpp"
 #include "Base/GameInstance.h"
+#include "Base/TickGroup.hpp"
 
 // ObjectType Defintions
 
@@ -46,16 +47,43 @@ GameMode::~GameMode()
 void GameMode::Update()
 {
 	float Dt = GetFrameTime();
-	for (auto& Object : m_Objects)
+	for (auto& DefaultTickObj : m_ObjectsByTickGroup[ETickGroup::DefaultTick])
 	{
-		Object.second->Tick(Dt);
-		if (Object.second->IsMarkedForDestruction())
+		auto ObjPtr = DefaultTickObj.TryLoad();
+		if (ObjPtr)
 		{
-			m_PendingKill.push_back(Object.second);
-			m_ObjectsToUnregister.push_back({ Object.second->GetName(), Object.second->GetStaticClass()});
+			ObjPtr->Tick(Dt);
 		}
 	}
 
+	for (auto& PostTickObj : m_ObjectsByTickGroup[ETickGroup::PostTick])
+	{
+		auto ObjPtr = PostTickObj.TryLoad();
+		if (ObjPtr)
+		{
+			ObjPtr->Tick(Dt);
+		}
+	}
+
+	for (auto& PreTickObj : m_ObjectsByTickGroup[ETickGroup::Rendering])
+	{
+		auto ObjPtr = PreTickObj.TryLoad();
+		if (ObjPtr)
+		{
+			ObjPtr->Tick(Dt);
+		}
+	}
+
+	for (auto& PhysicsTickObj : m_ObjectsByTickGroup[ETickGroup::MAX])
+	{
+		auto ObjPtr = PhysicsTickObj.TryLoad();
+		if (ObjPtr)
+		{
+			ObjPtr->Tick(Dt);
+		}
+	}
+
+	CollectPendingDestruction();
 	CleanUpPendingKill();
 }
 
@@ -95,6 +123,14 @@ void GameMode::CleanUpPendingKill()
 	{
 		DestroyObjectExplicitly(m_PendingKill[i]);
 		m_ObjectsByType[m_ObjectsToUnregister[i].second].erase(m_ObjectsToUnregister[i].first);
+		m_ObjectsByTickGroup[m_PendingKill[i]->GetTickGroup()].erase(
+			std::remove(
+				m_ObjectsByTickGroup[m_PendingKill[i]->GetTickGroup()].begin(),
+				m_ObjectsByTickGroup[m_PendingKill[i]->GetTickGroup()].end(),
+				SoftObjectPath<IObject>(m_PendingKill[i]->GetName())
+			),
+			m_ObjectsByTickGroup[m_PendingKill[i]->GetTickGroup()].end()
+		);
 	}
 
 	m_PendingKill.clear();
@@ -111,6 +147,14 @@ void GameMode::RegisterObject(std::shared_ptr<IObject> Object)
 	if (m_ObjectsByType[Object->GetStaticClass()].insert({Object->GetName(), SoftObjectPath<IObject>(Object->GetName())}).second == false)
 	{
 		LOG_ERROR("Couldn't Add {}, as it already registred in Type Map.", Object->GetName());
+	}
+
+	if (m_ObjectsByTickGroup[Object->GetTickGroup()].size() == 0 ||
+		std::find(m_ObjectsByTickGroup[Object->GetTickGroup()].begin(),
+			m_ObjectsByTickGroup[Object->GetTickGroup()].end(),
+			SoftObjectPath<IObject>(Object->GetName())) == m_ObjectsByTickGroup[Object->GetTickGroup()].end())
+	{
+		m_ObjectsByTickGroup[Object->GetTickGroup()].push_back(SoftObjectPath<IObject>(Object->GetName()));
 	}
 }
 

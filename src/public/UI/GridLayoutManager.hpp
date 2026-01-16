@@ -9,14 +9,12 @@
 #include "Base/GridCell.hpp"
 #include "Base/ContextMenu.hpp"
 #include "Base/ContextMenuEntry.hpp"
-
-#include <vector>
 #include <unordered_map>
 #include <memory>
 #include <functional>
 #include <string>
 
-
+class Button;
 
 enum class DisplayType
 {
@@ -48,12 +46,12 @@ class GridLayoutManager : public LayoutManager
 {
 	AUTOBODY(GridLayoutManager, LayoutManager)
 
-public:
-	static constexpr int MIN_TILE_SIZE = 250;
-	
+public:	
 	GridLayoutManager(int rows, int columns, int windowWidth, int windowHeight);
 	~GridLayoutManager();
 	
+	constexpr static int maxRows = 6;
+	constexpr static int maxCols = 6;
 
 	virtual bool RegisterDisplay(SoftObjectPath<IObject> display, std::any LayoutData) override;
 	
@@ -79,6 +77,10 @@ public:
 
 	bool ResizeDisplaySpan(SoftObjectPath<Display> display, int newRowSpan, int newColSpan);
 	
+	void AddRowEvent(std::shared_ptr<IEvent> Event);
+	void AddColumnEvent(std::shared_ptr<IEvent> Event);
+	void RemoveRowEvent(std::shared_ptr<IEvent> Event);
+	void RemoveColumnEvent(std::shared_ptr<IEvent> Event);
 
 	bool AddRow();
 	bool AddColumn();
@@ -180,9 +182,24 @@ private:
 	bool m_ShowDeleteButtons = true;
 
 	SpawnMenuState m_SpawnMenu;
+
+	std::shared_ptr<EventDispatcher> GridLayoutUIDispatcher;
 	
 	SoftObjectPath<ContextMenu> m_SpawnContextMenu;
+	SoftObjectPath<Button> AddRowButton;
+	SoftObjectPath<Button> RemoveRowButton;
 
+	SoftObjectPath<Button> AddColumnButton;
+	SoftObjectPath<Button> RemoveColumnButton;
+
+	std::vector<SoftObjectPath<Button>> m_AllUIButtons;
+
+	void InitializeControlButtons();
+	void UpdateButtonPositions();
+	void UpdateButtonPosition(SoftObjectPath<Button> inButton, Vector2 NewPos);
+
+	Rectangle PanelRect;
+	void ResizePanelRect();
 
 	void OpenSpawnMenu(const GridCell& cell, Vector2 screenPos);
 	void CloseSpawnMenu();
@@ -191,4 +208,5 @@ private:
 	void DeleteDisplay(SoftObjectPath<Display> Display);
 	void CreateDisplay(const GridCell& cell, const DisplaySpawnInfo& spawnInfo);
 };
+
 
