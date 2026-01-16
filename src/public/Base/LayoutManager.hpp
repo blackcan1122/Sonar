@@ -1,3 +1,4 @@
+#pragma once
 #include "Base/Core.h"
 #include "Base/EventDispatcher.hpp"
 #include "Base/SoftObject.hpp"

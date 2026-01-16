@@ -113,16 +113,15 @@ void GameMode::CollectPendingDestruction()
 		if (Object.second->IsMarkedForDestruction())
 		{
 			m_PendingKill.push_back(Object.second);
+			m_ObjectsToUnregister.push_back({ Object.second->GetName(), Object.second->GetStaticClass() });
 		}
 	}
 }
 
 void GameMode::CleanUpPendingKill()
 {
-	for (int i = 0; i < m_PendingKill.size(); i++)
+	for (size_t i = 0; i < m_PendingKill.size(); i++)
 	{
-		DestroyObjectExplicitly(m_PendingKill[i]);
-		m_ObjectsByType[m_ObjectsToUnregister[i].second].erase(m_ObjectsToUnregister[i].first);
 		m_ObjectsByTickGroup[m_PendingKill[i]->GetTickGroup()].erase(
 			std::remove(
 				m_ObjectsByTickGroup[m_PendingKill[i]->GetTickGroup()].begin(),
@@ -131,6 +130,10 @@ void GameMode::CleanUpPendingKill()
 			),
 			m_ObjectsByTickGroup[m_PendingKill[i]->GetTickGroup()].end()
 		);
+
+		m_ObjectsByType[m_ObjectsToUnregister[i].second].erase(m_ObjectsToUnregister[i].first);
+
+		DestroyObjectExplicitly(m_PendingKill[i]);
 	}
 
 	m_PendingKill.clear();

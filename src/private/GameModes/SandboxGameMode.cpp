@@ -6,7 +6,6 @@
 #include "Events/SoundEvent.hpp"
 #include "Events/DisplayResizeData.hpp"
 #include "UI/GridLayoutManager.hpp"
-#include "UI/GridLayoutManager.hpp"
 
 SandboxGameMode::SandboxGameMode()
 {
@@ -193,10 +192,6 @@ void SandboxGameMode::OnCreateDisplay(const SoftObjectPath<Display> InDisplay, c
 		{
 			if (auto MapObj = InDisplay.Cast<Map>().TryLoad())
 			{
-				LOG_ERROR("SandboxGameMode::OnCreateDisplay - Failed to load Map object.");
-				break;
-
-
 				if (auto playerone = PlayerOne.TryLoad())
 				{
 					MapObj->AddObjectToDraw(playerone);
