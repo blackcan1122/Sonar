@@ -57,7 +57,6 @@ int main (int args, char* argv[])
 	std::cout << "is Debug" << std::endl;
 #endif
 
-
 	GameInstance::InitGameInstance(WindowProperties(1280, 720, 60, false, isDebug));
 	
 }
