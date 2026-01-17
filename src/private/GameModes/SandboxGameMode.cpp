@@ -91,6 +91,14 @@ void SandboxGameMode::Update()
 {
 		ClearBackground(BLACK);
 
+		if (auto prop = Entity::StaticClass()->FindProperty("m_Position"))
+		{
+			Vector2 Test = prop->GetValue<Vector2>(PlayerOne.TryLoad().get());
+			LOG_INFO(l_GAME_INSTANCE, TEXT("Entity Position X: {} Y: {}", Test.x, Test.y));
+		}
+
+		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), Vector2{ 500, 500 });
+
 		auto GLM = GetObjects<GridLayoutManager>();
 		if (GLM.empty())
 		{

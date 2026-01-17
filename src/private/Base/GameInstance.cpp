@@ -40,6 +40,8 @@
 #include "Base/SoftObject.hpp"
 #include "Base/AssetRegistry.hpp"
 
+#include "Base/SClass.hpp"
+
 // Globale Funktion für SoftObjectPath
 std::shared_ptr<AssetRegistry> GetGlobalAssetRegistry()
 {
