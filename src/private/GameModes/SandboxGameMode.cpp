@@ -98,6 +98,8 @@ void SandboxGameMode::Update()
 		}
 
 		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), Vector2{ 500, 500 });
+		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), int(20)); // Wrong type test
+		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), true); // Wrong type test
 
 		auto GLM = GetObjects<GridLayoutManager>();
 		if (GLM.empty())

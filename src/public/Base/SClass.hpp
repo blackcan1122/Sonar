@@ -24,12 +24,14 @@ public:
     virtual void* GetValuePtr(void* Object) const = 0;
 
     template<typename T>
-    T& GetValue(void* Object) const {
+    T& GetValue(void* Object) const 
+    {
         return *static_cast<T*>(GetValuePtr(Object));
     }
 
     template<typename T>
-    void SetValue(void* Object, const T& Value) const {
+    void SetValue(void* Object, const T& Value) const 
+    {
         *static_cast<T*>(GetValuePtr(Object)) = Value;
     }
 
