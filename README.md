@@ -399,6 +399,421 @@ dispatcher.AddListener(
     &T::HandleEvent    // Member function
 );
 ```
+### Resource Management System
+
+The engine has a JSON-driven resource system with lazy loading and automatic garbage collection. Resources are defined in a JSON manifest, parsed at startup, and only loaded into VRAM when actually requested.
+
+#### Resource Manifest (Textures. json)
+
+Resources are declared in `resources/json/Textures. json`:
+
+```json
+{
+    "Resources": [
+        {
+            "Name": "BackgroundMenu",
+            "TextureID": 101,
+            "TextureKind": "Texture2D",
+            "TextureNPatchInfo": null,
+            "Path": "imgs/BackgroundMenu. jpg",
+            "Properties": {
+                "Width": 3072,
+                "Height": 2048,
+                "Format": "RGBA",
+                "WrapMode": "Repeat"
+            }
+        },
+        {
+            "Name": "ButtonImage",
+            "TextureID":  102,
+            "TextureKind": "NPatchTexture",
+            "TextureNPatchInfo": {
+                "SourceRect": { "x": 0, "y": 0, "width": 128, "height": 128 },
+                "Padding": { "left": 32, "top": 32, "right":  32, "bottom": 32 },
+                "HoverOffset": { "width": 128, "height": 0 },
+                "Layout": "stretch"
+            },
+            "Path": "imgs/9PatchTile.png",
+            "Properties": {
+                "Width": 256,
+                "Height": 128,
+                "Format": "RGBA"
+            }
+        }
+    ]
+}
+```
+
+The manifest supports:
+- **Texture2D** - Regular textures
+- **NPatchTexture** - 9-patch/9-slice textures with padding info for scalable UI elements
+- **HoverOffset** - Built-in support for sprite sheets with hover states
+
+#### ResourceManager & TextureResource
+
+At startup, `ResourceManager:: ParseJson()` parses the manifest (using OpenMP for parallel parsing) and creates `TextureResource` entries.  These hold metadata but don't load the actual texture into VRAM yet.
+
+```cpp
+// Get a resource handle by name - texture not loaded yet
+TextureResource* buttonResource = GameInstance::GetInstance()->GetResource("ButtonImage");
+
+// Now load it into VRAM - returns a SharedTexture2D
+SharedTexture2D buttonTexture = buttonResource->LoadTexture();
+
+// Access NPatch info if available
+if (buttonResource->nPatchInfo.has_value())
+{
+    NPatchInfo patchInfo = buttonResource->nPatchInfo.value();
+    
+    // For hover states, get the offset version
+    NPatchInfo hoverInfo = buttonResource->nPatchInfo->GetOfsettedNPatchInfo();
+}
+```
+
+#### SharedTexture2D - Reference Counted Textures
+
+`SharedTexture2D` is a RAII wrapper that manages texture lifetime through reference counting:
+
+```cpp
+{
+    // Load texture - refcount = 1
+    SharedTexture2D texture = resource->LoadTexture();
+    
+    // Copy it - refcount = 2
+    SharedTexture2D textureCopy = texture;
+    
+    // Use it directly as Texture2D (implicit conversion)
+    DrawTexture(texture, 0, 0, WHITE);
+    
+} // Both go out of scope - refcount hits 0, triggers GC
+```
+
+#### Automatic Garbage Collection
+
+When a texture's reference count drops to zero, a background worker starts a 120-second timer.  If the texture remains unused, it's automatically unloaded from VRAM.  If something requests it again during that window, the timer resets.
+
+```cpp
+// Internally, when RefCount hits 0:
+WorkerFuture = std::async(std::launch::async, [this]() {
+    // Wait 120 seconds, checking periodically
+    // If RefCount is still 0, enqueue unload on main thread
+    // If RefCount rises, reset timer (up to 5 resets)
+    GameInstance::GetInstance()->MainQueue. Enqueue([this]() {
+        this->UnloadTexture();
+    });
+});
+```
+
+This means:  
+- Textures stay loaded while in use
+- Textures get cleaned up if unused for 2 minutes
+- Rapidly switching between screens doesn't cause constant load/unload thrashing
+
+#### Real-World Usage
+
+Here's how the MenuMode uses the resource system:
+
+```cpp
+void MenuMode::BeginPlay()
+{
+    // Get resource handle (just metadata)
+    BackgroundResource = GameInstance::GetInstance()->GetResource("BackgroundMenu");
+    
+    // Adjust dimensions if needed
+    BackgroundResource->SetHeight(GetScreenHeight());
+    BackgroundResource->SetWidth(GetScreenWidth());
+    
+    // Now actually load into VRAM
+    Background = BackgroundResource->LoadTexture();
+    
+    // For buttons with 9-patch textures
+    TextureResource* ButtonResource = GameInstance:: GetInstance()->GetResource("ButtonImage");
+    SharedTexture2D SpriteButton = ButtonResource->LoadTexture();
+    NPatchInfo ninePatchInfo = ButtonResource->nPatchInfo.value();
+    
+    // Use the texture and patch info for buttons
+    StartGame = NewObject<Button>();
+    StartGame.TryLoad()
+        ->Construct(rect, "Start Game", RED)
+        .SetTexture(SpriteButton)
+        .UseNPatchFeature(true)
+        .SetNPatchInfo(ninePatchInfo)
+        .OnHover([ButtonResource](Button* btn) {
+            // Switch to hover sprite using offset
+            btn->SetNPatchInfo(ButtonResource->nPatchInfo->GetOfsettedNPatchInfo());
+        })
+        .OnHoverLeave([ButtonResource](Button* btn) {
+            // Switch back to normal sprite
+            btn->SetNPatchInfo(ButtonResource->nPatchInfo.value());
+        });
+}
+```
+
+#### TextureResource Utilities
+
+```cpp
+TextureResource* resource = GameInstance::GetInstance()->GetResource("MyTexture");
+
+// Modify dimensions (affects loaded texture if already in VRAM)
+resource->SetWidth(512);
+resource->SetHeight(512);
+
+// Generate mipmaps for better quality at different scales
+resource->GenerateMipMaps();
+
+// Load into VRAM and get shared handle
+SharedTexture2D texture = resource->LoadTexture();
+
+// Check validity
+if (texture.isValid()) { /* use it */ }
+```
+### GameMode Switching
+
+The engine uses a `GameModeSwitcher` (extending `StateMachine`) to manage transitions between GameModes: 
+
+```cpp
+// Register GameModes with factory functions at startup
+g_ActiveStateMachine.RegisterState("Menu", []() { return new MenuMode(); });
+g_ActiveStateMachine. RegisterState("Sandbox", []() { return new SandboxGameMode(); });
+g_ActiveStateMachine.RegisterState("Options", []() { return new OptionsMode(); });
+
+// Switch GameModes by name
+g_ActiveStateMachine.ChangeState("Sandbox");
+
+// Access current/previous modes
+GameMode* current = g_ActiveStateMachine.GetCurrentGameMode();
+GameMode* previous = g_ActiveStateMachine.GetLastGameMode();
+```
+
+The switcher handles cleanup of the previous GameMode automatically, ensuring all objects are properly destroyed before the new mode begins.
+
+### Naval Units & Physics
+
+The engine includes a naval units system with proper type aliases and conversions:
+
+```cpp
+namespace NavalUnits
+{
+    using NauticalMile = float;
+    using Knot = float;
+    using Hz = double;
+    
+    constexpr Hz KHz = 1000;
+    constexpr Hz MHz = 1000 * KHz;
+    
+    inline float NauticalMilesToMeters(NauticalMile nm);
+    constexpr inline float KnotToMetersPerSecond(Knot k);
+}
+```
+
+Entities like `BaseSubmarine` use these for realistic movement: 
+
+```cpp
+void BaseSubmarine:: Tick(float DeltaTime)
+{
+    CalculateRotation(DeltaTime);  // Heading changes based on turning rate
+    Turning();                      // Apply course corrections
+    CalculateSpeed(DeltaTime);      // Accelerate/decelerate toward desired speed
+    Accel(DeltaTime);               // Update position
+    
+    // Emit sound event based on current speed
+    if (m_CurrentKnots != 0)
+    {
+        auto soundEvent = std::make_shared<SoundEvent>();
+        soundEvent->Sender = SoftObjectPath<BaseSubmarine>(this->GetName());
+        soundEvent->SignalStrength = m_CurrentKnots;
+        soundEvent->SoundOrigin = m_Position;
+        SoundDispatcher->Dispatch(soundEvent);
+    }
+}
+```
+
+### Sound & Signal System
+
+Entities emit `SoundEvent`s that propagate through the `World` and are visualized on the sonar waterfall: 
+
+```cpp
+class SoundEvent : public Event
+{
+    AUTOBODY(SoundEvent, Event)
+public:
+    Vector2 SoundOrigin = {0, 0};
+    NavalUnits::Hz SignalStrength = 0;
+    SoftObjectPath<Entity> Sender;
+};
+```
+
+The `World` class collects these signals and provides them to displays:
+
+```cpp
+std::vector<Signals> World::GetSignals();
+std::vector<int> World::GetAmbientLevel();
+```
+
+### Rendering Approaches
+
+The engine uses two different rendering approaches depending on the use case:
+
+#### CPU-Based Rendering (Waterfall Display)
+
+The sonar waterfall uses CPU-side pixel manipulation with double buffering for smooth updates:
+
+```cpp
+struct PixelBuffer
+{
+    std::vector<PixelData> PixelArray;
+    unsigned int m_Width, m_Height;
+    
+    void ShiftPixelDown()
+    {
+        // Efficient memory shift using memmove
+        size_t TotalPixelsToMove = (m_Height - 1) * m_Width;
+        std::memmove(
+            PixelArray.data() + m_Width,      // Destination:  second row
+            PixelArray.data(),                 // Source: first row
+            TotalPixelsToMove * sizeof(PixelData)
+        );
+    }
+};
+```
+
+The waterfall processes data on a background thread, then swaps buffers and uploads to GPU:
+
+```cpp
+void Waterfall:: Tick(float DeltaTime)
+{
+    // Accumulate signal data with OpenMP parallelization
+    #pragma omp parallel for num_threads(4)
+    for (int DestX = 0; DestX < BufferWidth; ++DestX)
+    {
+        // Interpolate ambient data to buffer width
+        m_AccumulatedSignals[DestX] += Value;
+    }
+    
+    // When enough time passes, process on worker thread
+    if (LinesToShift > 0 && WorkerDone. load())
+    {
+        WorkerFuture = std::async(std::launch:: async, [this]() {
+            ProcessBackBuffer(LinesToShift, m_AccumulatedSignals, sampleCount);
+            WorkerDone. store(true);
+            RenderReady. store(true);
+        });
+    }
+}
+
+void Waterfall:: ProcessBackBuffer(int LinesToShift, ...)
+{
+    for (int Line = 0; Line < LinesToShift; Line++)
+    {
+        BackBuffer->ShiftPixelDown();  // memmove the entire buffer
+        
+        // Write new data to top row
+        for (int X = 0; X < BufferWidth; ++X)
+        {
+            (*BackBuffer)[X] = PixelData(0, Intensity, 0, 255);
+        }
+    }
+}
+```
+
+#### GPU-Based Rendering (World Map)
+
+The world map uses raw OpenGL (via GLAD) for rendering coastlines efficiently.  This bypasses Raylib for performance-critical geometry:
+
+```cpp
+// In Map::Draw()
+rlDrawRenderBatchActive();  // Flush Raylib's batch
+
+// Switch to custom OpenGL shader
+Matrix viewProj = GetOpenGLProjectionMatrix();
+glUseProgram(shader.id);
+glUniformMatrix4fv(locMVP, 1, GL_TRUE, &viewProj. m0);
+
+// Render all continent coastlines with a single multi-draw call
+for (auto& Continent : World->Continents)
+{
+    Continent. RenderBuffer();  // Uses glMultiDrawArrays
+}
+
+// Return to Raylib's default shader
+glBindVertexArray(0);
+glUseProgram(rlGetShaderIdDefault());
+```
+
+The `RenderBufferArrayLine` class manages VAO/VBO for efficient line rendering: 
+
+```cpp
+class RenderBufferArrayLine
+{
+    unsigned int vao = 0;
+    unsigned int vbo = 0;
+    
+    void LoadBuffer()
+    {
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+        glBindVertexArray(vao);
+        glBufferData(GL_ARRAY_BUFFER, 
+                     Vertices.size() * sizeof(float),
+                     Vertices.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(0);
+    }
+    
+    void RenderBuffer()
+    {
+        glBindVertexArray(vao);
+        glMultiDrawArrays(GL_LINE_LOOP, 
+                          GLOffsets.data(),   // Start indices
+                          GLCounts.data(),    // Vertex counts per loop
+                          DrawCount);         // Number of loops
+    }
+};
+```
+
+This allows rendering thousands of coastline segments with a single draw call, which is significantly faster than individual Raylib draw calls. 
+
+### Custom Shaders
+
+The map uses a basic vertex/fragment shader pair for line rendering:
+
+```glsl
+// basic. vs
+#version 430
+layout(location = 0) in vec2 aPos;
+uniform mat4 uMVP;
+
+void main()
+{
+    gl_Position = uMVP * vec4(aPos, 0.0, 1.0);
+}
+
+// basic.fs
+#version 330
+out vec4 fragColor;
+
+void main()
+{
+    fragColor = vec4(1.0, 0.2, 0.2, 1.0);  // Red coastlines
+}
+```
+
+The waterfall shader files exist for future GPU-based waterfall rendering, but the current implementation uses CPU-side processing for flexibility during development.
+### Thread-Safe Main Thread Queue
+
+For operations that must happen on the main thread (like OpenGL calls), the engine provides `GameThreadQueue`:
+
+```cpp
+// From any thread - enqueue work for main thread
+GameInstance::GetInstance()->MainQueue.Enqueue([this]() {
+    this->UnloadTexture();  // OpenGL calls must be on main thread
+});
+
+// Main thread processes queued tasks each frame
+MainQueue.ProcessTasks();
+```
+
+This is used by the resource garbage collector to safely unload textures from worker threads.
 
 ### UI System
 
