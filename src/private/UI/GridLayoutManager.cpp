@@ -860,7 +860,11 @@ void GridLayoutManager::DrawGridControls()
 				buttonSize
 			};
 
-			bool hover = CheckCollisionPointRec(GetMonitorPosition(0), deleteButtonRect);
+			bool hover = CheckCollisionPointRec(GetMousePosition(), deleteButtonRect);
+			if (hover)
+			{
+				SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+			}
 			Color buttonColor = hover ? ColorAlpha(RED, 0.9f) : ColorAlpha(RED, 0.6f);
 			Color iconColor = WHITE;
 
@@ -878,10 +882,11 @@ void GridLayoutManager::DrawGridControls()
 			DrawLineEx({ x2, y1 }, { x1, y2 }, 2, iconColor);
 
 			// Handle click
-			if (hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !m_SpawnMenu.isOpen)
+			if (hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 			{
+				std::cout << "Delete display at cell (" << cell.row << ", " << cell.column << ")\n";
 				DeleteDisplay(display);
-				return; // Exit early since we're modifying the collection
+				return;
 			}
 		}
 	}
