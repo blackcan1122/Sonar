@@ -7,6 +7,8 @@
 #include "Events/DisplayResizeData.hpp"
 #include "UI/GridLayoutManager.hpp"
 
+std::string Test{ "DuFicker" };
+
 SandboxGameMode::SandboxGameMode()
 {
 	SetName("Sandbox");
@@ -36,8 +38,6 @@ void SandboxGameMode::BeginPlay()
 		LayoutManagerObj->RegisterDisplay(MapDisplay, GridCell{0, 1, 1, 1}); // Row 0, Col 1
 		
 		map->MapEventDispatcher->AddListener("SandboxGameMode Map Click Listener", AllPurposeEvent::StaticClass(), this, &SandboxGameMode::OnMapClickedEvent);
-		map->OnResize.AddListener("SandboxGameMode Map Resize Listener", AllPurposeEvent::StaticClass(), LayoutManager, &GridLayoutManager::OnDisplayResize);
-		map->OnMove.AddListener("SandboxGameMode Map Move Listener", AllPurposeEvent::StaticClass(), LayoutManager, &GridLayoutManager::OnDisplayMove);
 	}
 
 	PlayerOne =  NewObject<Player>();
@@ -52,8 +52,7 @@ void SandboxGameMode::BeginPlay()
 	{
 		LayoutManagerObj->RegisterDisplay(WaterfallDisplay, GridCell{0, 0, 1, 1}); // Row 0, Col 0
 		waterfall->AssignPlayer(PlayerOne);
-		waterfall->OnResize.AddListener("SandboxGameMode Waterfall Resize Listener", AllPurposeEvent::StaticClass(), LayoutManager, &GridLayoutManager::OnDisplayResize);
-		waterfall->OnMove.AddListener("SandboxGameMode Waterfall Move Listener", AllPurposeEvent::StaticClass(), LayoutManager, &GridLayoutManager::OnDisplayMove);
+
 	}
 	m_AllDisplays.push_back(WaterfallDisplay);
 
@@ -63,8 +62,6 @@ void SandboxGameMode::BeginPlay()
 	{
 		LayoutManagerObj->RegisterDisplay(WaterfallDisplay2, GridCell{1, 0, 1, 1}); // Row 1, Col 0
 		waterfall2->AssignPlayer(PlayerOne);
-		waterfall2->OnResize.AddListener("SandboxGameMode Waterfall2 Resize Listener", AllPurposeEvent::StaticClass(), LayoutManager, &GridLayoutManager::OnDisplayResize);
-		waterfall2->OnMove.AddListener("SandboxGameMode Waterfall2 Move Listener", AllPurposeEvent::StaticClass(), LayoutManager, &GridLayoutManager::OnDisplayMove);
 	}
 	m_AllDisplays.push_back(WaterfallDisplay2);
 
@@ -102,42 +99,89 @@ void SandboxGameMode::Update()
 		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), int(20)); // Wrong type test
 		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), true); // Wrong type test
 
-		auto GLM = GetObjects<GridLayoutManager>();
-		if (GLM.empty())
-		{
-			return;
-		}
-
-		auto GLMOBJ = GLM[0].TryLoad();
-
-		if (!GLMOBJ)
-		{
-			return;
-		}
-
-		if (GLMOBJ)
-		{
-			GLMOBJ->DrawEmptyTiles();
-		}
-
-
-		if (GLMOBJ)
-		{
-			GLMOBJ->DrawSnapPreviews();
-		}
-
-		// Draw grid controls (always visible)
-		if (GLMOBJ)
-		{
-			GLMOBJ->DrawGridControls();
-		}
-
 #if DEBUG
 		DrawFPS(GameInstance::GetInstance()->GetWindowProperties().m_ScreenWidth - 100, 20);
 #endif
 		if (IsKeyPressed(KEY_K))
 		{
 			GameInstance::GetInstance()->g_ActiveStateMachine.ChangeState("Menu");
+		}
+
+		if (IsKeyPressed(KEY_T))
+		{
+			{
+				auto player = PlayerOne.TryLoad().get();
+
+				// Direct address
+				void* direct = player->GetDisplayNamePtr();
+
+				// Reflected address
+				auto prop = IObject::StaticClass()->FindProperty("m_DisplayName");
+				void* reflected = prop->GetValuePtr(player);
+
+				std::cout << "direct:    " << direct << std::endl;
+				std::cout << "reflected: " << reflected << std::endl;
+				std::cout << "match: " << (direct == reflected) << std::endl;
+
+				Player* p = PlayerOne.TryLoad().get();
+				IObject* i = p;  // typed cast — compiler adjusts
+
+				std::cout << "Player* : " << (void*)p << std::endl;
+				std::cout << "IObject*: " << (void*)i << std::endl;
+
+				// Crack open the member pointer offset directly
+				auto* sProp = static_cast<SProperty<IObject, std::string>*>(prop);
+
+				union {
+					std::string IObject::* mp;
+					ptrdiff_t offset;
+				} u;
+				u.mp = &IObject::m_DisplayName;
+				std::cout << "m_DisplayName member pointer offset: " << u.offset << std::endl;
+
+				u.mp = &IObject::m_Name;
+				std::cout << "m_Name member pointer offset: " << u.offset << std::endl;
+
+				IObject stackObj;
+				std::cout << "sizeof IObject: " << sizeof(IObject) << std::endl;
+				std::cout << "offsetof m_Name: " << offsetof(IObject, m_Name) << std::endl;
+				std::cout << "offsetof m_DisplayName: " << offsetof(IObject, m_DisplayName) << std::endl;
+
+				std::cout << "offsetof m_TickGroup: " << offsetof(IObject, m_TickGroup) << std::endl;
+				std::cout << "offsetof bIsMarkedForDestruction: " << offsetof(IObject, bIsMarkedForDestruction) << std::endl;
+			}
+			{
+				auto prop = IObject::StaticClass()->FindProperty("m_DisplayName");
+				auto* sProp = static_cast<SProperty<IObject, std::string>*>(prop);
+
+				// Print the stored offset
+				std::cout << "stored m_Offset: " << sProp->m_Offset << std::endl;
+
+				// Print what it should be
+				IObject temp;
+				char* base = (char*)&temp;
+				std::cout << "actual offset: " << ((char*)&temp.m_DisplayName - base) << std::endl;
+
+			}
+
+			//{
+			//	auto prop = IObject::StaticClass()->FindProperty("m_DisplayName");
+			//	auto* sProp = static_cast<SProperty<IObject, std::string>*>(prop);
+
+			//	// Print the raw bytes of MemberPtr
+			//	unsigned char* mp = reinterpret_cast<unsigned char*>(&sProp->MemberPtr);
+			//	std::cout << "MemberPtr raw bytes: ";
+			//	for (int i = 0; i < sizeof(sProp->MemberPtr); i++)
+			//		std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)mp[i] << " ";
+			//	std::cout << std::endl;
+			//	std::cout << "MemberPtr size: " << sizeof(sProp->MemberPtr) << std::endl;
+			//}
+			//{
+			//	IObject temp;
+			//	char* base = (char*)&temp;
+			//	std::cout << "runtime offset of m_DisplayName: "
+			//		<< ((char*)&temp.m_DisplayName - base) << std::endl;
+			//}
 		}
 
 		if (IsKeyPressed(KEY_L))
@@ -161,7 +205,7 @@ std::string SandboxGameMode::GetName()
 
 void SandboxGameMode::OnMapClickedEvent(std::shared_ptr<IEvent> Event)
 {
-	if (!Event && Event->GetStaticClass() != AllPurposeEvent::StaticClass())
+	if (!Event || Event->GetStaticClass() != AllPurposeEvent::StaticClass())
 	{
 		return;
 	}

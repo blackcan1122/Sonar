@@ -86,6 +86,7 @@ protected:
 
 	bool bIsResizable = true;
 	bool bIsResizing = false;
+	bool bIsResizeFinished = true;
 	Vector2 m_ResizeStartMousePos = { 0, 0 };
 	Vector2 m_ResizeStartSize = { 0, 0 };
 	int m_ResizeHandleSize = 15;

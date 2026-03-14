@@ -129,6 +129,7 @@ void Display::HandleResizeInteraction()
 			ResizeData->OldWidth = OldWidth;
 			ResizeData->OldHeight = OldHeight;
 			ResizeData->bIsResizeComplete = false;
+			bIsResizeFinished = false;
 			ResizeEvent->Payload = ResizeData;
 
 			OnResize.Dispatch(ResizeEvent);
@@ -145,6 +146,7 @@ void Display::HandleResizeInteraction()
 			ResizeData->OldWidth = static_cast<int>(m_ResizeStartSize.x);
 			ResizeData->OldHeight = static_cast<int>(m_ResizeStartSize.y);
 			ResizeData->bIsResizeComplete = true;
+			bIsResizeFinished = true;
 			ResizeEventComplete->Payload = ResizeData;
 
 			OnResize.Dispatch(ResizeEventComplete);

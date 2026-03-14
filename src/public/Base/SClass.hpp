@@ -9,6 +9,7 @@ enum class EPropertyType
     Int,
     Float,
     Bool,
+    String,
     Unknown
 };
 
@@ -88,6 +89,24 @@ public:
     {
         if (auto prop = FindProperty(Name))
         {
+            if constexpr (std::is_same_v<T, std::string>) 
+            {
+                if (prop->Type != EPropertyType::String) return false;
+            }
+            else if constexpr (std::is_same_v<T, int>) 
+            {
+                if (prop->Type != EPropertyType::Int) return false;
+            }
+
+            else if constexpr (std::is_same_v<T, float>) 
+            {
+                if (prop->Type != EPropertyType::Float) return false;
+            }
+            else if constexpr (std::is_same_v<T, bool>) 
+            {
+                if (prop->Type != EPropertyType::Bool) return false;
+            }
+
             *static_cast<T*>(prop->GetValuePtr(Object)) = Value;
             return true;
         }
@@ -131,35 +150,34 @@ template<typename ClassType, typename MemberType>
 class SProperty : public IProperty
 {
 public:
-    SProperty(const char* Name, MemberType ClassType::* InMemberPtr)
-        : IProperty(Name, DeduceType()), MemberPtr(InMemberPtr)
-    {
-    }
+    SProperty(const char* Name, size_t Offset)
+        : IProperty(Name, DeduceType()), m_Offset(Offset)
+    {}
 
     void* GetValuePtr(void* Object) const override
     {
-        return &(static_cast<ClassType*>(Object)->*MemberPtr);
+        return static_cast<char*>(Object) + m_Offset;
     }
 
-    
-    MemberType GetValue(void* Object) const
+    MemberType& GetValue(void* Object) const
     {
-        return static_cast<ClassType*>(Object)->*MemberPtr;
+        return *static_cast<MemberType*>(GetValuePtr(Object));
     }
 
     void SetValue(void* Object, const MemberType& Value) const
     {
-        static_cast<ClassType*>(Object)->*MemberPtr = Value;
+        *static_cast<MemberType*>(GetValuePtr(Object)) = Value;
     }
-
 private:
-    MemberType ClassType::* MemberPtr;
+
+    size_t m_Offset;
 
     static constexpr EPropertyType DeduceType()
     {
         if constexpr (std::is_same_v<MemberType, int>) return EPropertyType::Int;
         else if constexpr (std::is_same_v<MemberType, float>) return EPropertyType::Float;
         else if constexpr (std::is_same_v<MemberType, bool>) return EPropertyType::Bool;
+        else if constexpr (std::is_same_v<MemberType, std::string>) return EPropertyType::String;
         else return EPropertyType::Unknown;
     }
 };

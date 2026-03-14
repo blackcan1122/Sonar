@@ -81,38 +81,43 @@ void InitLogger();
 //#include "Base/GameMode.h"
 //#include "GameInstance.h"
 
-template<typename ClassType, typename MemberType>
-struct PropertyRegistrar {
-    PropertyRegistrar(SClass* Class, const char* Name, MemberType ClassType::* MemberPtr) {
-        Class->RegisterProperty(std::make_unique<SProperty<ClassType, MemberType>>(Name, MemberPtr));
-    }
-};
-
-
-// MACROS
-
-// Properties Macros
-
-#define EXPOSE_FLOAT(Member) \
-    static inline PropertyRegistrar<ThisClass, float> _reg_##Member{ThisClass::StaticClass(), #Member, &ThisClass::Member}
-
-#define EXPOSE_INT(Member) \
-    static inline PropertyRegistrar<ThisClass, int> _reg_##Member{ThisClass::StaticClass(), #Member, &ThisClass::Member}
-
-#define EXPOSE_BOOL(Member) \
-    static inline PropertyRegistrar<ThisClass, bool> _reg_##Member{ThisClass::StaticClass(), #Member, &ThisClass::Member}
-
-#define EXPOSE_PROPERTY(Type, Member) \
-    static inline PropertyRegistrar<ThisClass, Type> _reg_##Member{ThisClass::StaticClass(), #Member, &ThisClass::Member}
+//template<typename ClassType, typename MemberType>
+//struct PropertyRegistrar {
+//    PropertyRegistrar(SClass* Class, const char* Name, MemberType ClassType::* MemberPtr) {
+//        Class->RegisterProperty(std::make_unique<SProperty<ClassType, MemberType>>(Name, MemberPtr));
+//    }
+//};
+//
+//
+//// MACROS
+//
+//// Properties Macros
+//
+//#define EXPOSE_FLOAT(Member) \
+//    static inline PropertyRegistrar<ThisClass, float> _reg_##Member{ThisClass::StaticClass(), #Member, &ThisClass::Member}
+//
+//#define EXPOSE_INT(Member) \
+//    static inline PropertyRegistrar<ThisClass, int> _reg_##Member{ThisClass::StaticClass(), #Member, &ThisClass::Member}
+//
+//#define EXPOSE_BOOL(Member) \
+//    static inline PropertyRegistrar<ThisClass, bool> _reg_##Member{ThisClass::StaticClass(), #Member, &ThisClass::Member}
+//
+//#define EXPOSE_STRING(Member) \
+//    static inline PropertyRegistrar<ThisClass, std::string> _reg_##Member{ThisClass::StaticClass(), #Member, &ThisClass::Member}
+//
+//#define EXPOSE_PROPERTY(Type, Member) \
+//    static inline PropertyRegistrar<ThisClass, Type> _reg_##Member{ThisClass::StaticClass(), #Member, &ThisClass::Member}
 
 #define AUTOBODY(Base, Parent) \
 private: \
     using ThisClass = Base; \
-	static inline SClass m_SClass = SClass(Parent::StaticClass(), #Base); \
 public: \
     using Super = Parent; \
-    virtual SClass* GetStaticClass() override { return &m_SClass; } \
-    static SClass* StaticClass() { return  &m_SClass; } \
+    virtual SClass* GetStaticClass() override { return StaticClass(); } \
+    static SClass* StaticClass() { \
+        static SClass instance(Parent::StaticClass(), #Base); \
+        return &instance; \
+    } \
 private:
 
 #define ROOTBODY(Base) \

@@ -6,6 +6,12 @@
 #include <memory>
 #include <functional>
 #include "Base/TickGroup.hpp"
+#include "Base/Macros.h"
+
+#if defined(_DEBUG) && !defined(_ITERATOR_DEBUG_LEVEL)
+#error "Iterator debug level not set"
+#endif
+#pragma message("_ITERATOR_DEBUG_LEVEL=" _CRT_STRINGIZE(_ITERATOR_DEBUG_LEVEL))
 
 class GameMode;
 class Factory;
@@ -41,12 +47,18 @@ class GameInstance;
 class IObject
 {
 	friend class Factory;
-private:
-	static inline SClass m_SClass = SClass(nullptr, "IObject");
 
+private:
+	using ThisClass = IObject;
 
 public:
 	using EventCallback = std::function<void(std::shared_ptr<IEvent>)>;
+
+	virtual SClass* GetStaticClass() { return StaticClass(); }
+	static SClass* StaticClass() {
+		static SClass instance(nullptr, "IObject");
+		return &instance;
+	}
 
 	IObject() = default;
 	//~IObject();
@@ -63,8 +75,6 @@ public:
 	//// Move assignment operator - transfers callback ownership, clears existing callbacks first
 	//IObject& operator=(IObject&& Other) noexcept;
 
-	virtual SClass* GetStaticClass() { return &m_SClass; };
-	static SClass* StaticClass() { return  &m_SClass; };
 
 	virtual void Tick(float DeltaTime) {};
 	virtual void Initialize(){}; // TODO: Should be marked abstracted in future maybe?
@@ -83,6 +93,9 @@ public:
 	virtual const ETickGroup GetTickGroup() const { return m_TickGroup.GetTickGroup(); };
 	virtual void SetTickGroup(ETickGroup NewGroup) { m_TickGroup = NewGroup; };
 
+	void* GetDisplayNamePtr() { return &m_DisplayName; }
+
+
 
 	// Maybe for later implementations
 	// Right now i dont see the usecase sadly
@@ -99,21 +112,29 @@ public:
 	//		});
 	//}
 
+
+
+
 protected:
 
 	virtual void OnKeyStroke(KeyboardKey PressedKey, Vector2 MousePosition) {};
 	virtual void OnMouseButtonPressed(MouseButton PressedKey, Vector2 MousePosition) {};
 
-	TickGroup m_TickGroup{ETickGroup::DefaultTick};
 
 	std::string m_Name;
 	std::string m_DisplayName = "Unit";
+	EXPOSE_STRING(m_DisplayName);
+
+	TickGroup m_TickGroup{ ETickGroup::DefaultTick };
+	bool bIsMarkedForDestruction = false;
+
 
 	//std::vector<CallbackEntry> m_RegisteredCallbacks;
 
 private:
 
-	bool bIsMarkedForDestruction = false;
+
+
 
 
 
@@ -123,8 +144,13 @@ private:
 class Object : public IObject
 {
 	friend GameInstance;
-
 private:
-	static inline SClass m_SClass = SClass(IObject::StaticClass(), "Object");
-
+	using ThisClass = Object;
+public:
+	using Super = IObject;
+	virtual SClass* GetStaticClass() override { return StaticClass(); }
+	static SClass* StaticClass() {
+		static SClass instance(IObject::StaticClass(), "Object");
+		return &instance;
+	}
 };

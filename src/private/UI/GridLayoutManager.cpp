@@ -21,7 +21,7 @@ GridLayoutManager::GridLayoutManager(int rows, int columns, int windowWidth, int
 	, m_CellWidth(0)
 	, m_CellHeight(0)
 {
-
+	SetTickGroup(ETickGroup::MAX);
 
 	m_Rows = std::max(1, std::min(rows, maxRows));
 	m_Columns = std::max(1, std::min(columns, maxCols));
@@ -97,6 +97,9 @@ bool GridLayoutManager::RegisterDisplay(SoftObjectPath<IObject> inDisplay, std::
 		return false;
 	}
 
+	inDisplay.Cast<Display>().TryLoad()->OnResize.AddListener("GridLayoutManager Display Resize Listener", AllPurposeEvent::StaticClass(), this, &GridLayoutManager::OnDisplayResize);
+	inDisplay.Cast<Display>().TryLoad()->OnMove.AddListener("GridLayoutManager Display Move Listener", AllPurposeEvent::StaticClass(), this, &GridLayoutManager::OnDisplayMove);
+
 	m_DisplayCells.insert({ CastedDisplay, cell });
 
 	ApplyLayoutToDisplay(CastedDisplay, cell);
@@ -107,6 +110,13 @@ bool GridLayoutManager::RegisterDisplay(SoftObjectPath<IObject> inDisplay, std::
 bool GridLayoutManager::UnregisterDisplay(SoftObjectPath<IObject> inDisplay)
 {
 	return m_DisplayCells.erase(inDisplay.Cast<Display>()) == 1;
+}
+
+void GridLayoutManager::Tick(float DeltaTime)
+{
+	DrawEmptyTiles();
+	DrawSnapPreviews();
+	DrawGridControls();
 }
 
 void GridLayoutManager::UpdateLayout()
@@ -1121,7 +1131,6 @@ void GridLayoutManager::DrawEmptyTiles() const
 {
 	Vector2 mousePos = GetMousePosition();
 
-	// Find all empty cells and draw a placeholder
 	for (int r = 0; r < m_Rows; ++r)
 	{
 		for (int c = 0; c < m_Columns; ++c)

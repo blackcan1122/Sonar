@@ -1,17 +1,17 @@
 newoption
 {
-	trigger = "graphics",
-	value = "OPENGL_VERSION",
-	description = "version of OpenGL to build raylib against",
-	allowed = {
-		{ "opengl11", "OpenGL 1.1"},
-		{ "opengl21", "OpenGL 2.1"},
-		{ "opengl33", "OpenGL 3.3"},
-		{ "opengl43", "OpenGL 4.3"},
-		{ "openges2", "OpenGL ES2"},
-		{ "openges3", "OpenGL ES3"}
-	},
-	default = "opengl33"
+    trigger = "graphics",
+    value = "OPENGL_VERSION",
+    description = "version of OpenGL to build raylib against",
+    allowed = {
+        { "opengl11", "OpenGL 1.1"},
+        { "opengl21", "OpenGL 2.1"},
+        { "opengl33", "OpenGL 3.3"},
+        { "opengl43", "OpenGL 4.3"},
+        { "openges2", "OpenGL ES2"},
+        { "openges3", "OpenGL ES3"}
+    },
+    default = "opengl33"
 }
 
 function download_progress(total, current)
@@ -31,7 +31,7 @@ function check_raylib()
                 headers = { "From: Premake", "Referer: Premake" }
             })
         end
-        print("Unzipping to " ..  os.getcwd())
+        print("Unzipping to " .. os.getcwd())
         zip.extract("raylib-master.zip", os.getcwd())
         os.remove("raylib-master.zip")
     end
@@ -48,7 +48,7 @@ function checkspdlog()
                 headers = { "From: Premake", "Referer: Premake" }
             })
         end
-        print("Unzipping to " ..  os.getcwd())
+        print("Unzipping to " .. os.getcwd())
         zip.extract("v1.x.zip", os.getcwd())
         os.remove("v1.x.zip")
     end
@@ -65,7 +65,7 @@ function CheckNlohmann()
                 headers = { "From: Premake", "Referer: Premake" }
             })
         end
-        print("Unzipping to " ..  os.getcwd())
+        print("Unzipping to " .. os.getcwd())
         zip.extract("include.zip", os.getcwd() .. "/nlohmann")
         os.remove("include.zip")
     end
@@ -73,10 +73,10 @@ function CheckNlohmann()
 end
 
 function build_externals()
-     print("calling externals")
-     check_raylib()
-     checkspdlog()
-     CheckNlohmann()
+    print("calling externals")
+    check_raylib()
+    checkspdlog()
+    CheckNlohmann()
 end
 
 function platform_defines()
@@ -111,30 +111,17 @@ function platform_defines()
         defines {"_GLFW_X11"}
         defines {"_GNU_SOURCE"}
 
--- This is necessary, otherwise compilation will fail since
--- there is no CLOCK_MONOTOMIC. raylib claims to have a workaround
--- to compile under c99 without -D_GNU_SOURCE, but it didn't seem
--- to work. raylib's Makefile also adds this flag, probably why it went
--- unnoticed for so long.
--- It compiles under c11 without -D_GNU_SOURCE, because c11 requires
--- to have CLOCK_MONOTOMIC
--- See: https://github.com/raysan5/raylib/issues/2729
-
     filter{}
 end
 
--- if you don't want to download raylib, then set this to false, and set the raylib dir to where you want raylib to be pulled from, must be full sources.
 downloadRaylib = true
 raylib_dir = "external/raylib-master"
 spdlog_dir = "external/spdlog-1.x"
 json_dir = "external/nlohmann"
 
 workspaceName = 'Sonar'
-baseName = path.getbasename(path.getdirectory(os.getcwd()));
-
---if (baseName ~= 'raylib-quickstart') then
-    workspaceName = baseName
---end
+baseName = path.getbasename(path.getdirectory(os.getcwd()))
+workspaceName = baseName
 
 if (os.isdir('build_files') == false) then
     os.mkdir('build_files')
@@ -143,7 +130,6 @@ end
 if (os.isdir('external') == false) then
     os.mkdir('external')
 end
-
 
 workspace (workspaceName)
     location "../"
@@ -156,25 +142,32 @@ workspace (workspaceName)
     }
 
     filter { "files:**.vs", "files:**.fs", "action:vs*" }
-      buildaction           "Content"
-    filter {}  -- clear filter
+        buildaction "Content"
+    filter {}
 
     defaultplatform ("x64")
 
-    -- Apply global settings for Linux
+    -- CRT consistency across ALL projects — fixes std::string size mismatch
+    filter "action:vs*"
+        staticruntime "off"
+    filter "configurations:Debug or Debug_RGFW"
+        runtime "Debug"
+    filter "configurations:Release or Release_RGFW"
+        runtime "Release"
+    filter {}
+
     filter { "system:linux" }
-        architecture "x86_64"       -- 64‑bit Linux only runners 
-        pic          "On"           -- PIC for static libs on x86_64 :contentReference[oaicite:4]{index=4}
-        defines      { "_GLFW_X11", "_GNU_SOURCE" }  -- Enable X11 and GNU extensions :contentReference[oaicite:5]{index=5}
-        links        { "pthread", "m", "dl", "rt", "X11" }  -- System libs for raylib on Linux :contentReference[oaicite:6]{index=6}
+        architecture "x86_64"
+        pic "On"
+        defines { "_GLFW_X11", "_GNU_SOURCE" }
+        links { "pthread", "m", "dl", "rt", "X11" }
+    filter {}
 
-    filter {}  -- Clear filters so subsequent settings apply globally
-
-    filter "configurations:Debug"
+    filter "configurations:Debug or Debug_RGFW"
         defines { "DEBUG" }
         symbols "On"
 
-    filter "configurations:Release"
+    filter "configurations:Release or Release_RGFW"
         defines { "NDEBUG" }
         optimize "On"
 
@@ -190,9 +183,9 @@ workspace (workspaceName)
 
 if (downloadRaylib) then
     build_externals()
-	end
+end
 
-    startproject(workspaceName)
+startproject(workspaceName)
 
     project (workspaceName)
         kind "ConsoleApp"
@@ -212,13 +205,13 @@ if (downloadRaylib) then
 
         filter{}
 
-        vpaths 
+        vpaths
         {
-            ["Header Files/*"] = { "../include/**.h",  "../include/**.hpp", "../src/**.h", "../src/**.hpp"},
+            ["Header Files/*"] = { "../include/**.h", "../include/**.hpp", "../src/**.h", "../src/**.hpp"},
             ["Source Files/*"] = {"../src/**.c", "src/**.cpp"},
         }
         files {"../src/**.c", "../src/**.cpp", "../src/**.h", "../src/**.hpp", "../include/**.h", "../include/**.hpp"}
-    
+
         includedirs { "../src" }
         includedirs { "../src/public" }
         includedirs { "../src/private" }
@@ -230,14 +223,12 @@ if (downloadRaylib) then
         cppdialect "C++20"
 
         includedirs {raylib_dir .. "/src" }
-        includedirs {raylib_dir .."/src/external" }
-        includedirs { raylib_dir .."/src/external/glfw/include" }
-
+        includedirs {raylib_dir .. "/src/external" }
+        includedirs {raylib_dir .. "/src/external/glfw/include" }
         includedirs {spdlog_dir .. "/include" }
         includedirs {json_dir}
-        
-        defines { "SPDLOG_COMPILED_LIB" }
 
+        defines { "SPDLOG_COMPILED_LIB" }
 
         flags { "ShadowedVariables"}
         platform_defines()
@@ -246,19 +237,18 @@ if (downloadRaylib) then
             defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS"}
             dependson {"raylib", "spdlog", "nlohmann"}
             links {"raylib.lib", "spdlog.lib"}
-            libdirs { "../bin/%{cfg.buildcfg}" }  -- Tell linker where to find .lib files
+            libdirs { "../bin/%{cfg.buildcfg}" }
             characterset ("Unicode")
-            buildoptions { "/Zc:__cplusplus", "/utf-8", "/openmp", "/bigobj" }
+            buildoptions { "/Zc:__cplusplus", "/utf-8", "/openmp", "/bigobj", "/MP" }
 
         filter "system:windows"
             defines{"_WIN32"}
             links {"winmm", "gdi32", "opengl32"}
             libdirs {"../bin/%{cfg.buildcfg}"}
 
-
         filter "system:linux"
             links {"spdlog", "pthread", "m", "dl", "rt", "X11"}
-            kind   "ConsoleApp"
+            kind "ConsoleApp"
             buildoptions { "-fopenmp" }
             linkoptions { "-fopenmp" }
 
@@ -268,23 +258,19 @@ if (downloadRaylib) then
         filter{}
 
         postbuildcommands {
-            -- Cross-platform way to copy entire folder recursively
             '{COPYDIR} "../../resources/" "%{cfg.targetdir}/resources"',
             '{MKDIR} "%{cfg.targetdir}/src"',
             '{COPYDIR} "../../src/shaders" "%{cfg.targetdir}/src/shaders"'
-
         }
-		
+
 
     project "raylib"
         kind "StaticLib"
-    
-        platform_defines()
-
-        location "build_files/"
-
         language "C"
+        location "build_files/"
         targetdir "../bin/%{cfg.buildcfg}"
+
+        platform_defines()
 
         filter "action:vs*"
             defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS"}
@@ -299,7 +285,6 @@ if (downloadRaylib) then
             ["Source Files/*"] = { raylib_dir .. "/src/**.c"},
         }
         files {raylib_dir .. "/src/*.h", raylib_dir .. "/src/*.c"}
-
         removefiles {raylib_dir .. "/src/rcore_*.c"}
 
         filter { "system:macosx", "files:" .. raylib_dir .. "/src/rglfw.c" }
@@ -315,65 +300,47 @@ if (downloadRaylib) then
         kind "StaticLib"
         language "C++"
         location "build_files/"
-        targetdir "../bin/%{cfg.buildcfg}"  -- Match raylib's output directory
-    
-        -- Include spdlog headers and source files
+        targetdir "../bin/%{cfg.buildcfg}"
+
         includedirs { spdlog_dir .. "/include" }
-        files { 
-            spdlog_dir .. "/include/**.h", 
-            spdlog_dir .. "/src/**.cpp"  -- Include all .cpp files recursively
+        files {
+            spdlog_dir .. "/include/**.h",
+            spdlog_dir .. "/src/**.cpp"
         }
-    
-        -- Required for static library compilation
+
         defines { "SPDLOG_COMPILED_LIB" }
-    
-        -- Platform-specific configurations
-        filter { "system:windows" }
-            defines { "_CRT_SECURE_NO_WARNINGS" }
-            characterset "Unicode"
-    
-        filter { "configurations:Debug" }
-            symbols "On"
-    
-        filter { "configurations:Release" }
-            optimize "On"
-        
+
         filter "action:vs*"
+            defines{"_CRT_SECURE_NO_WARNINGS"}
+            characterset "Unicode"
             buildoptions { "/Zc:__cplusplus", "/utf-8" }
 
         filter { "system:linux" }
             defines { "PLATFORM_LINUX" }
-        
+
         filter { "system:windows" }
             defines { "PLATFORM_WINDOWS" }
+
+        filter{}
 
 
     project "nlohmann"
         kind "none"
         language "C++"
         location "build_files/"
-        targetdir "../bin/%{cfg.buildcfg}"  -- Match raylib's output directory
-    
-        -- Include spdlog headers and source files
+        targetdir "../bin/%{cfg.buildcfg}"
+
         includedirs { json_dir }
-        files { 
+        files {
             json_dir .. "/**.hpp",
             json_dir .. "/include/single_include/nlohmann/**.hpp"
         }
-    
-        -- Required for static library compilation
+
         defines { "Json_LIB" }
-    
-        -- Platform-specific configurations
-        filter { "system:windows" }
-            defines { "_CRT_SECURE_NO_WARNINGS" }
-            characterset "Unicode"
-    
-        filter { "configurations:Debug" }
-            symbols "On"
-    
-        filter { "configurations:Release" }
-            optimize "On"
-        
+
         filter "action:vs*"
+            defines{"_CRT_SECURE_NO_WARNINGS"}
+            characterset "Unicode"
             buildoptions { "/Zc:__cplusplus", "/utf-8" }
+
+        filter{}

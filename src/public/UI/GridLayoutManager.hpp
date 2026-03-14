@@ -57,7 +57,7 @@ public:
 	
 	virtual bool UnregisterDisplay(SoftObjectPath<IObject> display) override;
 
-	virtual void Tick(float DeltaTime) override {};
+	virtual void Tick(float DeltaTime) override;
 	
 	virtual void UpdateLayout() override;
 

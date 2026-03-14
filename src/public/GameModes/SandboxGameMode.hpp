@@ -47,4 +47,6 @@ protected:
 	SoftObjectPath<PlayerUI> m_PlayerUI;
 	
 	std::list<SoftObjectPath<Display>> m_AllDisplays;
+
+
 };

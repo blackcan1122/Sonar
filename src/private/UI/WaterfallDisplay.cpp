@@ -41,7 +41,6 @@ Waterfall::~Waterfall()
 
 void Waterfall::Tick(float DeltaTime) 
 {
-    // Handle resize interaction from base class
     Super::Tick(DeltaTime);
 
     auto CurrentWorld = GetOutter()->GetWorld().TryLoad();
@@ -51,9 +50,6 @@ void Waterfall::Tick(float DeltaTime)
         m_CurrentAmbientLevel = CurrentWorld->GetAmbientLevel();
     }
 
-    // change to always accumulate data and process them, no matter how many lines we shift
-    // but reset the sampled data when we shift
-
     if (InDestruction.load())
     {
         return;
@@ -61,7 +57,6 @@ void Waterfall::Tick(float DeltaTime)
 
     auto Signals = CurrentWorld->GetSignals();
 
-    // Scale ambient data to match buffer width
     int BufferWidth = static_cast<int>(FrontBuffer->m_Width);
     int SourceSize = static_cast<int>(m_CurrentAmbientLevel.size());
     
@@ -71,22 +66,18 @@ void Waterfall::Tick(float DeltaTime)
         m_AccumulatedSignals.resize(BufferWidth, 0);
     }
     
-    // Interpolate/scale source data to buffer width
     if (SourceSize > 0)
     {
         #pragma omp parallel for num_threads(4)
         for (int DestX = 0; DestX < BufferWidth; ++DestX)
         {
-            // Map destination pixel to source sample using linear interpolation
             float SrcIndexF = (static_cast<float>(DestX) / BufferWidth) * SourceSize;
             int SrcIndex = static_cast<int>(SrcIndexF);
             float Frac = SrcIndexF - SrcIndex;
             
-            // Clamp to valid range
             int SrcIndex0 = std::min(SrcIndex, SourceSize - 1);
             int SrcIndex1 = std::min(SrcIndex + 1, SourceSize - 1);
             
-            // Linear interpolation between samples
             int Value = static_cast<int>(
                 m_CurrentAmbientLevel[SrcIndex0] * (1.0f - Frac) + 
                 m_CurrentAmbientLevel[SrcIndex1] * Frac
@@ -121,30 +112,12 @@ auto PlayerPtr = AssignedPlayer.TryLoad();
             int CenterPixel = static_cast<int>(NormalizedBearing * BufferWidth);
             
             // Calculate signal intensity
-            float BaseIntensity = std::clamp(static_cast<float>(Signal.Strength), 0.0f, 255.0f);
+            float BaseIntensity = std::clamp(static_cast<float>(Signal.Strength * 100), 0.0f, 255.0f);
             
             // Spread signal 6 pixels to each side (12 pixel total width)
             int HalfWidth = 2;
             
-            int StartPixel = std::clamp(CenterPixel - HalfWidth, 0, BufferWidth - 1);
-            int EndPixel = std::clamp(CenterPixel + HalfWidth + 1, 0, BufferWidth);
-            
-            for (int X = StartPixel; X < EndPixel; ++X)
-            {
-                // Calculate distance from center (0.0 at center, 1.0 at edge)
-                float DistFromCenter = std::abs(static_cast<float>(X - CenterPixel)) / static_cast<float>(HalfWidth);
-                
-                // Steep falloff using higher power - strong in center, drops sharply at edges
-                // Using x^4 curve: stays high near center, drops steeply near edges
-                float Falloff = 1.0f - (DistFromCenter * DistFromCenter * DistFromCenter * DistFromCenter);
-                Falloff = std::max(0.0f, Falloff);
-                
-                // Add slight noise variation for realism
-                float Noise = 0.85f + 0.15f * (static_cast<float>((X * 7919 + Counter * 104729) % 1000) / 1000.0f);
-                
-                int Intensity = static_cast<int>(BaseIntensity * Falloff * Noise);
-                m_AccumulatedSignals[X] += Intensity;
-            }
+            m_AccumulatedSignals[CenterPixel] += BaseIntensity;
         }
     }
     ++Counter;
@@ -259,7 +232,17 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
     {
         return;
     }
-    
+
+    // During active resize drag, only scale visually without reallocating buffers.
+    // DrawTexturePro in RenderToMainBuffer will stretch the existing texture.
+    if (bIsResizing)
+    {
+        DestinationRect.width = static_cast<float>(NewWidth);
+        DestinationRect.height = static_cast<float>(NewHeight);
+        return;
+    }
+
+    // Full resize reallocate buffers and perform bilinear interpolation
     if (WorkerFuture.valid())
     {
         WorkerFuture.wait();
@@ -270,35 +253,54 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
     Image oldImage = LoadImageFromTexture(FrontTexture);
     int oldWidth = oldImage.width;
     int oldHeight = oldImage.height;
+    const Color* oldPixels = static_cast<const Color*>(oldImage.data);
 
-    // Unload old texture
     UnloadTexture(FrontTexture);
 
     FrontBuffer = std::make_shared<PixelBuffer>(NewWidth, NewHeight);
     BackBuffer = std::make_shared<PixelBuffer>(NewWidth, NewHeight);
 
+    PixelData* frontData = FrontBuffer->PixelArray.data();
+
+    auto lerp = [](uint8_t a, uint8_t b, float t) -> uint8_t {
+        return static_cast<uint8_t>(a * (1.0f - t) + b * t);
+    };
+
+    std::vector<int> oldX0Table(NewWidth);
+    std::vector<int> oldX1Table(NewWidth);
+    std::vector<float> xFracTable(NewWidth);
+    
+    for (int newX = 0; newX < NewWidth; ++newX)
+    {
+        float oldXf = (static_cast<float>(newX) / NewWidth) * oldWidth;
+        int oldX0 = std::min(static_cast<int>(oldXf), oldWidth - 1);
+        oldX0Table[newX] = oldX0;
+        oldX1Table[newX] = std::min(oldX0 + 1, oldWidth - 1);
+        xFracTable[newX] = oldXf - oldX0;
+    }
+
+    #pragma omp parallel for num_threads(4)
     for (int newY = 0; newY < NewHeight; ++newY) 
     {
         float oldYf = (static_cast<float>(newY) / NewHeight) * oldHeight;
         int oldY0 = std::min(static_cast<int>(oldYf), oldHeight - 1);
         int oldY1 = std::min(oldY0 + 1, oldHeight - 1);
         float yFrac = oldYf - oldY0;
+
+        const Color* row0 = oldPixels + oldY0 * oldWidth;
+        const Color* row1 = oldPixels + oldY1 * oldWidth;
+        int rowOffset = newY * NewWidth;
         
         for (int newX = 0; newX < NewWidth; ++newX) 
         {
-            float oldXf = (static_cast<float>(newX) / NewWidth) * oldWidth;
-            int oldX0 = std::min(static_cast<int>(oldXf), oldWidth - 1);
-            int oldX1 = std::min(oldX0 + 1, oldWidth - 1);
-            float xFrac = oldXf - oldX0;
-            
-            Color c00 = GetImageColor(oldImage, oldX0, oldY0);
-            Color c10 = GetImageColor(oldImage, oldX1, oldY0);
-            Color c01 = GetImageColor(oldImage, oldX0, oldY1);
-            Color c11 = GetImageColor(oldImage, oldX1, oldY1);
-            
-            auto lerp = [](uint8_t a, uint8_t b, float t) -> uint8_t {
-                return static_cast<uint8_t>(a * (1.0f - t) + b * t);
-            };
+            int x0 = oldX0Table[newX];
+            int x1 = oldX1Table[newX];
+            float xFrac = xFracTable[newX];
+
+            const Color& c00 = row0[x0];
+            const Color& c10 = row0[x1];
+            const Color& c01 = row1[x0];
+            const Color& c11 = row1[x1];
             
             uint8_t r0 = lerp(c00.r, c10.r, xFrac);
             uint8_t r1 = lerp(c01.r, c11.r, xFrac);
@@ -307,13 +309,11 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
             uint8_t b0 = lerp(c00.b, c10.b, xFrac);
             uint8_t b1 = lerp(c01.b, c11.b, xFrac);
             
-            PixelData result;
+            PixelData& result = frontData[rowOffset + newX];
             result.R = lerp(r0, r1, yFrac);
             result.G = lerp(g0, g1, yFrac);
             result.B = lerp(b0, b1, yFrac);
             result.A = 255;
-            
-            (*FrontBuffer)[newY * NewWidth + newX] = result;
         }
     }
     
@@ -337,9 +337,12 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
     
     Super::ResizeDisplay(NewWidth, NewHeight);
     
+#if DEBUG
+
     int Size = (FrontBuffer->m_Width * FrontBuffer->m_Height * sizeof(PixelData)) / 1024;
     LOG_INFO(l_RESOURCES, TEXT("Resized Waterfall to: {} x {} ({} KB)", 
         NewWidth, NewHeight, Size));
+#endif
 }
 
 void Waterfall::AssignPlayer(SoftObjectPath<Player> inPlayer)

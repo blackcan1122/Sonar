@@ -70,6 +70,8 @@ GameInstance::GameInstance(WindowProperties Properties)
 	InitLogger();
 	spdlog::flush_every(std::chrono::milliseconds(10));
 	LOG_INFO(l_GAME_INSTANCE, TEXT("GameInstance Initialized"));
+	LOG_INFO(l_GAME_INSTANCE, TEXT("sizeof std::string: {}", (sizeof(std::string))));
+
 	
 	SetTraceLogCallback(&GameInstance::RedirectTraceLog);
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Base/Core.h"
+#include "Base/Macros.h"
 
 class EventDispatcher;
 
@@ -59,7 +60,6 @@ public:
 protected:
 
 	Vector2 m_Position = { 0,0 };
-
 	EXPOSE_PROPERTY(Vector2, m_Position);
 
 	Vector2 m_Velocity = { 0,0 };

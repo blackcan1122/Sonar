@@ -1,5 +1,4 @@
 #pragma once
-#include "Base/Core.h"
 
 // Right now we will only use DefaultTick and Rendering and MAX
 enum class ETickGroup : uint8_t
