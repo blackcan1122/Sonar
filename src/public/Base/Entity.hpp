@@ -60,7 +60,7 @@ public:
 protected:
 
 	Vector2 m_Position = { 0,0 };
-	EXPOSE_PROPERTY(Vector2, m_Position);
+	//EXPOSE_PROPERTY(Vector2, m_Position);
 
 	Vector2 m_Velocity = { 0,0 };
 	NavalUnits::Knot m_CurrentKnots = 0.f;
@@ -84,7 +84,7 @@ protected:
 	float m_AccelerationRate = 2.f;
 	float m_DampeningRate = 0.01f;
 
-	EXPOSE_FLOAT(m_AccelerationRate);
+	//EXPOSE_FLOAT(m_AccelerationRate);
 
 	float m_SpeedChangeDelay = 0.2f;
 	float m_SpeedChangeTimer = 0.0f;

@@ -109,79 +109,11 @@ void SandboxGameMode::Update()
 
 		if (IsKeyPressed(KEY_T))
 		{
+			for (auto prop : Player::StaticClass()->GetAllProperties())
 			{
-				auto player = PlayerOne.TryLoad().get();
-
-				// Direct address
-				void* direct = player->GetDisplayNamePtr();
-
-				// Reflected address
-				auto prop = IObject::StaticClass()->FindProperty("m_DisplayName");
-				void* reflected = prop->GetValuePtr(player);
-
-				std::cout << "direct:    " << direct << std::endl;
-				std::cout << "reflected: " << reflected << std::endl;
-				std::cout << "match: " << (direct == reflected) << std::endl;
-
-				Player* p = PlayerOne.TryLoad().get();
-				IObject* i = p;  // typed cast — compiler adjusts
-
-				std::cout << "Player* : " << (void*)p << std::endl;
-				std::cout << "IObject*: " << (void*)i << std::endl;
-
-				// Crack open the member pointer offset directly
-				auto* sProp = static_cast<SProperty<IObject, std::string>*>(prop);
-
-				union {
-					std::string IObject::* mp;
-					ptrdiff_t offset;
-				} u;
-				u.mp = &IObject::m_DisplayName;
-				std::cout << "m_DisplayName member pointer offset: " << u.offset << std::endl;
-
-				u.mp = &IObject::m_Name;
-				std::cout << "m_Name member pointer offset: " << u.offset << std::endl;
-
-				IObject stackObj;
-				std::cout << "sizeof IObject: " << sizeof(IObject) << std::endl;
-				std::cout << "offsetof m_Name: " << offsetof(IObject, m_Name) << std::endl;
-				std::cout << "offsetof m_DisplayName: " << offsetof(IObject, m_DisplayName) << std::endl;
-
-				std::cout << "offsetof m_TickGroup: " << offsetof(IObject, m_TickGroup) << std::endl;
-				std::cout << "offsetof bIsMarkedForDestruction: " << offsetof(IObject, bIsMarkedForDestruction) << std::endl;
+				std::cout << prop->PropertyName << std::endl;
 			}
-			{
-				auto prop = IObject::StaticClass()->FindProperty("m_DisplayName");
-				auto* sProp = static_cast<SProperty<IObject, std::string>*>(prop);
-
-				// Print the stored offset
-				std::cout << "stored m_Offset: " << sProp->m_Offset << std::endl;
-
-				// Print what it should be
-				IObject temp;
-				char* base = (char*)&temp;
-				std::cout << "actual offset: " << ((char*)&temp.m_DisplayName - base) << std::endl;
-
-			}
-
-			//{
-			//	auto prop = IObject::StaticClass()->FindProperty("m_DisplayName");
-			//	auto* sProp = static_cast<SProperty<IObject, std::string>*>(prop);
-
-			//	// Print the raw bytes of MemberPtr
-			//	unsigned char* mp = reinterpret_cast<unsigned char*>(&sProp->MemberPtr);
-			//	std::cout << "MemberPtr raw bytes: ";
-			//	for (int i = 0; i < sizeof(sProp->MemberPtr); i++)
-			//		std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)mp[i] << " ";
-			//	std::cout << std::endl;
-			//	std::cout << "MemberPtr size: " << sizeof(sProp->MemberPtr) << std::endl;
-			//}
-			//{
-			//	IObject temp;
-			//	char* base = (char*)&temp;
-			//	std::cout << "runtime offset of m_DisplayName: "
-			//		<< ((char*)&temp.m_DisplayName - base) << std::endl;
-			//}
+			Player::StaticClass()->SetPropertyValue("m_DisplayName", PlayerOne.TryLoad().get(), std::string("FIIICKER"));
 		}
 
 		if (IsKeyPressed(KEY_L))

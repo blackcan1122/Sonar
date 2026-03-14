@@ -116,16 +116,22 @@ public: \
     virtual SClass* GetStaticClass() override { return StaticClass(); } \
     static SClass* StaticClass() { \
         static SClass instance(Parent::StaticClass(), #Base); \
+        RegisterReflection();
         return &instance; \
     } \
+    static void RegisterReflection(); \
 private:
 
 #define ROOTBODY(Base) \
 private: \
-	static inline SClass m_SClass = SClass(nullptr, #Base); \
+    using ThisClass = Base; \
 public: \
-    virtual SClass* GetStaticClass() { return &m_SClass; } \
-    static SClass* StaticClass() { return  &m_SClass; } \
+    virtual SClass* GetStaticClass() { return StaticClass(); } \
+    static SClass* StaticClass() { \
+        static SClass instance(nullptr, #Base); \
+        return &instance; \
+    } \
+    static void RegisterReflection(); \
 private:
 
 // Macro for intermediate CRTP base classes

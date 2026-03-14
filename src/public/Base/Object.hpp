@@ -52,13 +52,18 @@ private:
 	using ThisClass = IObject;
 
 public:
+	static void RegisterReflection(); // ← manual declaration
+
 	using EventCallback = std::function<void(std::shared_ptr<IEvent>)>;
 
 	virtual SClass* GetStaticClass() { return StaticClass(); }
 	static SClass* StaticClass() {
 		static SClass instance(nullptr, "IObject");
+		RegisterReflection();
 		return &instance;
 	}
+
+
 
 	IObject() = default;
 	//~IObject();
@@ -113,7 +118,8 @@ public:
 	//}
 
 
-
+	std::string m_Name;
+	std::string m_DisplayName = "Unit";
 
 protected:
 
@@ -121,9 +127,7 @@ protected:
 	virtual void OnMouseButtonPressed(MouseButton PressedKey, Vector2 MousePosition) {};
 
 
-	std::string m_Name;
-	std::string m_DisplayName = "Unit";
-	EXPOSE_STRING(m_DisplayName);
+
 
 	TickGroup m_TickGroup{ ETickGroup::DefaultTick };
 	bool bIsMarkedForDestruction = false;
@@ -149,8 +153,11 @@ private:
 public:
 	using Super = IObject;
 	virtual SClass* GetStaticClass() override { return StaticClass(); }
-	static SClass* StaticClass() {
+	static SClass* StaticClass() 
+	{
 		static SClass instance(IObject::StaticClass(), "Object");
+		RegisterReflection();
 		return &instance;
 	}
+	static void RegisterReflection();
 };

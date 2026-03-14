@@ -112,3 +112,10 @@ bool IObject::IsMarkedForDestruction()
 //		this->m_RegisteredCallbacks.push_back(entry);
 //	}
 //}
+
+BEGIN_REFLECTION(IObject, IObject)
+REFLECT(m_DisplayName, std::string)
+END_REFLECTION
+
+BEGIN_REFLECTION(Object, Object)
+END_REFLECTION

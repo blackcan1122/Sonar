@@ -36,3 +36,24 @@ struct PropertyRegistrar
 #define EXPOSE_PROPERTY(Type, Member) \
     static inline PropertyRegistrar<ThisClass, Type> _reg_##Member{ThisClass::StaticClass(), #Member, &ThisClass::Member}
 
+
+
+#define BEGIN_REFLECTION(Class, ConcreteClass) \
+    void Class::RegisterReflection() { \
+        using _Class = Class; \
+        using _Concrete = ConcreteClass; \
+        static bool done = false; \
+        if (done) return; \
+        done = true; \
+        _Concrete _concrete; \
+        _Class* _tmp = static_cast<_Class*>(&_concrete); \
+        uintptr_t _base = reinterpret_cast<uintptr_t>(_tmp);
+
+#define REFLECT(Member, Type) \
+        _Class::StaticClass()->RegisterProperty( \
+            std::make_unique<SProperty<_Class, Type>>( \
+                #Member, \
+                static_cast<size_t>(reinterpret_cast<uintptr_t>(&_tmp->Member) - _base) \
+            ));
+
+#define END_REFLECTION }
