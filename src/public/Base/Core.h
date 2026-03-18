@@ -116,10 +116,10 @@ public: \
     virtual SClass* GetStaticClass() override { return StaticClass(); } \
     static SClass* StaticClass() { \
         static SClass instance(Parent::StaticClass(), #Base); \
-        RegisterReflection();
+        RegisterReflection(); \
         return &instance; \
     } \
-    static void RegisterReflection(); \
+    static void RegisterReflection() {}; \
 private:
 
 #define ROOTBODY(Base) \

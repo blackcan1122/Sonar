@@ -113,9 +113,9 @@ bool IObject::IsMarkedForDestruction()
 //	}
 //}
 
-BEGIN_REFLECTION(IObject, IObject)
+BEGIN_REFLECTION(IObject)
 REFLECT(m_DisplayName, std::string)
 END_REFLECTION
 
-BEGIN_REFLECTION(Object, Object)
+BEGIN_REFLECTION(Object)
 END_REFLECTION

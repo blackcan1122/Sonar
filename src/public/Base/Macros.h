@@ -38,10 +38,10 @@ struct PropertyRegistrar
 
 
 
-#define BEGIN_REFLECTION(Class, ConcreteClass) \
+#define BEGIN_REFLECTION(Class) \
     void Class::RegisterReflection() { \
         using _Class = Class; \
-        using _Concrete = ConcreteClass; \
+        using _Concrete = Class; \
         static bool done = false; \
         if (done) return; \
         done = true; \
