@@ -95,9 +95,9 @@ void SandboxGameMode::Update()
 			Vector2 Test = prop->GetValue<Vector2>(PlayerOne.TryLoad().get());
 		}
 
-		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), Vector2{ 500, 500 });
-		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), int(20)); // Wrong type test
-		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), true); // Wrong type test
+		//Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), Vector2{ 500, 500 });
+		//Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), int(20)); // Wrong type test
+		//Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), true); // Wrong type test
 
 #if DEBUG
 		DrawFPS(GameInstance::GetInstance()->GetWindowProperties().m_ScreenWidth - 100, 20);
@@ -114,6 +114,11 @@ void SandboxGameMode::Update()
 				std::cout << prop->PropertyName << std::endl;
 			}
 			Player::StaticClass()->SetPropertyValue("m_DisplayName", PlayerOne.TryLoad().get(), std::string("FIIICKER"));
+		}
+
+		if (IsKeyPressed(KEY_Y))
+		{
+			Player::StaticClass()->SetPropertyValue("m_AccelerationRate", PlayerOne.TryLoad().get(), 200.f);
 		}
 
 		if (IsKeyPressed(KEY_L))

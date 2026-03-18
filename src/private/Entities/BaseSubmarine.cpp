@@ -111,3 +111,7 @@ void BaseSubmarine::Turning()
     SetEntityRotation(m_CurrentCourse);
     ConvertAngleToVector();
 }
+
+BEGIN_REFLECTION(BaseSubmarine)
+REFLECT(m_AccelerationRate, float);
+END_REFLECTION

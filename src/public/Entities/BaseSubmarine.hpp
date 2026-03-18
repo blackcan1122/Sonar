@@ -4,7 +4,7 @@
 
 class BaseSubmarine : public Entity
 {
-	AUTOBODY(BaseSubmarine, Entity)
+	AUTOBODY_REFLECT(BaseSubmarine, Entity)
 
 public:
 	virtual void Tick(float DeltaTime) override;
