@@ -189,8 +189,10 @@ void MenuMode::SetUpEvents()
 	// Exit Event
 	UIDispatcher->AddListener("Exit Event", UIEvent::StaticClass(), [this](std::shared_ptr<IEvent> Event) -> void
 		{
+			LOG_INFO(l_GAMEMODE, "Called Exit Event");
 			if (!Event || Event->GetStaticClass() != UIEvent::StaticClass())
 			{
+				LOG_INFO(l_GAMEMODE, "Exit Failed");
 				return;
 			}
 
@@ -199,7 +201,8 @@ void MenuMode::SetUpEvents()
 			auto CastedEvent = std::dynamic_pointer_cast<UIEvent>(Event);
 			if (CastedEvent->Payload == "Exit")
 			{
-				CloseWindow();
+				LOG_INFO(l_GAMEMODE, "Exit Success");
+				GetRuntimeContext().RequestShutdown();
 			}
 		});
 
