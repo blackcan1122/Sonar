@@ -254,7 +254,10 @@ startproject("SONAR")
             buildoptions { "/Zc:__cplusplus", "/utf-8", "/openmp", "/bigobj", "/MP" }
 
         filter "system:windows"
-            defines { "_WIN32" }
+            defines { "_WIN32",
+                      "CloseWindow=RaylibCloseWindow",
+                      "ShowCursor=RaylibShowCursor",
+                      "PlaySound=RaylibPlaySound" }
 
         filter "system:linux"
             buildoptions { "-fopenmp" }
@@ -321,7 +324,11 @@ startproject("SONAR")
             buildoptions { "/Zc:__cplusplus", "/utf-8", "/openmp", "/bigobj", "/MP" }
 
         filter "system:windows"
-            defines { "_WIN32" }
+            defines { "_WIN32",
+                        "CloseWindow=RaylibCloseWindow",
+                        "ShowCursor=RaylibShowCursor",
+                        "PlaySound=RaylibPlaySound" 
+                    }
             -- Keep Windows import libraries AFTER raylib in the final link.
             links { "winmm", "gdi32", "opengl32", "dbghelp", "user32" }
 
