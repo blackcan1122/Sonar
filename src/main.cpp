@@ -40,6 +40,7 @@
 */
 
 #include "Base/GameInstance.h"
+#include "SONAR/GameBootstrap.hpp"
 int main (int args, char* argv[])
 {
 	bool isDebug = false;
@@ -56,6 +57,8 @@ int main (int args, char* argv[])
 		isDebug = true;
 	std::cout << "is Debug" << std::endl;
 #endif
+
+	SONAR::RegisterDefaultGameModes();
 
 	GameInstance::InitGameInstance(WindowProperties(1280, 720, 60, false, isDebug));
 	

@@ -1,3 +1,6 @@
+-- SONAR Premake 5: static SONARENGINE + separate external libraries.
+-- Future goal: private engine dependencies and only SONARENGINE in the game's API.
+
 newoption
 {
     trigger = "graphics",
@@ -119,6 +122,25 @@ raylib_dir = "external/raylib-master"
 spdlog_dir = "external/spdlog-1.x"
 json_dir = "external/nlohmann"
 
+engine_public_headers = {
+    "../src/SONARENGINE/public/**.h",
+    "../src/SONARENGINE/public/**.hpp"
+}
+
+engine_source_files = {
+    "../src/SONARENGINE/private/**.cpp"
+}
+
+game_public_headers = {
+    "../src/SONAR/public/**.h",
+    "../src/SONAR/public/**.hpp"
+}
+
+game_source_files = {
+    "../src/SONAR/main.cpp",
+    "../src/SONAR/private/**.cpp"
+}
+
 workspaceName = 'Sonar'
 baseName = path.getbasename(path.getdirectory(os.getcwd()))
 workspaceName = baseName
@@ -137,8 +159,8 @@ workspace (workspaceName)
     platforms { "x64", "x86", "ARM64"}
 
     files {
-        "../src/shaders/**.vs",
-        "../src/shaders/**.fs"
+        "../src/SONAR/shaders/**.vs",
+        "../src/SONAR/shaders/**.fs"
     }
 
     filter { "files:**.vs", "files:**.fs", "action:vs*" }
@@ -149,6 +171,7 @@ workspace (workspaceName)
 
     -- CRT consistency across ALL projects — fixes std::string size mismatch
     filter "action:vs*"
+        toolset "v143"
         staticruntime "off"
     filter "configurations:Debug or Debug_RGFW"
         runtime "Debug"
@@ -185,9 +208,60 @@ if (downloadRaylib) then
     build_externals()
 end
 
-startproject(workspaceName)
+startproject("SONAR")
 
-    project (workspaceName)
+    project "SONARENGINE"
+        kind "StaticLib"
+        language "C++"
+        location "build_files/"
+        targetdir "../bin/%{cfg.buildcfg}"
+
+        vpaths
+        {
+            ["Header Files/*"] = engine_public_headers,
+            ["Source Files/*"] = engine_source_files,
+        }
+        files(engine_public_headers)
+        files(engine_source_files)
+        files { "../include/**.h", "../include/**.hpp" }
+
+        includedirs { "../src/SONARENGINE" }
+        includedirs { "../src/SONARENGINE/public" }
+        includedirs { "../src/SONARENGINE/private" }
+        -- TODO: Remove the game-header dependency once the engine no longer includes SONAR headers.
+        includedirs { "../src/SONAR/public" }
+        includedirs { "../include" }
+        includedirs { raylib_dir .. "/src" }
+        includedirs { raylib_dir .. "/src/external" }
+        includedirs { raylib_dir .. "/src/external/glfw/include" }
+        includedirs { spdlog_dir .. "/include" }
+        includedirs { json_dir }
+
+        cdialect "C99"
+        cppdialect "C++20"
+        defines { "SPDLOG_COMPILED_LIB" }
+        flags { "ShadowedVariables" }
+        platform_defines()
+
+        -- Build raylib/spdlog before the engine, but DON'T merge their archives
+        -- or any Windows import libraries into SONARENGINE.lib.
+        -- The final application links all of these instead.
+        dependson { "raylib", "spdlog" }
+
+        filter "action:vs*"
+            defines { "_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS" }
+            characterset("Unicode")
+            buildoptions { "/Zc:__cplusplus", "/utf-8", "/openmp", "/bigobj", "/MP" }
+
+        filter "system:windows"
+            defines { "_WIN32" }
+
+        filter "system:linux"
+            buildoptions { "-fopenmp" }
+
+        filter{}
+
+    project "SONAR"
         kind "ConsoleApp"
         location "build_files/"
         targetdir "../bin/%{cfg.buildcfg}"
@@ -207,26 +281,34 @@ startproject(workspaceName)
 
         vpaths
         {
-            ["Header Files/*"] = { "../include/**.h", "../include/**.hpp", "../src/**.h", "../src/**.hpp"},
-            ["Source Files/*"] = {"../src/**.c", "src/**.cpp"},
+            ["Header Files/*"] = game_public_headers,
+            ["Source Files/*"] = game_source_files,
         }
-        files {"../src/**.c", "../src/**.cpp", "../src/**.h", "../src/**.hpp", "../include/**.h", "../include/**.hpp"}
+        files(game_public_headers)
+        files(game_source_files)
+        files { "../include/**.h", "../include/**.hpp" }
 
-        includedirs { "../src" }
-        includedirs { "../src/public" }
-        includedirs { "../src/private" }
-        includedirs { "../include" }
+        includedirs { "../src/SONAR" }
+        includedirs { "../src/SONAR/public" }
+        includedirs { "../src/SONAR/private" }
 
-        links {"raylib"}
+        -- SONARENGINE include directory
+        includedirs { "../src/SONARENGINE/public" }
+
+        -- TEMPORARY: required while SONARENGINE public headers expose raylib etc.
+        -- Remove these third-party includedirs once the engine API hides them.
+        includedirs { raylib_dir .. "/src" }
+        includedirs { raylib_dir .. "/src/external" }
+        includedirs { raylib_dir .. "/src/external/glfw/include" }
+        includedirs { spdlog_dir .. "/include" }
+        includedirs { json_dir }
+
+        -- Resolve the engine's external static dependencies at the EXE link step.
+        -- Order matters for raylib's CloseWindow / PlaySound name collisions on MSVC.
+        links { "SONARENGINE", "raylib", "spdlog" }
 
         cdialect "C99"
         cppdialect "C++20"
-
-        includedirs {raylib_dir .. "/src" }
-        includedirs {raylib_dir .. "/src/external" }
-        includedirs {raylib_dir .. "/src/external/glfw/include" }
-        includedirs {spdlog_dir .. "/include" }
-        includedirs {json_dir}
 
         defines { "SPDLOG_COMPILED_LIB" }
 
@@ -234,20 +316,17 @@ startproject(workspaceName)
         platform_defines()
 
         filter "action:vs*"
-            defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS"}
-            dependson {"raylib", "spdlog", "nlohmann"}
-            links {"raylib.lib", "spdlog.lib"}
-            libdirs { "../bin/%{cfg.buildcfg}" }
-            characterset ("Unicode")
+            defines { "_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS" }
+            characterset "Unicode"
             buildoptions { "/Zc:__cplusplus", "/utf-8", "/openmp", "/bigobj", "/MP" }
 
         filter "system:windows"
-            defines{"_WIN32"}
-            links {"winmm", "gdi32", "opengl32"}
-            libdirs {"../bin/%{cfg.buildcfg}"}
+            defines { "_WIN32" }
+            -- Keep Windows import libraries AFTER raylib in the final link.
+            links { "winmm", "gdi32", "opengl32", "dbghelp", "user32" }
 
         filter "system:linux"
-            links {"spdlog", "pthread", "m", "dl", "rt", "X11"}
+            links { "pthread", "m", "dl", "rt", "X11" }
             kind "ConsoleApp"
             buildoptions { "-fopenmp" }
             linkoptions { "-fopenmp" }
@@ -260,7 +339,7 @@ startproject(workspaceName)
         postbuildcommands {
             '{COPYDIR} "../../resources/" "%{cfg.targetdir}/resources"',
             '{MKDIR} "%{cfg.targetdir}/src"',
-            '{COPYDIR} "../../src/shaders" "%{cfg.targetdir}/src/shaders"'
+            '{COPYDIR} "../../src/SONAR/shaders" "%{cfg.targetdir}/src/shaders"'
         }
 
 
@@ -289,6 +368,15 @@ startproject(workspaceName)
 
         filter { "system:macosx", "files:" .. raylib_dir .. "/src/rglfw.c" }
             compileas "Objective-C"
+
+        filter "system:windows"
+            defines {
+                "CloseWindow=RaylibCloseWindow",
+                "ShowCursor=RaylibShowCursor",
+                "PlaySound=RaylibPlaySound"
+            }
+
+        filter {}
 
         filter { "system:linux" }
             pic "On"

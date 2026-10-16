@@ -29,6 +29,30 @@
                 "Height": 128,
                 "Format": "RGBA"
             }
+        },
+        {
+            "Name": "PlayerMapIcon",
+            "TextureID": 103,
+            "TextureKind": "Texture2D",
+            "TextureNPatchInfo": null,
+            "Path": "imgs/PlayerMap.png",
+            "Properties": {
+                "Width": 256,
+                "Height": 256,
+                "Format": "RGBA"
+            }
+        },
+        {
+            "Name": "ShipMapIcon",
+            "TextureID": 104,
+            "TextureKind": "Texture2D",
+            "TextureNPatchInfo": null,
+            "Path": "imgs/ShipIcon.png",
+            "Properties": {
+                "Width": 256,
+                "Height": 256,
+                "Format": "RGBA"
+            }
         }
     ]
 }
