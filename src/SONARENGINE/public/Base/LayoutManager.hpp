@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Object.hpp"
 #include "Base/EventDispatcher.hpp"
-#include "Base/GridCell.hpp"
+#include "Base/Gridcell.hpp"
 #include "Base/SoftObject.hpp"
 #include <any>
 #include <functional>

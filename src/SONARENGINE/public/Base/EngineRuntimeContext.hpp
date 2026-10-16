@@ -10,6 +10,7 @@ struct TextureResource;
 
 class EngineRuntimeContext
 {
+	friend class GameInstance;
 public:
 	void Configure(
 		EventDispatcher* InUIEventDispatcher,
@@ -57,6 +58,7 @@ public:
 	std::string ResolveResourcePath(const std::string& RelativePath) const { return m_ResourcePathResolver(RelativePath); }
 	std::string ResolveShaderPath(const std::string& ShaderFileName) const { return m_ShaderPathResolver(ShaderFileName); }
 	void RequestGameModeChange(const std::string& GameModeName) const { m_GameModeChangeRequester(GameModeName); }
+	void  RequestShutdown() { m_ShouldShutdown.store(true); }
 
 private:
 	EventDispatcher* m_UIEventDispatcher = nullptr;
@@ -73,4 +75,6 @@ private:
 	std::function<std::string(const std::string&)> m_ResourcePathResolver;
 	std::function<std::string(const std::string&)> m_ShaderPathResolver;
 	std::function<void(const std::string&)> m_GameModeChangeRequester;
+
+	std::atomic<bool> m_ShouldShutdown{ false };
 };

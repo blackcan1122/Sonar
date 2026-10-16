@@ -236,7 +236,7 @@ void GameInstance::GameLoop()
 	std::shared_ptr<MouseEvent> MouseEventDispatch = std::make_shared<MouseEvent>();
 
 	// GAMELOOP //
-	while (!WindowShouldClose())
+	while (!WindowShouldClose() && !GetRuntimeContext().m_ShouldShutdown.load())
 	{
 		int KeyPressed = GetKeyPressed();
 		if (KeyPressed != 0)
@@ -314,8 +314,8 @@ void GameInstance::GameLoop()
 
 	SetTraceLogCallback(nullptr);
 
-	CloseAudioDevice();
-	CloseWindow();
+	RLAPI::CloseAudioDevice();
+	RLAPI::CloseWindow();
 
 	LOG_INFO(l_GAME_INSTANCE, "GameInstance shutdown complete");
 
