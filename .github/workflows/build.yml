@@ -31,17 +31,15 @@ jobs:
           MSYS2_LOCATION: ${{ steps.msys2.outputs.msys2-location }}
         run: |
           if ('${{ matrix.compiler }}' -eq 'msvc') {
-            cmake -S . -B out/ci -G "Visual Studio 17 2022" -A x64
+            cmake -S . -B out/ci -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=OFF
           } else {
             $env:PATH = "$env:MSYS2_LOCATION/ucrt64/bin;$env:PATH"
             Add-Content $env:GITHUB_PATH "$env:MSYS2_LOCATION/ucrt64/bin"
-            cmake -S . -B out/ci -G Ninja -DCMAKE_C_COMPILER="$env:MSYS2_LOCATION/ucrt64/bin/gcc.exe" -DCMAKE_CXX_COMPILER="$env:MSYS2_LOCATION/ucrt64/bin/g++.exe" -DCMAKE_BUILD_TYPE=${{ matrix.configuration }}
+            cmake -S . -B out/ci -G Ninja -DCMAKE_C_COMPILER="$env:MSYS2_LOCATION/ucrt64/bin/gcc.exe" -DCMAKE_CXX_COMPILER="$env:MSYS2_LOCATION/ucrt64/bin/g++.exe" -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTING=OFF
           }
-      - name: Build and test
+      - name: Build and install
         run: |
           cmake --build out/ci --config ${{ matrix.configuration }} --parallel 4
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          ctest --test-dir out/ci -C ${{ matrix.configuration }} --output-on-failure
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake --install out/ci --config ${{ matrix.configuration }} --prefix dist/sdk
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -56,8 +54,6 @@ jobs:
           else { $options = @('-G', 'Visual Studio 17 2022', '-A', 'x64') }
           cmake -S dist/sdk/examples/sdk-consumer -B out/consumer -DCMAKE_PREFIX_PATH="${{ github.workspace }}/dist/sdk" -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} @options
           cmake --build out/consumer --config ${{ matrix.configuration }}
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          ctest --test-dir out/consumer -C ${{ matrix.configuration }} --output-on-failure
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:

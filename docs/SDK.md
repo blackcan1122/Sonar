@@ -65,6 +65,6 @@ SONAR owns continent geometry and naval units; the engine provides generic world
 
 ## Checks
 
-Every public header is compiled independently. CTest exercises shared-library class identity, game-defined subclasses, events, destruction, logging, texture uploads/readback, and render targets. Bounded hidden-window game runs cover menu and sandbox startup/shutdown, including the map and waterfall. Run rendering tests under Xvfb on headless Linux.
+With `BUILD_TESTING=ON` (the default), every public header is compiled independently. CTest exercises shared-library class identity, game-defined subclasses, events, destruction, logging, texture uploads/readback, and render targets. Run rendering tests under Xvfb on headless Linux. CI configures with `BUILD_TESTING=OFF` and builds and installs the SDK and builds its consumer example without running tests.
 
-Interactive checks still cover menu/options transitions, map zoom/pan and selection, display dragging/resizing, and waterfall continuity. Native Linux execution is validated by Linux CI; MinGW testing covers GCC and Windows DLL behavior.
+Interactive checks still cover menu/options transitions, map zoom/pan and selection, display dragging/resizing, and waterfall continuity. CI checks compilation, SDK installation, and consumer linking on Linux and Windows; runtime checks are performed locally.

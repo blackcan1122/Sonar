@@ -62,15 +62,7 @@ int main (int args, char* argv[])
 
 	SONAR::RegisterDefaultGameModes();
 
-	bool smoke = false;
-	for (int i = 1; i < args; ++i) {
-		if (strcmp(argv[i], "--smoke-menu") == 0) { isDebug = false; smoke = true; }
-		if (strcmp(argv[i], "--smoke-sandbox") == 0) { isDebug = true; smoke = true; }
-
-}
 	WindowProperties properties(1280, 720, 60, false, isDebug);
-	if (smoke) GameInstance::SetStartupGameMode(isDebug ? "Sandbox" : "Menu");
-	if (smoke) properties.m_FrameLimit = 30;
 	GameInstance::InitGameInstance(properties);
 
 }

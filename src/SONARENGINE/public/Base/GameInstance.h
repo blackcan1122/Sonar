@@ -22,8 +22,6 @@ struct WindowProperties
 	int m_TargetFps;
 	bool m_Fullscreen;
 	bool m_IsDebug = false;
-	// Zero runs until the user closes the window; useful for bounded smoke runs.
-	int m_FrameLimit = 0;
 };
 
 

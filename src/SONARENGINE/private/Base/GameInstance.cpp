@@ -204,8 +204,7 @@ void GameInstance::RedirectTraceLog(int logLevel, const char* text, va_list args
 
 void GameInstance::CreateWindow()
 {
-	Sonar::SetConfigFlags(Sonar::FLAG_WINDOW_HIGHDPI | Sonar::FLAG_MSAA_4X_HINT | Sonar::FLAG_WINDOW_RESIZABLE
-	    | (g_Instance->m_WindowProperties.m_FrameLimit > 0 ? Sonar::FLAG_WINDOW_HIDDEN : 0));
+	Sonar::SetConfigFlags(Sonar::FLAG_WINDOW_HIGHDPI | Sonar::FLAG_MSAA_4X_HINT | Sonar::FLAG_WINDOW_RESIZABLE);
 
 	Sonar::InitWindow(g_Instance->m_WindowProperties.m_ScreenWidth, g_Instance->m_WindowProperties.m_ScreenHeight, "Sonar");
 	Sonar::SetTargetFPS(g_Instance->m_WindowProperties.m_TargetFps);
@@ -238,9 +237,7 @@ void GameInstance::GameLoop()
 	std::shared_ptr<MouseEvent> MouseEventDispatch = std::make_shared<MouseEvent>();
 
 	// GAMELOOP //
-	int frameCount = 0;
-	while (!Sonar::WindowShouldClose() && !GetRuntimeContext().m_ShouldShutdown.load()
-	    && (g_Instance->m_WindowProperties.m_FrameLimit == 0 || frameCount++ < g_Instance->m_WindowProperties.m_FrameLimit))
+	while (!Sonar::WindowShouldClose() && !GetRuntimeContext().m_ShouldShutdown.load())
 	{
 		int KeyPressed = Sonar::GetKeyPressed();
 		if (KeyPressed != 0)

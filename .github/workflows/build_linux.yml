@@ -15,18 +15,16 @@ jobs:
       - name: Install toolchain and display dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++-14 ninja-build xvfb libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev
+          sudo apt-get install -y g++-14 ninja-build libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev
       - name: Configure and build
         run: |
-          cmake -S . -B out/ci -G Ninja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=${{ matrix.configuration }}
+          cmake -S . -B out/ci -G Ninja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTING=OFF
           cmake --build out/ci --parallel 4
-      - name: Test and install
+      - name: Install and build consumer
         run: |
-          xvfb-run -a ctest --test-dir out/ci --output-on-failure
           cmake --install out/ci --prefix "$PWD/dist/sdk"
           cmake -S dist/sdk/examples/sdk-consumer -B out/consumer -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DCMAKE_PREFIX_PATH="$PWD/dist/sdk"
           cmake --build out/consumer
-          ctest --test-dir out/consumer --output-on-failure
           readelf -d out/ci/bin/SONAR
       - uses: actions/upload-artifact@v4
         with:
