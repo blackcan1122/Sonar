@@ -1,4 +1,4 @@
-﻿/*
+/*
  Copyright (C) [Year] [Your Name]
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,6 +39,8 @@
  Contributions are welcome! Please fork the repository and submit your pull requests.
 */
 
+#include <cstring>
+
 #include "Base/GameInstance.h"
 #include "SONAR/GameBootstrap.hpp"
 int main (int args, char* argv[])
@@ -60,6 +62,15 @@ int main (int args, char* argv[])
 
 	SONAR::RegisterDefaultGameModes();
 
-	GameInstance::InitGameInstance(WindowProperties(1280, 720, 60, false, isDebug));
-	
+	bool smoke = false;
+	for (int i = 1; i < args; ++i) {
+		if (strcmp(argv[i], "--smoke-menu") == 0) { isDebug = false; smoke = true; }
+		if (strcmp(argv[i], "--smoke-sandbox") == 0) { isDebug = true; smoke = true; }
+
+}
+	WindowProperties properties(1280, 720, 60, false, isDebug);
+	if (smoke) GameInstance::SetStartupGameMode(isDebug ? "Sandbox" : "Menu");
+	if (smoke) properties.m_FrameLimit = 30;
+	GameInstance::InitGameInstance(properties);
+
 }

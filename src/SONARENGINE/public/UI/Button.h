@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/BaseUI.h"
 #include "Base/Texture2DWrap.hpp"
-#include "raylib.h"
+#include "Rendering/Graphics.hpp"
 
 #include <functional>
 #include <memory>
@@ -16,29 +16,29 @@ class SONARENGINE_API Button : public BaseUI
 
 public:
 	Button() = default;
-	Button(int X, int Y, int Width, int Height, std::string InitialText, Color BackgroundColor);
+	Button(int X, int Y, int Width, int Height, std::string InitialText, Sonar::Color BackgroundColor);
 	~Button() = default;
 
-	virtual Button& Construct(Rectangle Dim, std::string InitialText, Color BackgroundColor);
-	virtual Button& Construct(Rectangle Dim, std::string InitialText, Color BackgroundColor, bool Rounded, float Roundness);
-	virtual Button& Construct(int X, int Y, int Width, int Height, std::string InitialText, Color BackgroundColor);
-	virtual Button& Construct(int X, int Y, int Width, int Height, std::string InitialText, Color BackgroundColor, bool Rounded, float Roundness);
+	virtual Button& Construct(Sonar::Rectangle Dim, std::string InitialText, Sonar::Color BackgroundColor);
+	virtual Button& Construct(Sonar::Rectangle Dim, std::string InitialText, Sonar::Color BackgroundColor, bool Rounded, float Roundness);
+	virtual Button& Construct(int X, int Y, int Width, int Height, std::string InitialText, Sonar::Color BackgroundColor);
+	virtual Button& Construct(int X, int Y, int Width, int Height, std::string InitialText, Sonar::Color BackgroundColor, bool Rounded, float Roundness);
 
 	virtual Button& SetEventDispatcher(std::shared_ptr<EventDispatcher> UsedDispatcher);
 	virtual Button& SetEventDispatcher(std::weak_ptr<EventDispatcher> UsedDispatcher);
 
 	virtual Button& SetEventPayload(std::string GameModeName);
 
-	virtual Button& UpdateTextPosition(Vector2 NewPos);
+	virtual Button& UpdateTextPosition(Sonar::Vector2 NewPos);
 	virtual Button& CenterText();
 	virtual Button& UpdateTextPosition(int X, int Y);
-	virtual Button& UpdateButtonPosition(Vector2 NewPos);
+	virtual Button& UpdateButtonPosition(Sonar::Vector2 NewPos);
 	virtual Button& UpdateButtonPosition(int X, int Y);
-	virtual Button& UpdateColor(Color NewColor);
+	virtual Button& UpdateColor(Sonar::Color NewColor);
 	virtual Button& UpdateText(std::string NewText);
-	virtual Button& UpdateTextColor(Color NewTextColor);
+	virtual Button& UpdateTextColor(Sonar::Color NewTextColor);
 	virtual Button& UpdateFontSize(int NewFontSize);
-	virtual Button& SetStickyPosition(Vector2 StickyPos);
+	virtual Button& SetStickyPosition(Sonar::Vector2 StickyPos);
 	virtual Button& SetStickyPosition(int X, int Y);
 
 	virtual Button& CalculateRelativePosition();
@@ -46,7 +46,7 @@ public:
 	virtual Button& OnHover(std::function<void(Button* ButtonClass)> callback);
 
 	virtual Button& SetTexture(SharedTexture2D Texture);
-	virtual Button& SetNPatchInfo(NPatchInfo NPatchInfo);
+	virtual Button& SetNPatchInfo(Sonar::NPatchInfo PatchInfo);
 	virtual Button& UseNPatchFeature(bool bUseNpatch);
 	virtual Button& UseTexture(bool bUseTexture);
 
@@ -58,7 +58,7 @@ public:
 private:
 
 	virtual std::shared_ptr<UIEvent> OnClickEvent();
-	virtual bool IsClicked(Vector2 MousePosition, bool IsHovered);
+	virtual bool IsClicked(Sonar::Vector2 MousePosition, bool IsHovered);
 
 	std::shared_ptr<EventDispatcher> UsedEventDispatcher;
 	std::function<void(Button* ButtonClass)> HoverCallback;
@@ -66,19 +66,19 @@ private:
 
 	std::string m_Payload;
 	std::string m_Text;
-	Vector2 TextPosition;
+	Sonar::Vector2 TextPosition;
 	int FontSize = 14;
 	bool m_IsRounded;
 	bool m_WasLastHovered = false;
 	float m_Roundness;
-	Rectangle ButtonDim;
-	Color m_BacgroundColor;
-	Color m_TextColor = BLACK;
+	Sonar::Rectangle ButtonDim;
+	Sonar::Color m_BacgroundColor;
+	Sonar::Color m_TextColor = Sonar::BLACK;
 
-	Vector2 m_StickyPosition = { -1, -1 };
-	Vector2 m_OffsetPosition = { -1, -1 };
+	Sonar::Vector2 m_StickyPosition = { -1, -1 };
+	Sonar::Vector2 m_OffsetPosition = { -1, -1 };
 
-	NPatchInfo m_NpatchTextureInfo;
+	Sonar::NPatchInfo m_NpatchTextureInfo;
 	SharedTexture2D m_Texture;
 	bool m_UseNpatch = false;
 	bool m_UseTexture = false;

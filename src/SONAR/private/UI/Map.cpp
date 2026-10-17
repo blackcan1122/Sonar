@@ -1,7 +1,7 @@
 #include "UI/Map.hpp"
 #include <cstdio>
 #include "Entities/SubmarinePlayer.hpp"
-#include "Base/NavalTypedefs.h"
+#include "SONAR/NavalUnits.hpp"
 #include <iostream>
 #include <format>
 #include "Base/EventDispatcher.hpp"
@@ -14,11 +14,9 @@
 // Countries
 #include "CountryMap/continent_outline.h"
 
-#include "external/glad.h"
-
 #define GridColor {5,18,36,255}
 
-Map::Map(std::string Name, Vector2 Pos)
+Map::Map(std::string Name, Sonar::Vector2 Pos)
     :Display(Pos.x, Pos.y)
 {
     SourceRect.width = Pos.x;
@@ -32,7 +30,7 @@ Map::Map(int X, int Y)
 
 Map::~Map()
 {
-    UnloadShader(shader);
+    Sonar::UnloadShader(shader);
 }
 
 long double Map::GetMinimumZoomLevel() const
@@ -76,28 +74,28 @@ void Map::ClampCameraToWorldBounds()
 
     const float minCameraY = -WORLD_HALF_HEIGHT + halfVisibleHeight;
     const float maxCameraY = WORLD_HALF_HEIGHT - halfVisibleHeight;
-    CameraWorldPosition.y = Clamp(CameraWorldPosition.y, minCameraY, maxCameraY);
+    CameraWorldPosition.y = Sonar::Clamp(CameraWorldPosition.y, minCameraY, maxCameraY);
 }
 
 void Map::Draw()
 {
     // Border and stuff outside of RenderTarget
-    DrawTextureNPatch(BorderTexture, MapBorder->nPatchInfo.value(), BorderRect,{0,0}, 0, WHITE);
+    Sonar::DrawTextureNPatch(BorderTexture, MapBorder->nPatchInfo.value(), BorderRect,{0,0}, 0, Sonar::WHITE);
 
-	Texture2D playerIconTexture = {};
+	Sonar::Texture2D playerIconTexture = {};
 	if (PlayerIcon.isValid())
 	{
 		playerIconTexture = PlayerIcon;
 	}
 
     // RenderTarget 
-    BeginTextureMode(ActiveRenderTarget);
-    ClearBackground(BLACK);
+    BeginDisplayDraw();
+    Sonar::ClearBackground(Sonar::BLACK);
 
     const float gridSpacing = ZoomLevel < 0.01f ? 500000.f : 1000.f;
 
-    Vector2 worldTopLeft = ConvertScreenPosToWorld({ 0, 0 });
-    Vector2 worldBottomRight = ConvertScreenPosToWorld({ DestinationRect.width, DestinationRect.height });
+    Sonar::Vector2 worldTopLeft = ConvertScreenPosToWorld({ 0, 0 });
+    Sonar::Vector2 worldBottomRight = ConvertScreenPosToWorld({ DestinationRect.width, DestinationRect.height });
 
     float startX = std::floor(worldTopLeft.x / gridSpacing) * gridSpacing;
     float endX = std::ceil(worldBottomRight.x / gridSpacing) * gridSpacing;
@@ -107,36 +105,32 @@ void Map::Draw()
     // Draw vertical grid lines
     for (float x = startX; x <= endX; x += gridSpacing)
     {
-        Vector2 worldStart = { x, startY };
-        Vector2 worldEnd = { x, endY };
+        Sonar::Vector2 worldStart = { x, startY };
+        Sonar::Vector2 worldEnd = { x, endY };
 
-        Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
-        Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
+        Sonar::Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
+        Sonar::Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
-        DrawLineEx(screenStart, screenEnd, 2, GridColor);
+        Sonar::DrawLineEx(screenStart, screenEnd, 2, GridColor);
 
     }
 
     // Draw horizontal grid lines
     for (float y = startY; y <= endY; y += gridSpacing)
     {
-        Vector2 worldStart = { startX, y };
-        Vector2 worldEnd = { endX, y };
+        Sonar::Vector2 worldStart = { startX, y };
+        Sonar::Vector2 worldEnd = { endX, y };
 
-        Vector2 screenStart = ConvertWorldToScreenPos(worldStart); 
-        Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
+        Sonar::Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
+        Sonar::Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
-        DrawLineEx(screenStart, screenEnd, 2, GridColor);
+        Sonar::DrawLineEx(screenStart, screenEnd, 2, GridColor);
     }
 
 
     // Custom OpenGL
 
-    rlDrawRenderBatchActive();
-
-    Matrix viewProj = GetOpenGLProjectionMatrix();
-    glUseProgram(shader.id);
-    glUniformMatrix4fv(locMVP, 1, GL_TRUE, &viewProj.m0); // GL_TRUE = transpose for raylib's Matrix
+    Sonar::Matrix viewProj = GetOpenGLProjectionMatrix();
 
     const std::array<float, 3> worldCopyOffsets = {
         -WORLD_WIDTH,
@@ -146,16 +140,12 @@ void Map::Draw()
 
     for (const float worldCopyOffset : worldCopyOffsets)
     {
-        glUniform1f(locWorldOffsetX, worldCopyOffset);
 
-        for (auto& Continent : this->GetOutter()->GetWorld().TryLoad()->Continents)
+        for (auto& Continent : Continents)
         {
-            Continent.RenderBuffer();
+            Continent.RenderBuffer(shader, viewProj, worldCopyOffset);
         }
     }
-
-    glBindVertexArray(0);
-    glUseProgram(rlGetShaderIdDefault());
 
     // Raylib Drawing
 
@@ -174,8 +164,8 @@ void Map::Draw()
 
         std::weak_ptr<Entity> TempObject = std::dynamic_pointer_cast<Entity>(obj);
 
-        Vector2 screenPos = ConvertWorldToScreenPos(TempObject.lock()->GetEntityLocation());
-        Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(GetMousePosition());
+        Sonar::Vector2 screenPos = ConvertWorldToScreenPos(TempObject.lock()->GetEntityLocation());
+        Sonar::Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(Sonar::GetMousePosition());
 
         if (!PlayerIcon.isValid())
         {
@@ -185,19 +175,19 @@ void Map::Draw()
         float scaledWidth = playerIconTexture.width * std::fmax(ZoomLevel, 0.035f);
         float scaledHeight = playerIconTexture.height * std::fmax(ZoomLevel, 0.035f);
 
-        Rectangle destRec = {
+        Sonar::Rectangle destRec = {
             screenPos.x,
             screenPos.y,
             scaledWidth,
             scaledHeight
         };
 
-        Vector2 origin = { scaledWidth / 2, scaledHeight / 2 };
+        Sonar::Vector2 origin = { scaledWidth / 2, scaledHeight / 2 };
 
-        if (CheckCollisionPointCircle(MousePos, screenPos, playerIconTexture.width * ZoomLevel / 2))
+        if (Sonar::CheckCollisionPointCircle(MousePos, screenPos, playerIconTexture.width * ZoomLevel / 2))
         {
             HoveredUnit = obj;
-            if (IsMouseButtonPressed(MouseButton::MOUSE_BUTTON_LEFT))
+            if (Sonar::IsMouseButtonPressed(Sonar::MouseButton::MOUSE_BUTTON_LEFT))
             {
                 FocusedUnit = obj;
                 ClickDataPayload->ClickedObject = obj->GetName();
@@ -228,19 +218,19 @@ void Map::Draw()
                     // BoundingBox Drawing for hover and focused
                     if (HoveredUnit.lock() == obj)
                     {
-                        DrawCircleLinesV(screenPos, playerIconTexture.width * ZoomLevel / 2, YELLOW);
+                        Sonar::DrawCircleLinesV(screenPos, playerIconTexture.width * ZoomLevel / 2, Sonar::YELLOW);
                     }
                     if (FocusedUnit.lock() == obj)
                     {
-                        DrawCircleLinesV(screenPos, playerIconTexture.width * ZoomLevel / 2, PURPLE);
+                        Sonar::DrawCircleLinesV(screenPos, playerIconTexture.width * ZoomLevel / 2, Sonar::PURPLE);
                         std::string CourseString = std::to_string(Submarine->GetEntityRotation());
                         std::string SpeedString = std::to_string(Submarine->GetCurrentSpeed());
-                        DrawText(("Name: " + obj->GetDisplayName()).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y - 24, 12, GREEN);
-                        DrawText(("Course: " + CourseString).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y, 12, GREEN);
-                        DrawText(("Speed: " + SpeedString).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, GREEN);
+                        Sonar::DrawText(("Name: " + obj->GetDisplayName()).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y - 24, 12, Sonar::GREEN);
+                        Sonar::DrawText(("Course: " + CourseString).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y, 12, Sonar::GREEN);
+                        Sonar::DrawText(("Speed: " + SpeedString).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, Sonar::GREEN);
                     }
-                    
-                    DrawTexturePro(
+
+                    Sonar::DrawTexturePro(
                         playerIconTexture,
                         { 0, 0, (float)playerIconTexture.width, (float)playerIconTexture.height }, // Source rectangle
                         destRec,                                                      // Destination rectangle
@@ -255,7 +245,7 @@ void Map::Draw()
         }
     }
     auto Mark = ConvertWorldToScreenPos(MarkedPos);
-    DrawCircle(Mark.x, Mark.y, 10, GREEN);
+    Sonar::DrawCircle(Mark.x, Mark.y, 10, Sonar::GREEN);
 
     for (const auto Index : IndicesPendingKill)
     {
@@ -264,8 +254,7 @@ void Map::Draw()
     IndicesPendingKill.clear();
     ObjectsToDraw.shrink_to_fit();
 
-
-    EndTextureMode();
+    EndDisplayDraw();
 
     // Overlay
 }
@@ -276,8 +265,8 @@ void Map::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
     ClampCameraToWorldBounds();
 
-    const Rectangle DisplayedRect = GetDisplayedRect();
-    
+    const Sonar::Rectangle DisplayedRect = GetDisplayedRect();
+
     if (IsManipulatingDisplay())
     {
         BorderRect = { DisplayedRect.x - 15, DisplayedRect.y - 15, DisplayedRect.width + 30, DisplayedRect.height + 30 };
@@ -285,35 +274,35 @@ void Map::Tick(float DeltaTime)
         RenderToMainBuffer();
         return;
     }
-    
-    if (CheckCollisionPointRec(GetMousePosition(), DestinationRect)) 
+
+    if (Sonar::CheckCollisionPointRec(Sonar::GetMousePosition(), DestinationRect))
     {
         int Multiply = 100.f;
-        if (IsKeyDown(KEY_LEFT_CONTROL))
+        if (Sonar::IsKeyDown(Sonar::KEY_LEFT_CONTROL))
         {
             Multiply = 1.f;
         }
-        ZoomLevel += GetMouseWheelMove() * (0.0001f * Multiply);
+        ZoomLevel += Sonar::GetMouseWheelMove() * (0.0001f * Multiply);
         ClampZoomToWorldBounds();
 
         // Pan
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
+        if (Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
         {
             IsDragging = true;
-            LastMousePosition = GetMousePosition();
+            LastMousePosition = Sonar::GetMousePosition();
         }
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
+        if (Sonar::IsMouseButtonReleased(Sonar::MOUSE_BUTTON_LEFT))
         {
             IsDragging = false;
         }
         if (IsDragging)
         {
-            Vector2 delta = Vector2Scale(
-                Vector2Subtract(GetMousePosition(), LastMousePosition),
+            Sonar::Vector2 delta = Sonar::Vector2Scale(
+                Sonar::Vector2Subtract(Sonar::GetMousePosition(), LastMousePosition),
                 static_cast<float>(1.0L / ZoomLevel));
-            CameraWorldPosition = Vector2Subtract(CameraWorldPosition, delta);
+            CameraWorldPosition = Sonar::Vector2Subtract(CameraWorldPosition, delta);
 
-            LastMousePosition = GetMousePosition();
+            LastMousePosition = Sonar::GetMousePosition();
         }
     }
     else
@@ -343,6 +332,22 @@ void Map::Initialize()
 
 void Map::Init()
 {
+    auto addContinent = [this](const auto& vertices, const auto& offsets, const auto& counts) {
+        RenderBufferArrayLine buffer;
+        buffer.AddVertices(vertices);
+        buffer.AddOffsets(offsets);
+        buffer.AddCounts(counts);
+        buffer.LoadBuffer();
+        Continents.push_back(std::move(buffer));
+    };
+    addContinent(AsiaVertices, AsiaOffsets, AsiaCounts);
+    addContinent(SouthAmericaVertices, SouthAmericaOffsets, SouthAmericaCounts);
+    addContinent(AfricaVertices, AfricaOffsets, AfricaCounts);
+    addContinent(EuropeVertices, EuropeOffsets, EuropeCounts);
+    addContinent(NorthAmericaVertices, NorthAmericaOffsets, NorthAmericaCounts);
+    addContinent(OceaniaVertices, OceaniaOffsets, OceaniaCounts);
+    addContinent(AntarcticaVertices, AntarcticaOffsets, AntarcticaCounts);
+    addContinent(SevenseasVertices, SevenseasOffsets, SevenseasCounts);
     const EngineRuntimeContext& RuntimeContext = GetOutter()->GetRuntimeContext();
     const std::string VertexShaderPath = RuntimeContext.ResolveShaderPath("basic.vs");
     const std::string FragmentShaderPath = RuntimeContext.ResolveShaderPath("basic.fs");
@@ -354,11 +359,9 @@ void Map::Init()
             FragmentShaderPath));
     }
 
-    shader = LoadShader(
+    shader = Sonar::LoadShader(
         VertexShaderPath.empty() ? nullptr : VertexShaderPath.c_str(),
         FragmentShaderPath.empty() ? nullptr : FragmentShaderPath.c_str());
-    locMVP = glGetUniformLocation(shader.id, "uMVP");
-    locWorldOffsetX = glGetUniformLocation(shader.id, "uWorldOffsetX");
     try
     {
         LoadRessources();
@@ -377,7 +380,7 @@ void Map::Init()
 
     RightClickMenu = GetOutter()->NewObject<ContextMenu>();
     RightClickMenu.TryLoad()->SetDisplayName("Right Click Menu");
-   
+
     SpeedMenu = GetOutter()->NewObject<ContextMenu>();
     SpeedMenu.TryLoad()->SetDisplayName("Speed Menu");
 
@@ -437,9 +440,9 @@ void Map::Init()
     NewEntry2.SetDisplayName("Set Course");
     NewEntry2.SetCallback([this](ContextMenuEntry* Self)
         {
-            Vector2 localMouse = ConvertMouseScreenPosToMapScreenPos(RightClickMenu.TryLoad()->MousePosWhenConstructed);
+            Sonar::Vector2 localMouse = ConvertMouseScreenPosToMapScreenPos(RightClickMenu.TryLoad()->MousePosWhenConstructed);
 
-            Vector2 MousePos = ConvertScreenPosToWorld(localMouse);
+            Sonar::Vector2 MousePos = ConvertScreenPosToWorld(localMouse);
 
             MarkedPos = MousePos;
 
@@ -498,10 +501,10 @@ void Map::AddObjectToDraw(std::weak_ptr<IObject> inObject)
     }
 }
 
-void Map::OnKeyStroke(KeyboardKey Key, Vector2 MousePos)
+void Map::OnKeyStroke(Sonar::KeyboardKey Key, Sonar::Vector2 MousePos)
 {
-    if (CheckCollisionPointRec(MousePos, DestinationRect)
-        && Key == KEY_C)
+    if (Sonar::CheckCollisionPointRec(MousePos, DestinationRect)
+        && Key == Sonar::KEY_C)
     {
         CameraWorldPosition = TrackedPlayer.lock()->GetEntityLocation();
         ZoomLevel = 1.f;
@@ -509,21 +512,20 @@ void Map::OnKeyStroke(KeyboardKey Key, Vector2 MousePos)
     }
 }
 
-void Map::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
+void Map::OnMouseButtonPressed(Sonar::MouseButton Key, Sonar::Vector2 MousePos)
 {
-    if (!CheckCollisionPointRec(MousePos, DestinationRect))
+    if (!Sonar::CheckCollisionPointRec(MousePos, DestinationRect))
     {
         return;
     }
 
-
-    if (Key == MOUSE_BUTTON_RIGHT)
+    if (Key == Sonar::MOUSE_BUTTON_RIGHT)
     {
         RightClickMenu.TryLoad()->OnConstruct(MousePos);
     }
 }
 
-Vector2 Map::ConvertWorldToScreenPos(Vector2 worldPos) const
+Sonar::Vector2 Map::ConvertWorldToScreenPos(Sonar::Vector2 worldPos) const
 {
     float relX = worldPos.x - CameraWorldPosition.x;
     float relY = worldPos.y - CameraWorldPosition.y;
@@ -531,14 +533,14 @@ Vector2 Map::ConvertWorldToScreenPos(Vector2 worldPos) const
     relX *= ZoomLevel;
     relY *= ZoomLevel;
 
-    Vector2 screenPos;
+    Sonar::Vector2 screenPos;
     screenPos.x = relX + (DestinationRect.width * 0.5f);
     screenPos.y = relY + (DestinationRect.height * 0.5f);
 
     return screenPos;
 }
 
-Vector2 Map::ConvertScreenPosToWorld(Vector2 VectorToConver) const
+Sonar::Vector2 Map::ConvertScreenPosToWorld(Sonar::Vector2 VectorToConver) const
 {
     // 1) Convert so that (0,0) is at the center:
     float centeredX = VectorToConver.x - (DestinationRect.width * 0.5f);
@@ -553,32 +555,32 @@ Vector2 Map::ConvertScreenPosToWorld(Vector2 VectorToConver) const
     centeredY /= ZoomLevel;
 
     // 4) Translate so that camera-origin returns to its world position:
-    Vector2 worldPos;
+    Sonar::Vector2 worldPos;
     worldPos.x = centeredX + CameraWorldPosition.x;
     worldPos.y = centeredY + CameraWorldPosition.y;
 
     return worldPos;
 }
 
-inline Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters)
+inline Sonar::Vector2 Map::ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Sonar::Vector2 SizeInMeters)
 {
     return { SizeInMeters.x / UsedTexture->width, SizeInMeters.y / UsedTexture->height };
 }
 
-Matrix Map::GetViewProjectionMatrix() const
+Sonar::Matrix Map::GetViewProjectionMatrix() const
 {
-    Matrix S = MatrixScale(ZoomLevel, ZoomLevel, 1);
-    Matrix T = MatrixTranslate(-CameraWorldPosition.x, -CameraWorldPosition.y, 0);
-    Matrix O = MatrixTranslate(
+    Sonar::Matrix S = Sonar::MatrixScale(ZoomLevel, ZoomLevel, 1);
+    Sonar::Matrix T = Sonar::MatrixTranslate(-CameraWorldPosition.x, -CameraWorldPosition.y, 0);
+    Sonar::Matrix O = Sonar::MatrixTranslate(
         DestinationRect.width / 2.0f,
         DestinationRect.height / 2.0f,
         0
     );
 
-    return MatrixMultiply(MatrixMultiply(T, S), O);
+    return Sonar::MatrixMultiply(Sonar::MatrixMultiply(T, S), O);
 }
 
-Matrix Map::GetOpenGLProjectionMatrix() const
+Sonar::Matrix Map::GetOpenGLProjectionMatrix() const
 {
     float visibleWidth = DestinationRect.width / ZoomLevel;
     float visibleHeight = DestinationRect.height / ZoomLevel;
@@ -590,7 +592,7 @@ Matrix Map::GetOpenGLProjectionMatrix() const
     float top = -CameraWorldPosition.y + visibleHeight / 2.0f;
 
     // OpenGL Matrix Projection
-    Matrix projection = { 0 };
+    Sonar::Matrix projection = { 0 };
     projection.m0 = 2.0f / (right - left); // X scale
     projection.m5 = 2.0f / (top - bottom); // Y scale
     projection.m12 = -(right + left) / (right - left); // X translation
@@ -609,8 +611,8 @@ void Map::LoadRessources()
         PlayerIcon = PlayerIconResource->LoadTexture();
         if (PlayerIcon.isValid())
         {
-            Texture2D LoadedPlayerIcon = PlayerIcon;
-            SetTextureFilter(LoadedPlayerIcon, TextureFilter::TEXTURE_FILTER_TRILINEAR);
+            Sonar::Texture2D LoadedPlayerIcon = PlayerIcon;
+            Sonar::SetTextureFilter(LoadedPlayerIcon, Sonar::TextureFilter::TEXTURE_FILTER_TRILINEAR);
         }
     }
     else
@@ -623,8 +625,8 @@ void Map::LoadRessources()
         ShipIcon = ShipIconResource->LoadTexture();
         if (ShipIcon.isValid())
         {
-            Texture2D LoadedShipIcon = ShipIcon;
-            SetTextureFilter(LoadedShipIcon, TextureFilter::TEXTURE_FILTER_TRILINEAR);
+            Sonar::Texture2D LoadedShipIcon = ShipIcon;
+            Sonar::SetTextureFilter(LoadedShipIcon, Sonar::TextureFilter::TEXTURE_FILTER_TRILINEAR);
         }
     }
     else
@@ -637,10 +639,9 @@ void Map::LoadRessources()
     BorderTexture = MapBorder->LoadTexture();
 }
 
-
-inline Vector2 Map::ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos)
+inline Sonar::Vector2 Map::ConvertMouseScreenPosToMapScreenPos(Sonar::Vector2 MouseAbsolutePos)
 {
-    Vector2 DestinationVector = { DestinationRect.x, DestinationRect.y };
-    Vector2 DestinationVectorSize = { DestinationRect.width, DestinationRect.height };
-    return Vector2Clamp(Vector2Subtract(MouseAbsolutePos, DestinationVector), Vector2{ 0,0 }, DestinationVectorSize);
+    Sonar::Vector2 DestinationVector = { DestinationRect.x, DestinationRect.y };
+    Sonar::Vector2 DestinationVectorSize = { DestinationRect.width, DestinationRect.height };
+    return Sonar::Vector2Clamp(Sonar::Vector2Subtract(MouseAbsolutePos, DestinationVector), Sonar::Vector2{ 0,0 }, DestinationVectorSize);
 }

@@ -1,4 +1,5 @@
-﻿#pragma once
+#pragma once
+#include "Base/Export.hpp"
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -43,9 +44,11 @@ public:
     EPropertyType Type;
 };
 
-class SClass
+class SONARENGINE_API SClass
 {
 public:
+    SClass(const SClass&) = delete;
+    SClass& operator=(const SClass&) = delete;
     explicit SClass(const SClass* Parent, const char* Name)
         : ParentClass(Parent), ClassName(Name)
     {
@@ -136,11 +139,8 @@ public:
 
     const std::string ClassName;
 
-    static std::unordered_map<std::string, SClass*>& GetClassRegistry()
-    {
-        static std::unordered_map<std::string, SClass*> Registry;
-        return Registry;
-    }
+    static std::unordered_map<std::string, SClass*>& GetClassRegistry();
+    static SClass* GetOrCreate(const SClass* Parent, const char* Name);
 
 protected:
     const SClass* ParentClass;

@@ -1,6 +1,8 @@
 #pragma once
+#include <cmath>
+#include "Base/Export.hpp"
 #include "Base/Logging.h"
-#include "raylib.h"
+#include "Rendering/Graphics.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -8,8 +10,7 @@
 #include <string_view>
 #include <type_traits>
 
-
-class Helper
+class SONARENGINE_API Helper
 {
 	Helper();
 	~Helper() = default;
@@ -17,10 +18,10 @@ class Helper
 public:
 
 	static float LerpFloat(float& Float1, float& Float2, float Alpha, float AlphaMax, float AlphaMin);
-	static Vector2 LerpVector(Vector2& VectorFirst, Vector2& VectorSecond, float Alpha, float AlphaMax, float AlphaMin);
-	static Vector2 NormalizeVector2(Vector2& VectorToNormalize);
-	static Vector2 Vector2MultiplyFloat(Vector2& Vector, float FloatValue);
-	static bool Vector2IsInRange(Vector2& Vector, Vector2 Min, Vector2 Max);
+	static Sonar::Vector2 LerpVector(Sonar::Vector2& VectorFirst, Sonar::Vector2& VectorSecond, float Alpha, float AlphaMax, float AlphaMin);
+	static Sonar::Vector2 NormalizeVector2(Sonar::Vector2& VectorToNormalize);
+	static Sonar::Vector2 Vector2MultiplyFloat(Sonar::Vector2& Vector, float FloatValue);
+	static bool Vector2IsInRange(Sonar::Vector2& Vector, Sonar::Vector2 Min, Sonar::Vector2 Max);
 
 };
 

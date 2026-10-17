@@ -1,32 +1,56 @@
-name: Premake Windows CI
-
-on:
-  workflow_dispatch
-
+name: Windows SDK
+on: [push, pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: windows-latest
-
+    strategy:
+      matrix:
+        compiler: [msvc, mingw]
+        configuration: [Debug, Release]
     steps:
-      # Step 1: Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: setup-msbuild
-        uses: microsoft/setup-msbuild@v2
-
-      # Step 2: Generate Visual Studio 2022 project files with Premake
-      - name: Generate VS2022 project files
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        id: msys2
+        if: matrix.compiler == 'mingw'
+        with:
+          msystem: UCRT64
+          update: true
+          install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-ninja
+      - name: Configure
+        shell: pwsh
+        env:
+          MSYS2_LOCATION: ${{ steps.msys2.outputs.msys2-location }}
         run: |
-          cd build
-          .\premake5.exe vs2022
-
-      # Step 3: Build Release Configuration
-      - name: Build Release Configuration
+          if ('${{ matrix.compiler }}' -eq 'msvc') {
+            cmake -S . -B out/ci -G "Visual Studio 17 2022" -A x64
+          } else {
+            $env:PATH = "$env:MSYS2_LOCATION/ucrt64/bin;$env:PATH"
+            Add-Content $env:GITHUB_PATH "$env:MSYS2_LOCATION/ucrt64/bin"
+            cmake -S . -B out/ci -G Ninja -DCMAKE_C_COMPILER="$env:MSYS2_LOCATION/ucrt64/bin/gcc.exe" -DCMAKE_CXX_COMPILER="$env:MSYS2_LOCATION/ucrt64/bin/g++.exe" -DCMAKE_BUILD_TYPE=${{ matrix.configuration }}
+          }
+      - name: Build and test
         run: |
-          msbuild Sonar.sln /p:Configuration=Release
-
-      # Step 4: Build Debug Configuration
-      - name: Build Debug Configuration
+          cmake --build out/ci --config ${{ matrix.configuration }} --parallel 4
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir out/ci -C ${{ matrix.configuration }} --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --install out/ci --config ${{ matrix.configuration }} --prefix dist/sdk
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build installed consumer
+        shell: pwsh
+        env:
+          MSYS2_LOCATION: ${{ steps.msys2.outputs.msys2-location }}
         run: |
-          msbuild Sonar.sln /p:Configuration=Debug
+          $env:PATH = "${{ github.workspace }}/dist/sdk/bin;$env:PATH"
+          $options = @()
+          if ('${{ matrix.compiler }}' -eq 'mingw') { $options = @('-G', 'Ninja', "-DCMAKE_CXX_COMPILER=$env:MSYS2_LOCATION/ucrt64/bin/g++.exe") }
+          else { $options = @('-G', 'Visual Studio 17 2022', '-A', 'x64') }
+          cmake -S dist/sdk/examples/sdk-consumer -B out/consumer -DCMAKE_PREFIX_PATH="${{ github.workspace }}/dist/sdk" -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} @options
+          cmake --build out/consumer --config ${{ matrix.configuration }}
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir out/consumer -C ${{ matrix.configuration }} --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdk-windows-${{ matrix.compiler }}-${{ matrix.configuration }}
+          path: dist/sdk

@@ -1,36 +1,30 @@
-name: Premake Linux CI
-
-on:
-  workflow_dispatch:
-
+name: Linux SDK
+on: [push, pull_request, workflow_dispatch]
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install dependencies
+      - uses: actions/checkout@v4
+      - name: Install toolchain and display dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev \
-            libxi-dev libgl1-mesa-dev libglu1-mesa-dev
-
-      - name: Setup Premake
-        uses: abel0b/setup-premake@v2.4
-        with:
-          version: "5.0.0-beta6"
-
-      - name: Generate GNU Makefiles
+          sudo apt-get install -y g++-14 ninja-build xvfb libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev
+      - name: Configure and build
         run: |
-          cd build
-          premake5 gmake2
-
-      - name: Build Release Configuration
-        run: make config=release_x64
-
-      - name: Build Debug Configuration
-        run: make config=debug_x64
+          cmake -S . -B out/ci -G Ninja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=${{ matrix.configuration }}
+          cmake --build out/ci --parallel 4
+      - name: Test and install
+        run: |
+          xvfb-run -a ctest --test-dir out/ci --output-on-failure
+          cmake --install out/ci --prefix "$PWD/dist/sdk"
+          cmake -S dist/sdk/examples/sdk-consumer -B out/consumer -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DCMAKE_PREFIX_PATH="$PWD/dist/sdk"
+          cmake --build out/consumer
+          ctest --test-dir out/consumer --output-on-failure
+          readelf -d out/ci/bin/SONAR
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdk-linux-gcc-${{ matrix.configuration }}
+          path: dist/sdk

@@ -3,7 +3,7 @@
 #include <typeindex>
 
 
-class IEvent
+class SONARENGINE_API IEvent
 {
 	ROOTBODY(IEvent)
 
@@ -14,7 +14,7 @@ public:
 };
 
 
-class Event : public IEvent
+class SONARENGINE_API Event : public IEvent
 {
 	AUTOBODY(Event, IEvent)
 

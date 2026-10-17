@@ -63,7 +63,7 @@ std::vector<int> SignalSystem::CreateAmbientNoise(int NumberOfData)
 	ReturnArray.resize(NumberOfData);
 	for (int i = 0; i < NumberOfData; i++)
 	{
-		ReturnArray[i] = GetRandomValue(0, 40);
+		ReturnArray[i] = Sonar::GetRandomValue(0, 40);
 	}
 	return ReturnArray;
 }

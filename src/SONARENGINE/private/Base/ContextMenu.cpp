@@ -9,7 +9,7 @@ void ContextMenu::Tick(float DeltaTime)
 	}
 }
 
-void ContextMenu::OnConstruct(Vector2 Position)
+void ContextMenu::OnConstruct(Sonar::Vector2 Position)
 {
 	CalculateSize();
 	MousePosWhenConstructed = Position;
@@ -20,7 +20,7 @@ void ContextMenu::OnConstruct(Vector2 Position)
 
 	for (int i = 0; i < MenuEntries.size(); i++)
 	{
-		Rectangle TempRec { Window.x + 10, LastYPos + PaddingY, Window.width, (float)MenuEntries[i].FontSize };
+		Sonar::Rectangle TempRec { Window.x + 10, LastYPos + PaddingY, Window.width, (float)MenuEntries[i].FontSize };
 
 		LastYPos = TempRec.y + TempRec.height + PaddingY;
 
@@ -51,7 +51,7 @@ void ContextMenu::OnDelete()
 	IsConstructed = false;
 }
 
-void ContextMenu::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
+void ContextMenu::OnMouseButtonPressed(Sonar::MouseButton Key, Sonar::Vector2 MousePos)
 {
 	if (!IsConstructed)
 	{
@@ -60,17 +60,17 @@ void ContextMenu::OnMouseButtonPressed(MouseButton Key, Vector2 MousePos)
 
 	if (ElapsedLifetime >= CloseDelaySecs)
 	{
-		if (!CheckCollisionPointRec(MousePos, Window))
+		if (!Sonar::CheckCollisionPointRec(MousePos, Window))
 		{
 			OnDelete();
 			return;
 		}
 	}
-	
-	if (Key == MouseButton::MOUSE_BUTTON_LEFT)
+
+	if (Key == Sonar::MouseButton::MOUSE_BUTTON_LEFT)
 	for (auto& Entry : MenuEntries)
 	{		
-		if (CheckCollisionPointRec(MousePos, Entry.ContextMenuEntryRec))
+		if (Sonar::CheckCollisionPointRec(MousePos, Entry.ContextMenuEntryRec))
 		{
 			Entry.OnClick();
 			if (Entry.CloseOnClick)
@@ -119,20 +119,19 @@ void ContextMenu::CalculateSize()
 
 void ContextMenu::Draw() const
 {
-	DrawRectangle(Window.x, Window.y, Window.width + 20, Window.height, BackgroundColor);
+	Sonar::DrawRectangle(Window.x, Window.y, Window.width + 20, Window.height, BackgroundColor);
 
 	for (auto& Entry : MenuEntries)
 	{
-		if (CheckCollisionPointRec(GetMousePosition(), Entry.ContextMenuEntryRec) == false)
+		if (Sonar::CheckCollisionPointRec(Sonar::GetMousePosition(), Entry.ContextMenuEntryRec) == false)
 		{
-			DrawRectangle(static_cast<int>(Entry.ContextMenuEntryRec.x), static_cast<int>(Entry.ContextMenuEntryRec.y), Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, BLANK);
+			Sonar::DrawRectangle(static_cast<int>(Entry.ContextMenuEntryRec.x), static_cast<int>(Entry.ContextMenuEntryRec.y), Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, Sonar::BLANK);
 		}
 		else
 		{
-			DrawRectangle(static_cast<int>(Entry.ContextMenuEntryRec.x), Entry.ContextMenuEntryRec.y, Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, BLACK);
+			Sonar::DrawRectangle(static_cast<int>(Entry.ContextMenuEntryRec.x), Entry.ContextMenuEntryRec.y, Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, Sonar::BLACK);
 		}
 
-		DrawText(Entry.GetDisplayName().c_str(), Entry.ContextMenuEntryRec.x, Entry.ContextMenuEntryRec.y, Entry.FontSize, GREEN);
+		Sonar::DrawText(Entry.GetDisplayName().c_str(), Entry.ContextMenuEntryRec.x, Entry.ContextMenuEntryRec.y, Entry.FontSize, Sonar::GREEN);
 	}
 }
-

@@ -1,6 +1,6 @@
 #pragma once
 #include "Base/Macros.h"
-#include "external/glad.h"
+#include "Rendering/Graphics.hpp"
 
 #include <utility>
 #include <vector>
@@ -22,95 +22,12 @@ public:
     RenderBufferArrayLine() = default;
     ~RenderBufferArrayLine();
 
-    
-    // Copy Constructor
-    RenderBufferArrayLine(const RenderBufferArrayLine& Other)
-        :Vertices(Other.Vertices),
-        Offsets(Other.Offsets),
-        Counts(Other.Counts)
-    {
-        this->LoadBuffer(); // Important to make sure we got a unique vao and vbo
-    }
 
-    // Copy Assignment
-    RenderBufferArrayLine& operator=(const RenderBufferArrayLine& Other)
-    {
-        if (this == &Other)
-        {
-            return *this;
-        }
+    RenderBufferArrayLine(const RenderBufferArrayLine& Other);
+    RenderBufferArrayLine& operator=(const RenderBufferArrayLine& Other);
+    RenderBufferArrayLine(RenderBufferArrayLine&& Other) noexcept;
+    RenderBufferArrayLine& operator=(RenderBufferArrayLine&& Other) noexcept;
 
-        if (vbo != 0)
-        {
-            glDeleteBuffers(1, &vbo);
-        }
-
-        if (vao != 0)
-        {
-            glDeleteVertexArrays(1, &vao);
-        }
-
-        this->Vertices = Other.Vertices;
-        this->Counts = Other.Counts;
-        this->Offsets = Other.Offsets;
-
-        LoadBuffer();
-
-        return *this;
-    }
-
-
-    // Move Constructor
-    RenderBufferArrayLine(RenderBufferArrayLine&& Other) noexcept
-        :vao(Other.vao),
-         vbo(Other.vbo),
-         DrawCount(Other.DrawCount),
-         Vertices(std::move(Other.Vertices)),
-         Offsets(std::move(Other.Offsets)),
-         Counts(std::move(Other.Counts)),
-         GLOffsets(std::move(Other.GLOffsets)),
-         GLCounts(std::move(Other.GLCounts))
-    {
-        Other.vao = 0;
-        Other.vbo = 0;
-    }
-
-    // Move Assignment
-    RenderBufferArrayLine& operator=(RenderBufferArrayLine&& Other) noexcept
-    {
-        if (this == &Other)
-        {
-            return *this;
-        }
-
-        if (vbo != 0)
-        {
-            glDeleteBuffers(1, &vbo);
-        }
-        if (vao != 0)
-        {
-            glDeleteVertexArrays(1, &vao);
-        }
-
-        this->vao = Other.vao;
-        this->vbo = Other.vbo;
-        this->Vertices = std::move(Other.Vertices);
-        this->Counts = std::move(Other.Counts);
-        this->Offsets = std::move(Other.Offsets);
-        this->GLCounts = std::move(Other.GLCounts);
-        this->GLOffsets = std::move(Other.GLOffsets);
-        this->DrawCount = Other.DrawCount;
-
-        Other.vao = 0;
-        Other.vbo = 0;
-
-
-        return *this;
-    }
-
-    unsigned int vao = 0;
-    unsigned int vbo = 0;
-    
 
     void AddVertices(std::vector<float> inVertex) noexcept
     {
@@ -127,7 +44,7 @@ public:
         Counts = std::move(inCounts);
     }
 
-    void RenderBuffer();
+    void RenderBuffer(const Sonar::Shader& shader, const Sonar::Matrix& projection, float worldOffset);
     void LoadBuffer();
 
 
@@ -138,8 +55,9 @@ private:
     std::vector<unsigned int> Offsets; // The Offsets between the Arrays
     std::vector<unsigned int> Counts; // The Amount of Lines
 
-    GLsizei DrawCount;
-    std::vector<GLint>  GLOffsets;
-    std::vector<GLsizei> GLCounts;
+    unsigned int vao = 0, vbo = 0;
+    int DrawCount = 0;
+    std::vector<int>  GLOffsets;
+    std::vector<int> GLCounts;
 
 };

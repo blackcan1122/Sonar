@@ -1,0 +1,106 @@
+﻿{
+    "version":  "2.0.0",
+    "tasks":  [
+                  {
+                      "label":  "configure: MSVC",
+                      "problemMatcher":  [
+
+                                         ],
+                      "command":  "cmake",
+                      "args":  [
+                                   "--preset",
+                                   "msvc"
+                               ],
+                      "type":  "process"
+                  },
+                  {
+                      "problemMatcher":  [
+                                             "$msCompile"
+                                         ],
+                      "label":  "build: SONAR Debug x64",
+                      "dependsOn":  "configure: MSVC",
+                      "command":  "cmake",
+                      "type":  "process",
+                      "args":  [
+                                   "--build",
+                                   "--preset",
+                                   "msvc-debug"
+                               ],
+                      "group":  {
+                                    "kind":  "build",
+                                    "isDefault":  true
+                                }
+                  },
+                  {
+                      "problemMatcher":  [
+                                             "$msCompile"
+                                         ],
+                      "label":  "build: SONAR Release x64",
+                      "dependsOn":  "configure: MSVC",
+                      "command":  "cmake",
+                      "type":  "process",
+                      "args":  [
+                                   "--build",
+                                   "--preset",
+                                   "msvc-release"
+                               ]
+                  },
+                  {
+                      "problemMatcher":  [
+                                             "$msCompile"
+                                         ],
+                      "label":  "rebuild: SONAR Debug x64",
+                      "dependsOn":  "configure: MSVC",
+                      "command":  "cmake",
+                      "type":  "process",
+                      "args":  [
+                                   "--build",
+                                   "--preset",
+                                   "msvc-debug",
+                                   "--clean-first"
+                               ]
+                  },
+                  {
+                      "label":  "configure: MinGW Debug",
+                      "problemMatcher":  [
+
+                                         ],
+                      "command":  "cmake",
+                      "args":  [
+                                   "--preset",
+                                   "mingw-debug"
+                               ],
+                      "type":  "process"
+                  },
+                  {
+                      "problemMatcher":  [
+                                             "$gcc"
+                                         ],
+                      "label":  "build: MinGW Debug",
+                      "dependsOn":  "configure: MinGW Debug",
+                      "command":  "cmake",
+                      "type":  "process",
+                      "args":  [
+                                   "--build",
+                                   "--preset",
+                                   "mingw-debug"
+                               ]
+                  },
+                  {
+                      "problemMatcher":  [
+
+                                         ],
+                      "label":  "test: MSVC Debug",
+                      "dependsOn":  "build: SONAR Debug x64",
+                      "command":  "ctest",
+                      "type":  "process",
+                      "args":  [
+                                   "--test-dir",
+                                   "out/msvc",
+                                   "-C",
+                                   "Debug",
+                                   "--output-on-failure"
+                               ]
+                  }
+              ]
+}

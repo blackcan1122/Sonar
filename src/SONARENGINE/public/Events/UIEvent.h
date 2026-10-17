@@ -6,7 +6,7 @@
 class BaseUI;
 
 
-class UIEvent : public Event
+class SONARENGINE_API UIEvent : public Event
 {
 	AUTOBODY(UIEvent, Event)
 public:

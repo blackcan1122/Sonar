@@ -5,7 +5,7 @@
 #include <string>
 
 
-class StringEventData : public EventData
+class SONARENGINE_API StringEventData : public EventData
 {
 	AUTOBODY(StringEventData, EventData)
 public:

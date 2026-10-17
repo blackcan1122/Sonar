@@ -1,4 +1,5 @@
-﻿#include "Entities/BaseSubmarine.hpp"
+#include "SONAR/NavalUnits.hpp"
+#include "Entities/BaseSubmarine.hpp"
 #include "Base/EngineRuntimeContext.hpp"
 #include "Base/EventDispatcher.hpp"
 #include "Base/GameMode.h"
@@ -102,10 +103,10 @@ void BaseSubmarine::Accel(float Deltatime)
     float speedMPS = NavalUnits::KnotToMetersPerSecond(m_CurrentKnots);
 
     // Calculate displacement vector (speed * deltaTime gives movement in meters for this frame)
-    Vector2 displacement = Vector2Scale(GetFacingVector(), speedMPS * Deltatime);
+    Sonar::Vector2 displacement = Sonar::Vector2Scale(GetFacingVector(), speedMPS * Deltatime);
 
     // Update the submarine's position.
-    SetEntityLocation(Vector2Add(GetEntityLocation(), displacement));
+    SetEntityLocation(Sonar::Vector2Add(GetEntityLocation(), displacement));
 }
 
 void BaseSubmarine::Turning()

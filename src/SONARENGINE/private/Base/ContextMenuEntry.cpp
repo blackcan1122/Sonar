@@ -7,7 +7,7 @@ void ContextMenuEntry::Construct()
 	{
 		LOG_ERROR(l_DEFAULT, SONAR_FMT("Missing Display Name for Context Menu. Should be Changed"));
 	}
-	MeasuredText =  MeasureText(GetDisplayName().c_str(), FontSize);
+	MeasuredText =  Sonar::MeasureText(GetDisplayName().c_str(), FontSize);
 }
 
 void ContextMenuEntry::OnClick()

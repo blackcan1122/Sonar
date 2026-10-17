@@ -23,7 +23,7 @@ public:
 	std::shared_ptr<TextInputBox> DepthBox;
 	std::shared_ptr<TextInputBox> NameBox;
 
-	void SetPosition(Vector2 NewPos);
+	void SetPosition(Sonar::Vector2 NewPos);
 	void SetNewPlayer(SoftObjectPath<SubmarinePlayer> NewPlayer);
 	virtual void Tick(float DeltaTime) override;
 	virtual void Draw();
@@ -33,7 +33,7 @@ private:
 	unsigned int Course = 0;
 	int Speed = 0;
 	unsigned int Depth = 0;
-	Vector2 m_Position = { 0,0 };
+	Sonar::Vector2 m_Position = { 0,0 };
 
 
 };

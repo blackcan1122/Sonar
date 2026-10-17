@@ -2,7 +2,7 @@
 #include "Base/GameMode.h"
 #include "Entities/SubmarinePlayer.hpp"
 #include "SONAR/SignalSystem.hpp"
-#include "raylib.h"
+#include "Rendering/Graphics.hpp"
 #include <chrono>
 #include <string>
 #include "omp.h"
@@ -16,9 +16,9 @@ Waterfall::Waterfall(int Width, int Height, int TimeFrame)
     BackBuffer = std::make_shared<PixelBuffer>(Width, Height);
 
     // Create textures with initial data
-    Image frontImg = GenImageColor(Width, Height, BLACK);
-    FrontTexture = LoadTextureFromImage(frontImg);
-    UnloadImage(frontImg);
+    Sonar::Image frontImg = Sonar::GenImageColor(Width, Height, Sonar::BLACK);
+    FrontTexture = Sonar::LoadTextureFromImage(frontImg);
+    Sonar::UnloadImage(frontImg);
 
     int Size = (FrontBuffer->m_Width * FrontBuffer->m_Height * sizeof(PixelData)) / 1024;
     LOG_INFO(l_RESOURCES, SONAR_FMT("Allocated Waterfall RenderTexture on VRAM with Size: {} x {} and {} Kilobytes", 
@@ -36,7 +36,7 @@ Waterfall::~Waterfall()
     {
         WorkerFuture.wait();
     }
-    UnloadTexture(FrontTexture);
+    Sonar::UnloadTexture(FrontTexture);
 }
 
 void Waterfall::Tick(float DeltaTime) 
@@ -63,13 +63,13 @@ void Waterfall::Tick(float DeltaTime)
 
     int BufferWidth = static_cast<int>(FrontBuffer->m_Width);
     int SourceSize = static_cast<int>(m_CurrentAmbientLevel.size());
-    
+
     if (static_cast<int>(m_AccumulatedSignals.size()) != BufferWidth)
     {
         m_AccumulatedSignals.clear();
         m_AccumulatedSignals.resize(BufferWidth, 0);
     }
-    
+
     if (SourceSize > 0)
     {
         #pragma omp parallel for num_threads(4)
@@ -78,15 +78,15 @@ void Waterfall::Tick(float DeltaTime)
             float SrcIndexF = (static_cast<float>(DestX) / BufferWidth) * SourceSize;
             int SrcIndex = static_cast<int>(SrcIndexF);
             float Frac = SrcIndexF - SrcIndex;
-            
+
             int SrcIndex0 = std::min(SrcIndex, SourceSize - 1);
             int SrcIndex1 = std::min(SrcIndex + 1, SourceSize - 1);
-            
+
             int Value = static_cast<int>(
                 m_CurrentAmbientLevel[SrcIndex0] * (1.0f - Frac) + 
                 m_CurrentAmbientLevel[SrcIndex1] * Frac
             );
-            
+
             m_AccumulatedSignals[DestX] += Value;
         }
     }
@@ -95,32 +95,32 @@ void Waterfall::Tick(float DeltaTime)
 auto PlayerPtr = AssignedPlayer.TryLoad();
     if (PlayerPtr)
     {
-        Vector2 ListenerPos = PlayerPtr->GetEntityLocation();
-        
+        Sonar::Vector2 ListenerPos = PlayerPtr->GetEntityLocation();
+
         for (const auto& Signal : Signals)
         {
-            Vector2 Delta = Signal.SenderPosition - ListenerPos;
+            Sonar::Vector2 Delta = Sonar::Vector2Subtract(Signal.SenderPosition, ListenerPos);
 
             if (Signal.SenderEntity.ToString() == AssignedPlayer.ToString())
             {
                 continue;
             }
-            
+
             // Calculate absolute bearing in degrees (0-360, where 0 is North)
             float AngleRad = std::atan2(-Delta.x, Delta.y);  // -y because screen Y is inverted
-            float AbsoluteBearing = AngleRad * (180.0f / PI);
+            float AbsoluteBearing = AngleRad * (180.0f / Sonar::PI);
             if (AbsoluteBearing < 0) AbsoluteBearing += 360.0f;
-            
+
             // Map absolute bearing (0 to 360) to buffer position (0 to BufferWidth)
             float NormalizedBearing = AbsoluteBearing / 360.0f;
             int CenterPixel = static_cast<int>(NormalizedBearing * BufferWidth);
-            
+
             // Calculate signal intensity
             float BaseIntensity = std::clamp(static_cast<float>(Signal.Strength * 100), 0.0f, 255.0f);
-            
+
             // Spread signal 6 pixels to each side (12 pixel total width)
             int HalfWidth = 2;
-            
+
             m_AccumulatedSignals[CenterPixel] += BaseIntensity;
         }
     }
@@ -136,7 +136,7 @@ auto PlayerPtr = AssignedPlayer.TryLoad();
     if (WorkerDone.load() && RenderReady.load())
     {
         std::swap(FrontBuffer, BackBuffer);
-        UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
+        Sonar::UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
         std::swap(FrontBuffer, BackBuffer);
         RenderReady.store(false);
 
@@ -182,11 +182,11 @@ void Waterfall::ProcessBackBuffer(int LinesToShift, std::vector<int> Accumulated
     }
 
     int BufferWidth = static_cast<int>(BackBuffer->m_Width);
-    
+
     for (int Line = 0; Line < LinesToShift; Line++)
     {
         BackBuffer->ShiftPixelDown();
-        
+
         size_t SignalSize = AverageSignals.empty() ? AccumulatedSamples.size() : AverageSignals.size();
         for (int X = 0; X < BufferWidth; ++X)
         {
@@ -203,12 +203,12 @@ void Waterfall::ProcessBackBuffer(int LinesToShift, std::vector<int> Accumulated
 
 void Waterfall::Draw() 
 {
-    BeginTextureMode(ActiveRenderTarget);
-    ClearBackground(BLACK);
-    DrawTexture(FrontTexture, 0, 0, WHITE);
+    BeginDisplayDraw();
+    Sonar::ClearBackground(Sonar::BLACK);
+    Sonar::DrawTexture(FrontTexture, 0, 0, Sonar::WHITE);
     GenerateBearings();
     GenerateTimeScale();
-    EndTextureMode();
+    EndDisplayDraw();
 }
 
 void Waterfall::MarkForDestruction()
@@ -230,7 +230,7 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
     {
         return;
     }
-    
+
     if (NewWidth == static_cast<int>(GetWidth()) && 
         NewHeight == static_cast<int>(GetHeight()))
     {
@@ -245,12 +245,12 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
 
     WorkerDone.store(false);
 
-    Image oldImage = LoadImageFromTexture(FrontTexture);
+    Sonar::Image oldImage = Sonar::LoadImageFromTexture(FrontTexture);
     int oldWidth = oldImage.width;
     int oldHeight = oldImage.height;
-    const Color* oldPixels = static_cast<const Color*>(oldImage.data);
+    const Sonar::Color* oldPixels = static_cast<const Sonar::Color*>(oldImage.pixels.data());
 
-    UnloadTexture(FrontTexture);
+    Sonar::UnloadTexture(FrontTexture);
 
     FrontBuffer = std::make_shared<PixelBuffer>(NewWidth, NewHeight);
     BackBuffer = std::make_shared<PixelBuffer>(NewWidth, NewHeight);
@@ -264,7 +264,7 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
     std::vector<int> oldX0Table(NewWidth);
     std::vector<int> oldX1Table(NewWidth);
     std::vector<float> xFracTable(NewWidth);
-    
+
     for (int newX = 0; newX < NewWidth; ++newX)
     {
         float oldXf = (static_cast<float>(newX) / NewWidth) * oldWidth;
@@ -282,28 +282,28 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
         int oldY1 = std::min(oldY0 + 1, oldHeight - 1);
         float yFrac = oldYf - oldY0;
 
-        const Color* row0 = oldPixels + oldY0 * oldWidth;
-        const Color* row1 = oldPixels + oldY1 * oldWidth;
+        const Sonar::Color* row0 = oldPixels + oldY0 * oldWidth;
+        const Sonar::Color* row1 = oldPixels + oldY1 * oldWidth;
         int rowOffset = newY * NewWidth;
-        
+
         for (int newX = 0; newX < NewWidth; ++newX) 
         {
             int x0 = oldX0Table[newX];
             int x1 = oldX1Table[newX];
             float xFrac = xFracTable[newX];
 
-            const Color& c00 = row0[x0];
-            const Color& c10 = row0[x1];
-            const Color& c01 = row1[x0];
-            const Color& c11 = row1[x1];
-            
+            const Sonar::Color& c00 = row0[x0];
+            const Sonar::Color& c10 = row0[x1];
+            const Sonar::Color& c01 = row1[x0];
+            const Sonar::Color& c11 = row1[x1];
+
             uint8_t r0 = lerp(c00.r, c10.r, xFrac);
             uint8_t r1 = lerp(c01.r, c11.r, xFrac);
             uint8_t g0 = lerp(c00.g, c10.g, xFrac);
             uint8_t g1 = lerp(c01.g, c11.g, xFrac);
             uint8_t b0 = lerp(c00.b, c10.b, xFrac);
             uint8_t b1 = lerp(c01.b, c11.b, xFrac);
-            
+
             PixelData& result = frontData[rowOffset + newX];
             result.R = lerp(r0, r1, yFrac);
             result.G = lerp(g0, g1, yFrac);
@@ -311,27 +311,27 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
             result.A = 255;
         }
     }
-    
-    UnloadImage(oldImage);
+
+    Sonar::UnloadImage(oldImage);
 
     BackBuffer->PixelArray = FrontBuffer->PixelArray;
-    
-    Image frontImg = GenImageColor(NewWidth, NewHeight, BLACK);
-    FrontTexture = LoadTextureFromImage(frontImg);
-    UnloadImage(frontImg);
-    
-    UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
+
+    Sonar::Image frontImg = Sonar::GenImageColor(NewWidth, NewHeight, Sonar::BLACK);
+    FrontTexture = Sonar::LoadTextureFromImage(frontImg);
+    Sonar::UnloadImage(frontImg);
+
+    Sonar::UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
 
     m_AccumulatedSignals.clear();
     m_AccumulatedSignals.resize(NewWidth, 0);
     Counter = 0;
     AccDelta = 0;
-    
+
     WorkerDone.store(true);
     RenderReady.store(false);
-    
+
     Super::ResizeDisplay(NewWidth, NewHeight);
-    
+
 #if DEBUG
 
     int Size = (FrontBuffer->m_Width * FrontBuffer->m_Height * sizeof(PixelData)) / 1024;
@@ -368,32 +368,32 @@ void Waterfall::GenerateBearings()
 
 
         int bearing = ((static_cast<int>((static_cast<float>(i) / NumberOfLines) * 360 - 180)) + 360) % 360;
-        
+
         if (bearing % MajorBearingStep == 0)
         {
 
             if (i == NumberOfLines)
             {
-                int TextLength = MeasureText(std::to_string(bearing).c_str(), FontSize);
-                DrawText(std::to_string(bearing).c_str(), Pos - TextLength, 20, FontSize, PURPLE);
+                int TextLength = Sonar::MeasureText(std::to_string(bearing).c_str(), FontSize);
+                Sonar::DrawText(std::to_string(bearing).c_str(), Pos - TextLength, 20, FontSize, Sonar::PURPLE);
             }
 
             else if (i == 0)
             {
-                DrawText(std::to_string(bearing).c_str(), Pos, 20, 10, PURPLE);
+                Sonar::DrawText(std::to_string(bearing).c_str(), Pos, 20, 10, Sonar::PURPLE);
             }
             else
             {
-                int TextLength = MeasureText(std::to_string(bearing).c_str(), FontSize);
-                DrawText(std::to_string(bearing).c_str(), Pos - (TextLength / 2), 20, FontSize, PURPLE);
+                int TextLength = Sonar::MeasureText(std::to_string(bearing).c_str(), FontSize);
+                Sonar::DrawText(std::to_string(bearing).c_str(), Pos - (TextLength / 2), 20, FontSize, Sonar::PURPLE);
             }
-            DrawLine(Pos, 0, Pos, 15, PURPLE); // Long line for labeled bearings
+            Sonar::DrawLine(Pos, 0, Pos, 15, Sonar::PURPLE); // Long line for labeled bearings
         }
 
         else 
         {
             // Draw shorter line for minor bearings
-            DrawLine(Pos, 0, Pos, 5, PURPLE);
+            Sonar::DrawLine(Pos, 0, Pos, 5, Sonar::PURPLE);
         }
     }
 }
@@ -403,12 +403,12 @@ void Waterfall::GenerateTimeScale()
     int FontSize = 10;
     int BufferHeight = static_cast<int>(FrontBuffer->m_Height);
     int BufferWidth = static_cast<int>(FrontBuffer->m_Width);
-    
+
     // Determine appropriate time step based on total time frame
     // We want roughly 4-8 major time markers
     float TimeStep;
     const char* UnitSuffix;
-    
+
     if (TimeFrameInSec <= 10)
     {
         // For short timeframes (<=10s), show every 2 seconds
@@ -439,19 +439,19 @@ void Waterfall::GenerateTimeScale()
         TimeStep = 120.0f;
         UnitSuffix = "m";
     }
-    
+
     // Calculate how many markers we need
     int NumMarkers = static_cast<int>(TimeFrameInSec / TimeStep);
-    
+
     // Draw time markers from top (now) to bottom (past)
     for (int i = 0; i <= NumMarkers; i++)
     {
         float TimeValue = i * TimeStep;
         float YPos = (TimeValue / TimeFrameInSec) * BufferHeight;
-        
+
         // Skip if too close to top edge (where bearings are)
         if (YPos < 35) continue;
-        
+
         // Format time label
         char TimeLabel[32];
         if (UnitSuffix[0] == 'm')
@@ -463,20 +463,20 @@ void Waterfall::GenerateTimeScale()
         {
             snprintf(TimeLabel, sizeof(TimeLabel), "-%d%s", static_cast<int>(TimeValue), UnitSuffix);
         }
-        
+
         // Draw horizontal tick line on left side
         bool IsMajor = (static_cast<int>(TimeValue) % static_cast<int>(TimeStep * 2) == 0) || i == 0;
         int TickLength = IsMajor ? 10 : 5;
-        
-        DrawLine(0, static_cast<int>(YPos), TickLength, static_cast<int>(YPos), ORANGE);
-        
+
+        Sonar::DrawLine(0, static_cast<int>(YPos), TickLength, static_cast<int>(YPos), Sonar::ORANGE);
+
         // Draw label for major ticks
         if (IsMajor || NumMarkers <= 6)
         {
-            DrawText(TimeLabel, TickLength + 2, static_cast<int>(YPos) - FontSize / 2, FontSize, ORANGE);
+            Sonar::DrawText(TimeLabel, TickLength + 2, static_cast<int>(YPos) - FontSize / 2, FontSize, Sonar::ORANGE);
         }
-        
+
         // Also draw tick on right side (optional mirror)
-        DrawLine(BufferWidth - TickLength, static_cast<int>(YPos), BufferWidth, static_cast<int>(YPos), ORANGE);
+        Sonar::DrawLine(BufferWidth - TickLength, static_cast<int>(YPos), BufferWidth, static_cast<int>(YPos), Sonar::ORANGE);
     }
 }

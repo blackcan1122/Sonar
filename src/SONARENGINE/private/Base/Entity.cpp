@@ -1,6 +1,6 @@
 #include "Base/Entity.hpp"
 
-#include "raymath.h"
+#include "Rendering/Graphics.hpp"
 
 void Entity::Initialize()
 {
@@ -9,10 +9,10 @@ void Entity::Initialize()
 void Entity::ConvertAngleToVector() 
 {
 	// Rotate around 90, to accomodate for math radians
-	float RadianAngle = (m_Rotation + 90.f) * (PI / 180.f);
+	float RadianAngle = (m_Rotation + 90.f) * (Sonar::PI / 180.f);
 
 	m_FacingVector.x = -cos(RadianAngle);
 	m_FacingVector.y = -sin(RadianAngle);
 
-	m_FacingVector = Vector2Normalize(m_FacingVector);
+	m_FacingVector = Sonar::Vector2Normalize(m_FacingVector);
 }

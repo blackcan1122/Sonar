@@ -22,6 +22,8 @@ struct WindowProperties
 	int m_TargetFps;
 	bool m_Fullscreen;
 	bool m_IsDebug = false;
+	// Zero runs until the user closes the window; useful for bounded smoke runs.
+	int m_FrameLimit = 0;
 };
 
 
@@ -64,7 +66,7 @@ struct WindowProperties
  * Usage:
 	 1. Initialize the game instance:
 		GameInstance::InitGameInstance(WindowProperties(parameters));
- 
+
 	 2. Use `GetInstance()` to retrieve the global instance for accessing features like :
 	-`GetCurrentGameMode()` to access the active game mode.
 	 -`LoadAssetFromSoftObjectPath()` to safely load assets.
@@ -86,7 +88,7 @@ struct WindowProperties
 	-When using std::shared_ptr or SoftObjectPath and SharedTexure2D this will happen automatically, when you allocate memory yourself, you are also responsible for it
 		  -**Event Dispatching * *:
 		 -Use the provided dispatchers for decoupled communication, avoiding direct dependencies between systems.
-		 
+
 */
 
 class SONARENGINE_API GameInstance
@@ -131,7 +133,7 @@ public:
 	static EventDispatcher UIEventDispatcher;
 	static EventDispatcher KeyDispatcher;
 	static EventDispatcher MouseDispatcher;
-  
+
 	static EventDispatcher SaveStateDispatcher;
 	static EventDispatcher AllPurposeDispatcher;
 

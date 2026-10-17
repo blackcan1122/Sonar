@@ -1,13 +1,14 @@
+#include "SONAR/NavalUnits.hpp"
 #include "Entities/NavalEntity.hpp"
 
 #include "Base/Logging.h"
-#include "raymath.h"
+#include "Rendering/Graphics.hpp"
 
-void NavalEntity::MoveEntityToPosition(Vector2 TargetPosition)
+void NavalEntity::MoveEntityToPosition(Sonar::Vector2 TargetPosition)
 {
-	Vector2 Delta = TargetPosition - m_Position;
+	Sonar::Vector2 Delta = Sonar::Vector2Subtract(TargetPosition, m_Position);
 	double AngleRadians = std::atan2(Delta.y, Delta.x);
-	double AngleDeg = AngleRadians * (180.0f / PI);
+	double AngleDeg = AngleRadians * (180.0f / Sonar::PI);
 
 	AngleDeg += 90.0f;
 	AngleDeg = std::fmod(AngleDeg, 360.0f);

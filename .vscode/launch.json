@@ -1,0 +1,24 @@
+﻿{
+    "version":  "0.2.0",
+    "configurations":  [
+                           {
+                               "args":  [
+
+                                        ],
+                               "type":  "cppvsdbg",
+                               "cwd":  "${workspaceFolder}/out/msvc/bin/Debug",
+                               "externalConsole":  false,
+                               "name":  "Launch SONAR (MSVC Debug)",
+                               "stopAtEntry":  false,
+                               "preLaunchTask":  "build: SONAR Debug x64",
+                               "program":  "${workspaceFolder}/out/msvc/bin/Debug/SONAR.exe",
+                               "request":  "launch"
+                           },
+                           {
+                               "processId":  "${command:pickProcess}",
+                               "request":  "attach",
+                               "name":  "Attach to SONAR.exe",
+                               "type":  "cppvsdbg"
+                           }
+                       ]
+}

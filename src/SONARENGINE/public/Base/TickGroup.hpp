@@ -1,4 +1,6 @@
 #pragma once
+#include <cstdint>
+#include "Base/Export.hpp"
 
 // Right now we will only use DefaultTick and Rendering and MAX
 enum class ETickGroup : uint8_t
@@ -12,7 +14,7 @@ enum class ETickGroup : uint8_t
 	MAX					= 1 << 5
 };
 
-class TickGroup
+class SONARENGINE_API TickGroup
 {
 public:
 	TickGroup() = default;

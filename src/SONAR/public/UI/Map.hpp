@@ -1,6 +1,7 @@
-﻿#pragma once
+#pragma once
 
 #include "Base/Core.h"
+#include "Rendering/RenderBufferArrayLine.hpp"
 #include "Base/Texture2DWrap.hpp"
 #include "UI/Display.hpp"
 #include "Events/AllPurposeEvent.h"
@@ -50,7 +51,7 @@ class Map : public Display
 
 public:
 
-	Map(std::string Name, Vector2 Pos);
+	Map(std::string Name, Sonar::Vector2 Pos);
 	Map(int X, int Y);
 
 	virtual ~Map() override;
@@ -68,11 +69,11 @@ public:
 
 	bool IsDragging = false;
 
-	Vector2 LastMousePosition = { 0,0 };
+	Sonar::Vector2 LastMousePosition = { 0,0 };
 
 protected:
-	virtual void OnKeyStroke(KeyboardKey Key, Vector2 MousePos) override;
-	virtual void OnMouseButtonPressed(MouseButton Key, Vector2 MousePos) override;
+	virtual void OnKeyStroke(Sonar::KeyboardKey Key, Sonar::Vector2 MousePos) override;
+	virtual void OnMouseButtonPressed(Sonar::MouseButton Key, Sonar::Vector2 MousePos) override;
 
 
 
@@ -80,20 +81,21 @@ private:
 	static constexpr long double MinMapZoom = 0.00005L;
 	static constexpr long double MaxMapZoom = 10.0L;
 
-	Matrix GetViewProjectionMatrix() const;
-	Matrix GetOpenGLProjectionMatrix() const;
+	Sonar::Matrix GetViewProjectionMatrix() const;
+	Sonar::Matrix GetOpenGLProjectionMatrix() const;
 	long double GetMinimumZoomLevel() const;
 	void ClampZoomToWorldBounds();
 	void ClampCameraToWorldBounds();
 
-	Vector2 MarkedPos = { 0,0 };
+	Sonar::Vector2 MarkedPos = { 0,0 };
 
 	void LoadRessources();
 
-	Shader shader;
+	std::vector<RenderBufferArrayLine> Continents;
+	Sonar::Shader shader;
 	int locMVP;
 	int locWorldOffsetX;
-	Matrix mvp = { 1,0,0,0,
+	Sonar::Matrix mvp = { 1,0,0,0,
 				   0,1,0,0,
 				   0,0,1,0,
 				   0,0,0,1};
@@ -105,10 +107,10 @@ private:
 	TextureResource* MapBorder = nullptr;
 	SharedTexture2D BorderTexture;
 
-	Rectangle BorderRect;
+	Sonar::Rectangle BorderRect;
 
-	Color ColorLookupState[5] = {{0,255,255,255} , GREEN, RED, BLUE, GRAY};
-	Color ColorLookupInteractivity[3] = { BLANK, YELLOW, PURPLE};
+	Sonar::Color ColorLookupState[5] = {{0,255,255,255} , Sonar::GREEN, Sonar::RED, Sonar::BLUE, Sonar::GRAY};
+	Sonar::Color ColorLookupInteractivity[3] = { Sonar::BLANK, Sonar::YELLOW, Sonar::PURPLE};
 
 
 	std::vector<std::pair<std::weak_ptr<Entity>, std::pair<ObjectType, ObjectState>>> ObjectsToDraw;
@@ -117,19 +119,19 @@ private:
 	std::vector<size_t> IndicesPendingKill;
 	long double ZoomLevel = 1.f;
 
-	Vector2 MapOffset = { 0, 0 };			// World-space offset
-	Vector2 CameraWorldPosition = { 0, 0 };			// World Space Position of The Map
+	Sonar::Vector2 MapOffset = { 0, 0 };			// World-space offset
+	Sonar::Vector2 CameraWorldPosition = { 0, 0 };			// World Space Position of The Map
 
 	std::weak_ptr<IObject> FocusedUnit;
 	std::weak_ptr<IObject> HoveredUnit;
 
-	Vector2 ConvertWorldToScreenPos(Vector2 VectorToConver) const;
-	Vector2 ConvertScreenPosToWorld(Vector2 VectorToConver) const;
+	Sonar::Vector2 ConvertWorldToScreenPos(Sonar::Vector2 VectorToConver) const;
+	Sonar::Vector2 ConvertScreenPosToWorld(Sonar::Vector2 VectorToConver) const;
 
-	inline Vector2 ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Vector2 SizeInMeters);
+	inline Sonar::Vector2 ConvertTextureSizeToWorldSize(TextureResource* UsedTexture, Sonar::Vector2 SizeInMeters);
 
 	// Like wtf think of a better name haha
-	Vector2 ConvertMouseScreenPosToMapScreenPos(Vector2 MouseAbsolutePos);
+	Sonar::Vector2 ConvertMouseScreenPosToMapScreenPos(Sonar::Vector2 MouseAbsolutePos);
 
 	std::shared_ptr<AllPurposeEvent> MapClickEvent;
 	std::shared_ptr<MapClickEventData> ClickDataPayload;

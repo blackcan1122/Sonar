@@ -1,5 +1,5 @@
 #pragma once
-#include "raylib.h"
+#include "Rendering/Graphics.hpp"
 #include <string>
 #include "Base/BaseUI.h"
 
@@ -9,8 +9,8 @@ class SONARENGINE_API TextInputBox : public BaseUI
 public:
 	TextInputBox() = default;
 
-	TextInputBox& Construct(Rectangle Box, Color BackgroundColor);
-	TextInputBox& Construct(float x, float y, float width, float height, Color BackgroundColor);
+	TextInputBox& Construct(Sonar::Rectangle Box, Sonar::Color BackgroundColor);
+	TextInputBox& Construct(float x, float y, float width, float height, Sonar::Color BackgroundColor);
 	TextInputBox& UseBorder(bool UseBorder);
 	TextInputBox& SetInitialText(std::string InitialText);
 	TextInputBox& SetInitialText(char InitalText[51]);
@@ -23,34 +23,34 @@ public:
 	TextInputBox& EreaseText();
 	std::string GetText();
 
-	TextInputBox& UpdateTextOffset(Vector2 NewTextPosition);
-	TextInputBox& UpdateBoxPositionOffset(Vector2 BoxOffset);
-	TextInputBox& SetBoxPosition(Vector2 BoxOffset);
+	TextInputBox& UpdateTextOffset(Sonar::Vector2 NewTextPosition);
+	TextInputBox& UpdateBoxPositionOffset(Sonar::Vector2 BoxOffset);
+	TextInputBox& SetBoxPosition(Sonar::Vector2 BoxOffset);
 	TextInputBox& UpdateTextPosition();
 	TextInputBox& UpdateFontSize(int NewFontSize);
-	TextInputBox& UpdateFontColor(Color NewFontColor);
-	TextInputBox& UpdatePosition(Vector2 NewPosition);
-	TextInputBox& UpdateSize(Vector2 NewSize);
-	TextInputBox& UpdateColor(Color NewColor);
+	TextInputBox& UpdateFontColor(Sonar::Color NewFontColor);
+	TextInputBox& UpdatePosition(Sonar::Vector2 NewPosition);
+	TextInputBox& UpdateSize(Sonar::Vector2 NewSize);
+	TextInputBox& UpdateColor(Sonar::Color NewColor);
 	TextInputBox& UpdateTextShown(std::string Text);
-	TextInputBox& UpdateBorder(int Thickness, Color BorderColor);
+	TextInputBox& UpdateBorder(int Thickness, Sonar::Color BorderColor);
 	TextInputBox& ResetSizeToInitial();
 
 	virtual void Tick(float DeltaTime) override;
 
-	bool bIsFocused(Vector2 MousePosition);
+	bool bIsFocused(Sonar::Vector2 MousePosition);
 
 	char StringToHold[1024 + 1] = "\0";
 
-	Rectangle Box;
+	Sonar::Rectangle Box;
 
 private:
-	Color BoxBackgroundColor;
+	Sonar::Color BoxBackgroundColor;
 	std::string Text;
-	Vector2 TextPosition;
-	Vector2 TextOffset = { 0,0 };
+	Sonar::Vector2 TextPosition;
+	Sonar::Vector2 TextOffset = { 0,0 };
 	int FontSize = 8;
-	Color FontColor = WHITE;
+	Sonar::Color FontColor = Sonar::WHITE;
 	bool IsEditable = true;
 	bool bShouldCenter = false;
 
@@ -65,7 +65,7 @@ private:
 	int MaxChars = 5;
 	int LetterCount = 0;
 
-	Rectangle InitialPosition;
+	Sonar::Rectangle InitialPosition;
 
 	bool bWordWrap = false;
 	bool bContainsText = false;

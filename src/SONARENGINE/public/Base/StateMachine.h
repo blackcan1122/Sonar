@@ -1,4 +1,5 @@
 #pragma once
+#include "Base/Export.hpp"
 #include <functional>
 #include <map>
 #include <string>
@@ -7,7 +8,7 @@ class GameMode;
 
 
 /**
- * @class StateMachine
+ * @class SONARENGINE_API StateMachine
  * @brief Manages transitions between game modes or states.
  *
  * Purpose:
@@ -23,7 +24,7 @@ class GameMode;
  * - Ensure that states are properly registered before transitioning.
  * - Use `GetCurrentGameMode()` to retrieve the active game mode.
  */
-class StateMachine
+class SONARENGINE_API StateMachine
 {
 private:
 

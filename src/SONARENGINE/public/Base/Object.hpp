@@ -1,5 +1,5 @@
 #pragma once
-#include "raylib.h"
+#include "Rendering/Graphics.hpp"
 #include <typeindex>
 #include <string>
 #include "Base/SClass.hpp"
@@ -54,14 +54,15 @@ public:
 
 	virtual SClass* GetStaticClass() { return StaticClass(); }
 	static SClass* StaticClass() {
-		static SClass instance(nullptr, "IObject");
+		static SClass* instance = SClass::GetOrCreate(nullptr, "IObject");
 		RegisterReflection();
-		return &instance;
+		return instance;
 	}
 
 
 
 	IObject() = default;
+	virtual ~IObject() = default;
 	//~IObject();
 
 	//// Copy constructor - does NOT copy callbacks (new object has fresh callback state)
@@ -120,8 +121,8 @@ public:
 
 protected:
 
-	virtual void OnKeyStroke(KeyboardKey PressedKey, Vector2 MousePosition) {};
-	virtual void OnMouseButtonPressed(MouseButton PressedKey, Vector2 MousePosition) {};
+	virtual void OnKeyStroke(Sonar::KeyboardKey PressedKey, Sonar::Vector2 MousePosition) {};
+	virtual void OnMouseButtonPressed(Sonar::MouseButton PressedKey, Sonar::Vector2 MousePosition) {};
 
 
 
@@ -153,9 +154,9 @@ public:
 	virtual SClass* GetStaticClass() override { return StaticClass(); }
 	static SClass* StaticClass() 
 	{
-		static SClass instance(IObject::StaticClass(), "Object");
+		static SClass* instance = SClass::GetOrCreate(IObject::StaticClass(), "Object");
 		RegisterReflection();
-		return &instance;
+		return instance;
 	}
 	static void RegisterReflection();
 };

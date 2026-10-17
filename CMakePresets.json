@@ -1,0 +1,32 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {"name":"mingw-debug","generator":"Ninja","binaryDir":"${sourceDir}/out/mingw-debug","cacheVariables":{"CMAKE_BUILD_TYPE":"Debug","CMAKE_C_COMPILER":"C:/msys64/ucrt64/bin/gcc.exe","CMAKE_CXX_COMPILER":"C:/msys64/ucrt64/bin/g++.exe"}},
+    {"name":"mingw-release","inherits":"mingw-debug","binaryDir":"${sourceDir}/out/mingw-release","cacheVariables":{"CMAKE_BUILD_TYPE":"Release"}},
+    {"name":"linux-debug","generator":"Ninja","binaryDir":"${sourceDir}/out/linux-debug","cacheVariables":{"CMAKE_BUILD_TYPE":"Debug","CMAKE_C_COMPILER":"gcc","CMAKE_CXX_COMPILER":"g++"}},
+    {"name":"linux-release","inherits":"linux-debug","binaryDir":"${sourceDir}/out/linux-release","cacheVariables":{"CMAKE_BUILD_TYPE":"Release"}},
+    {
+  "name": "msvc",
+  "generator": "Visual Studio 17 2022",
+  "architecture": "x64",
+  "binaryDir": "${sourceDir}/out/msvc",
+  "cacheVariables": {
+    "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist/msvc-release"
+  }
+}
+  ],
+  "buildPresets": [
+    {"name":"mingw-debug","configurePreset":"mingw-debug"},
+    {"name":"mingw-release","configurePreset":"mingw-release"},
+    {"name":"msvc-debug","configurePreset":"msvc","configuration":"Debug"},
+    {"name":"msvc-release","configurePreset":"msvc","configuration":"Release"},
+    {"name":"linux-debug","configurePreset":"linux-debug"},
+    {"name":"linux-release","configurePreset":"linux-release"},
+    {
+  "name": "msvc-dist",
+  "configurePreset": "msvc",
+  "configuration": "Release",
+  "targets": ["INSTALL"]
+}
+  ]
+}
