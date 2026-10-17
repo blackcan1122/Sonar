@@ -20,7 +20,11 @@ jobs:
         with:
           msystem: UCRT64
           update: true
-          install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-ninja
+          # GCC 16 packages OpenMP separately; gcc alone does not install it.
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-libgomp
+            mingw-w64-ucrt-x86_64-ninja
       - name: Configure
         shell: pwsh
         env:
