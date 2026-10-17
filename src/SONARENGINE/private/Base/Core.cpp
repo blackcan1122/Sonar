@@ -1,3 +1,4 @@
+#include "Base/LoggingBackend.hpp"
 #include "Base/Core.h"
 #include "Base/CrashHandler.hpp"
 #include <spdlog/pattern_formatter.h>
@@ -263,6 +264,7 @@ namespace
     {
         FlushCrashLog();
         TerminateProcess(GetCurrentProcess(), 1);
+        std::abort();
     }
 
     LONG WINAPI UnhandledExceptionFilterCallback(EXCEPTION_POINTERS* ExceptionInfo)
@@ -365,13 +367,13 @@ public:
     {
         std::string level = spdlog::level::to_string_view(msg.level).data();
         std::transform(level.begin(), level.end(), level.begin(), ::toupper);
-        
+
         // Pad to 8 characters
         while (level.size() < 8)
         {
             level.push_back(' ');
         }
-        
+
         dest.append(level.data(), level.data() + level.size());
     }
 
@@ -408,7 +410,7 @@ void InitLogger()
     auto formatter_console = std::make_unique<spdlog::pattern_formatter>();
     formatter_console->add_flag<UppercaseLevelFormatter>('*');
     formatter_console->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%*%$] %v");
-    
+
     auto formatter_file = std::make_unique<spdlog::pattern_formatter>();
     formatter_file->add_flag<UppercaseLevelFormatter>('*');
     formatter_file->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%*] %v");  // No color codes for file
@@ -419,7 +421,7 @@ void InitLogger()
     // Create logger with both sinks
     GeneralLogger = std::make_shared<spdlog::logger>("Basic", spdlog::sinks_init_list{console_sink, file_sink});
     GeneralLogger->set_level(spdlog::level::info);
-    
+
     // Register it as default logger
     spdlog::register_logger(GeneralLogger);
 

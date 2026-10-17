@@ -4,7 +4,7 @@
 #include "Events/AllPurposeEvent.h"
 #include "Events/DisplayResizeData.hpp"
 #include "Events/DisplayMoveData.hpp"
-#include "raylib.h"
+#include "Rendering/Graphics.hpp"
 
 #include <memory>
 #include <mutex>
@@ -18,19 +18,21 @@ public:
 	virtual ~Display();
 
 	virtual void Draw();
+	void BeginDisplayDraw();
+	void EndDisplayDraw();
 	virtual void MarkForDestruction() override;
 
 	virtual void Initialize() override;
 
-	void SetPosition(Vector2 NewPosition);
+	void SetPosition(Sonar::Vector2 NewPosition);
 	void RenderToMainBuffer();
 
 	virtual void ResizeDisplay(int NewWidth, int NewHeight);
 
-	Vector2 GetSize() const { return { DestinationRect.width, DestinationRect.height }; }
+	Sonar::Vector2 GetSize() const { return { DestinationRect.width, DestinationRect.height }; }
 	int GetWidth() const { return static_cast<int>(DestinationRect.width); }
 	int GetHeight() const { return static_cast<int>(DestinationRect.height); }
-	Rectangle GetDisplayedRect() const;
+	Sonar::Rectangle GetDisplayedRect() const;
 
 	void SetResizable(bool bCanResize) { bIsResizable = bCanResize; }
 	bool IsResizable() const { return bIsResizable; }
@@ -43,11 +45,11 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	Rectangle GetDestinationRect() const { return DestinationRect; }
+	Sonar::Rectangle GetDestinationRect() const { return DestinationRect; }
 
 	EventDispatcher OnResize;
 	EventDispatcher OnMove;
-	void SetDisplayPreviewRect(const Rectangle& PreviewRect);
+	void SetDisplayPreviewRect(const Sonar::Rectangle& PreviewRect);
 	void ClearDisplayPreviewRect();
 
 protected:
@@ -57,13 +59,15 @@ protected:
 	void HandleMoveInteraction();
 	void DrawResizeHandle();
 	void DrawMoveHandle();
-	Rectangle GetResizeHandleRect() const;
-	Rectangle GetMoveHandleRect() const;
+	Sonar::Rectangle GetResizeHandleRect() const;
+	Sonar::Rectangle GetMoveHandleRect() const;
 
-	RenderTexture2D ActiveRenderTarget;
+private:
+	Sonar::RenderTexture2D ActiveRenderTarget;
+protected:
 
-	Rectangle SourceRect;
-	Rectangle DestinationRect;
+	Sonar::Rectangle SourceRect;
+	Sonar::Rectangle DestinationRect;
 
 	std::shared_ptr<AllPurposeEvent> ResizeEvent;
 	std::shared_ptr<AllPurposeEvent> ResizeEventComplete;
@@ -77,16 +81,16 @@ protected:
 	bool bIsResizable = true;
 	bool bIsResizing = false;
 	bool bIsResizeFinished = true;
-	Vector2 m_ResizeStartMousePos = { 0, 0 };
-	Vector2 m_ResizeStartSize = { 0, 0 };
+	Sonar::Vector2 m_ResizeStartMousePos = { 0, 0 };
+	Sonar::Vector2 m_ResizeStartSize = { 0, 0 };
 	int m_ResizeHandleSize = 15;
 	int m_MinWidth = 100;
 	int m_MinHeight = 100;
-	std::optional<Rectangle> m_DisplayPreviewRect;
+	std::optional<Sonar::Rectangle> m_DisplayPreviewRect;
 
 	bool bIsMovable = true;
 	bool bIsMoving = false;
-	Vector2 m_MoveStartMousePos = { 0, 0 };
-	Vector2 m_MoveStartPos = { 0, 0 };
+	Sonar::Vector2 m_MoveStartMousePos = { 0, 0 };
+	Sonar::Vector2 m_MoveStartPos = { 0, 0 };
 	int m_MoveHandleSize = 15;
 };

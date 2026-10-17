@@ -12,18 +12,18 @@ public:
 public:
 
 	void Tick(float DeltaTime) override;
-	void OnConstruct(const Vector2 Position);
+	void OnConstruct(const Sonar::Vector2 Position);
 	void OnDelete();
 	void AddOnCloseCallback(std::function<void()> Callback) { if (Callback) OnCloseCallbacks.push_back(Callback); };
 	void ClearMenuEntries();
-	virtual void OnMouseButtonPressed(MouseButton Key, Vector2 MousePos) override;
+	virtual void OnMouseButtonPressed(Sonar::MouseButton Key, Sonar::Vector2 MousePos) override;
 
 	bool GetIsConstructed() const;
 
 	void AddMenuEntry(const ContextMenuEntry Entry);
-	Rectangle Window;
+	Sonar::Rectangle Window;
 	int PaddingY = 2;
-	Vector2 MousePosWhenConstructed;
+	Sonar::Vector2 MousePosWhenConstructed;
 
 
 protected:
@@ -32,7 +32,7 @@ protected:
 	void Draw() const;
 	bool IsConstructed = false;
 	std::vector<ContextMenuEntry> MenuEntries;
-	Color BackgroundColor = DARKGRAY;
+	Sonar::Color BackgroundColor = Sonar::DARKGRAY;
 
 	std::vector<std::function<void()>> OnCloseCallbacks;
 

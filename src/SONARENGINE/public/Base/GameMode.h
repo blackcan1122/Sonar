@@ -72,7 +72,7 @@ public:
 
 		return false;
 	}
-	
+
 	template<typename T, typename... Args>
 	SoftObjectPath<T> NewObject(Args&&... args);
 
@@ -111,7 +111,7 @@ protected:
 	float m_DeltaTime = 0;
 	std::string m_Name;
 	uint64_t m_InstanceId = 0;
-	
+
 	// Flag to prevent UnregisterObject calls during destruction
 	bool m_IsDestroying = false;
 	std::shared_ptr<char> m_LifetimeGuard = std::make_shared<char>(0);
@@ -119,15 +119,9 @@ protected:
 	// Optional
 	SoftObjectPath<World> m_World;
 	EngineRuntimeContext* m_RuntimeContext = nullptr;
-	
+
 
 };
 
 
 #include "Base/Factory.hpp"
-
-template<typename T, typename... Args>
-SoftObjectPath<T> GameMode::NewObject(Args&&... args)
-{
-	return m_ObjectFactory->NewObject<T>(std::forward<Args>(args)...);
-};

@@ -43,17 +43,17 @@ void SandboxGameMode::BeginPlay()
 
 	m_World =  NewObject<World>();
 	m_SignalSystem = NewObject<SignalSystem>();
-	
+
 	MapDisplay = NewObject<Map>(400, 400);
 	if (auto map = MapDisplay.TryLoad())
 	{
 		LayoutManagerObj->RegisterDisplay(MapDisplay, GridCell{0, 1, 1, 1}); // Row 0, Col 1
-		
+
 		map->MapEventDispatcher->AddListener("SandboxGameMode Map Click Listener", AllPurposeEvent::StaticClass(), this, &SandboxGameMode::OnMapClickedEvent);
 	}
 
 	PlayerOne =  NewObject<SubmarinePlayer>();
-	PlayerOne.TryLoad()->SetEntityLocation(Vector2{ 0,0 });
+	PlayerOne.TryLoad()->SetEntityLocation(Sonar::Vector2{ 0,0 });
 	PlayerOne.TryLoad()->SetDisplayName("U-521");
 	PlayerOne.TryLoad()->SetInitialSpeed(0);
 	PlayerOne.TryLoad()->SetEntityRotationAndCourse(90);
@@ -81,7 +81,7 @@ void SandboxGameMode::BeginPlay()
 
 
 	OtherSub =  NewObject<BaseSubmarine>();
-	OtherSub.TryLoad()->SetEntityLocation(Vector2{ 400,200 });
+	OtherSub.TryLoad()->SetEntityLocation(Sonar::Vector2{ 400,200 });
 	OtherSub.TryLoad()->SetDisplayName("K-21");
 	OtherSub.TryLoad()->SetInitialSpeed(15);
 	OtherSub.TryLoad()->SetEntityRotationAndCourse(270);
@@ -100,28 +100,28 @@ void SandboxGameMode::BeginPlay()
 
 void SandboxGameMode::Update()
 {
-		ClearBackground(BLACK);
+		Sonar::ClearBackground(Sonar::BLACK);
 		GameMode::Update();
 
 
 		if (auto prop = Entity::StaticClass()->FindProperty("m_Position"))
 		{
-			Vector2 Test = prop->GetValue<Vector2>(PlayerOne.TryLoad().get());
+			Sonar::Vector2 Test = prop->GetValue<Sonar::Vector2>(PlayerOne.TryLoad().get());
 		}
 
-		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), Vector2{ 500, 500 });
+		Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), Sonar::Vector2{ 500, 500 });
 		//Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), int(20)); // Wrong type test
 		//Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), true); // Wrong type test
 
 #if DEBUG
-		DrawFPS(GetRuntimeContext().GetScreenWidth() - 100, 20);
+		Sonar::DrawFPS(GetRuntimeContext().GetScreenWidth() - 100, 20);
 #endif
-		if (IsKeyPressed(KEY_K))
+		if (Sonar::IsKeyPressed(Sonar::KEY_K))
 		{
 			GetRuntimeContext().RequestGameModeChange("Menu");
 		}
 
-		if (IsKeyPressed(KEY_T))
+		if (Sonar::IsKeyPressed(Sonar::KEY_T))
 		{
 			for (auto prop : SubmarinePlayer::StaticClass()->GetAllProperties())
 			{
@@ -130,12 +130,12 @@ void SandboxGameMode::Update()
 			SubmarinePlayer::StaticClass()->SetPropertyValue("m_DisplayName", PlayerOne.TryLoad().get(), std::string("FIIICKER"));
 		}
 
-		if (IsKeyPressed(KEY_Y))
+		if (Sonar::IsKeyPressed(Sonar::KEY_Y))
 		{
 			SubmarinePlayer::StaticClass()->SetPropertyValue("m_AccelerationRate", PlayerOne.TryLoad().get(), 200.f);
 		}
 
-		if (IsKeyPressed(KEY_L))
+		if (Sonar::IsKeyPressed(Sonar::KEY_L))
 		{
 			//SubmarinePlayer* PlayerOnePtr = nullptr;
 			//PlayerOnePtr->GetDisplayName();
@@ -178,7 +178,7 @@ void SandboxGameMode::OnDeleteDisplay(SoftObjectPath<Display> InDisplay)
 	{
 		return;
 	}
-	
+
 	for (auto it = m_AllDisplays.begin(); it != m_AllDisplays.end(); ++it)
 	{
 		if (*it == InDisplay)

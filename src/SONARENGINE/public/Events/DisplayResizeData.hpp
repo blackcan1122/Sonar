@@ -5,7 +5,7 @@
 
 class Display;
 
-class DisplayResizeData : public EventData
+class SONARENGINE_API DisplayResizeData : public EventData
 {
 	AUTOBODY(DisplayResizeData, EventData)
 public:

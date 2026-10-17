@@ -1,6 +1,7 @@
+#include <cstring>
 #include "UI/TextBox.h"
 
-TextInputBox& TextInputBox::Construct(Rectangle Box, Color BackgroundColor)
+TextInputBox& TextInputBox::Construct(Sonar::Rectangle Box, Sonar::Color BackgroundColor)
 {
 	this->Box = Box;
 	this->InitialPosition = Box;
@@ -9,9 +10,9 @@ TextInputBox& TextInputBox::Construct(Rectangle Box, Color BackgroundColor)
 	return *this;
 }
 
-TextInputBox& TextInputBox::Construct(float x, float y, float width, float height, Color BackgroundColor)
+TextInputBox& TextInputBox::Construct(float x, float y, float width, float height, Sonar::Color BackgroundColor)
 {
-	Rectangle TempObj = { x, y, width, height };
+	Sonar::Rectangle TempObj = { x, y, width, height };
 	return Construct(TempObj, BackgroundColor);
 }
 
@@ -83,20 +84,20 @@ std::string TextInputBox::GetText()
 	return Text;
 }
 
-TextInputBox& TextInputBox::UpdateTextOffset(Vector2 NewTextPosition)
+TextInputBox& TextInputBox::UpdateTextOffset(Sonar::Vector2 NewTextPosition)
 {
 	this->TextOffset = NewTextPosition;
 	return *this;
 }
 
-TextInputBox& TextInputBox::UpdateBoxPositionOffset(Vector2 BoxOffset)
+TextInputBox& TextInputBox::UpdateBoxPositionOffset(Sonar::Vector2 BoxOffset)
 {
 	Box.x = Box.x + BoxOffset.x;
 	Box.y = Box.y + BoxOffset.y;
 	return *this;
 }
 
-TextInputBox& TextInputBox::SetBoxPosition(Vector2 BoxOffset)
+TextInputBox& TextInputBox::SetBoxPosition(Sonar::Vector2 BoxOffset)
 {
 	Box.x = BoxOffset.x;
 	Box.y = BoxOffset.y;
@@ -114,27 +115,27 @@ TextInputBox& TextInputBox::UpdateFontSize(int NewFontSize)
 	return *this;
 }
 
-TextInputBox& TextInputBox::UpdateFontColor(Color NewFontColor)
+TextInputBox& TextInputBox::UpdateFontColor(Sonar::Color NewFontColor)
 {
 	FontColor = NewFontColor;
 	return *this;
 }
 
-TextInputBox& TextInputBox::UpdatePosition(Vector2 NewPosition)
+TextInputBox& TextInputBox::UpdatePosition(Sonar::Vector2 NewPosition)
 {
 	this->Box.x = NewPosition.x;
 	this->Box.y = NewPosition.y;
 	return *this;
 }
 
-TextInputBox& TextInputBox::UpdateSize(Vector2 NewSize)
+TextInputBox& TextInputBox::UpdateSize(Sonar::Vector2 NewSize)
 {
 	this->Box.width = NewSize.x;
 	this->Box.height = NewSize.y;
 	return *this;
 }
 
-TextInputBox& TextInputBox::UpdateColor(Color NewColor)
+TextInputBox& TextInputBox::UpdateColor(Sonar::Color NewColor)
 {
 	this->BoxBackgroundColor = NewColor;
 	return *this;
@@ -146,7 +147,7 @@ TextInputBox& TextInputBox::UpdateTextShown(std::string Text)
 	return *this;
 }
 
-TextInputBox& TextInputBox::UpdateBorder(int Thickness, Color BorderColor)
+TextInputBox& TextInputBox::UpdateBorder(int Thickness, Sonar::Color BorderColor)
 {
 	return *this;
 }
@@ -157,9 +158,9 @@ TextInputBox& TextInputBox::ResetSizeToInitial()
 	return *this;
 }
 
-bool TextInputBox::bIsFocused(Vector2 MousePosition)
+bool TextInputBox::bIsFocused(Sonar::Vector2 MousePosition)
 {
-	return CheckCollisionPointRec(MousePosition, this->Box);
+	return Sonar::CheckCollisionPointRec(MousePosition, this->Box);
 }
 
 void TextInputBox::Tick(float DeltaTime)
@@ -171,13 +172,13 @@ void TextInputBox::Tick(float DeltaTime)
 		NumberOfLines = 0;
 	}
 
-	DrawRectangle(this->Box.x, this->Box.y, this->Box.width, this->Box.height, this->BoxBackgroundColor);
+	Sonar::DrawRectangle(this->Box.x, this->Box.y, this->Box.width, this->Box.height, this->BoxBackgroundColor);
 
-	if (bIsFocused(GetMousePosition()) && this->IsEditable)
+	if (bIsFocused(Sonar::GetMousePosition()) && this->IsEditable)
 	{
-		int PressedKey = GetCharPressed();
+		int PressedKey = Sonar::GetCharPressed();
 
-		if (IsKeyPressed(KEY_BACKSPACE))
+		if (Sonar::IsKeyPressed(Sonar::KEY_BACKSPACE))
 		{
 			if (LetterCount > 0)
 			{
@@ -193,9 +194,9 @@ void TextInputBox::Tick(float DeltaTime)
 			DelayTimer = 0.0f;
 			RepeatTimer = 0.0f;
 		}
-		else if (IsKeyDown(KEY_BACKSPACE))
+		else if (Sonar::IsKeyDown(Sonar::KEY_BACKSPACE))
 		{
-			float DeltaTimeFrame = GetFrameTime();
+			float DeltaTimeFrame = Sonar::GetFrameTime();
 			DelayTimer += DeltaTimeFrame;
 
 			if (DelayTimer >= Delay)
@@ -225,7 +226,7 @@ void TextInputBox::Tick(float DeltaTime)
 
 		if (strlen(StringToHold) < MaxChars && PressedKey > 0)
 		{
-			if (MeasureText(StringToHold, FontSize) > Box.width && bContainsText)
+			if (Sonar::MeasureText(StringToHold, FontSize) > Box.width && bContainsText)
 			{
 				if (bWordWrap)
 				{
@@ -283,7 +284,7 @@ void TextInputBox::Tick(float DeltaTime)
 			pos++;
 		}
 
-		int textWidth = MeasureText(TempString.c_str(), FontSize);
+		int textWidth = Sonar::MeasureText(TempString.c_str(), FontSize);
 		int LineHeight = FontSize * LineCount;
 
 		float XPosition = (Box.width - textWidth) / 2.0f;
@@ -295,10 +296,10 @@ void TextInputBox::Tick(float DeltaTime)
 
 	if (IsEditable)
 	{
-		DrawText(StringToHold, Box.x + TextOffset.x, Box.y + TextOffset.y, FontSize, FontColor);
+		Sonar::DrawText(StringToHold, Box.x + TextOffset.x, Box.y + TextOffset.y, FontSize, FontColor);
 	}
 	else
 	{
-		DrawText(Text.c_str(), Box.x + TextOffset.x, Box.y + TextOffset.y, FontSize, FontColor);
+		Sonar::DrawText(Text.c_str(), Box.x + TextOffset.x, Box.y + TextOffset.y, FontSize, FontColor);
 	}
 }

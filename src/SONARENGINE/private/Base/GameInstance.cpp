@@ -1,3 +1,4 @@
+#include "Base/LoggingBackend.hpp"
 #ifndef RAYGUI_IMPLEMENTATION
 #define RAYGUI_IMPLEMENTATION
 #endif // !RAYGUI_IMPLEMENTATION
@@ -63,7 +64,7 @@ GameInstance::GameInstance(WindowProperties Properties)
 	LOG_INFO(l_GAME_INSTANCE, SONAR_FMT("GameInstance Initialized"));
 	LOG_INFO(l_GAME_INSTANCE, SONAR_FMT("sizeof std::string: {}", (sizeof(std::string))));
 
-	SetTraceLogCallback(&GameInstance::RedirectTraceLog);
+	Sonar::SetTraceLogCallback(&GameInstance::RedirectTraceLog);
 }
 
 TextureResource* GameInstance::GetResource(std::string Name)
@@ -87,7 +88,7 @@ void GameInstance::InitGameInstance(WindowProperties Properties)
 		return;
 	}
 
-	g_WorkingDirectory = GetWorkingDirectory();
+	g_WorkingDirectory = std::filesystem::current_path().generic_string();
 	g_ResourceRoot = g_WorkingDirectory + "/resources";
 	g_ResourceManager.SetWorkingDirectory(g_WorkingDirectory);
 	g_ResourceManager.SetResourceRoot(g_ResourceRoot);
@@ -203,12 +204,12 @@ void GameInstance::RedirectTraceLog(int logLevel, const char* text, va_list args
 
 void GameInstance::CreateWindow()
 {
-	SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
+	Sonar::SetConfigFlags(Sonar::FLAG_WINDOW_HIGHDPI | Sonar::FLAG_MSAA_4X_HINT | Sonar::FLAG_WINDOW_RESIZABLE);
 
-	InitWindow(g_Instance->m_WindowProperties.m_ScreenWidth, g_Instance->m_WindowProperties.m_ScreenHeight, "Sonar");
-	SetTargetFPS(g_Instance->m_WindowProperties.m_TargetFps);
+	Sonar::InitWindow(g_Instance->m_WindowProperties.m_ScreenWidth, g_Instance->m_WindowProperties.m_ScreenHeight, "Sonar");
+	Sonar::SetTargetFPS(g_Instance->m_WindowProperties.m_TargetFps);
 
-	InitAudioDevice();
+	Sonar::InitAudioDevice();
 
 	LOG_INFO(l_GAME_INSTANCE, SONAR_FMT("Window Initialized with Properties, Size: {} x {}, TargetFPS: {}",
 		g_Instance->m_WindowProperties.m_ScreenWidth,
@@ -236,43 +237,43 @@ void GameInstance::GameLoop()
 	std::shared_ptr<MouseEvent> MouseEventDispatch = std::make_shared<MouseEvent>();
 
 	// GAMELOOP //
-	while (!WindowShouldClose() && !GetRuntimeContext().m_ShouldShutdown.load())
+	while (!Sonar::WindowShouldClose() && !GetRuntimeContext().m_ShouldShutdown.load())
 	{
-		int KeyPressed = GetKeyPressed();
+		int KeyPressed = Sonar::GetKeyPressed();
 		if (KeyPressed != 0)
 		{
-			KeyEventDispatch->KeyPressed = static_cast<KeyboardKey>(KeyPressed);
-			KeyEventDispatch->MousePos = GetMousePosition();
+			KeyEventDispatch->KeyPressed = static_cast<Sonar::KeyboardKey>(KeyPressed);
+			KeyEventDispatch->MousePos = Sonar::GetMousePosition();
 
 			KeyDispatcher.Dispatch(KeyEventDispatch, "GlobalKeyEvent");
 		}
 
-		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+		if (Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
 		{
-			MouseEventDispatch->KeyPressed = MOUSE_BUTTON_LEFT;
-			MouseEventDispatch->MousePos = GetMousePosition();
+			MouseEventDispatch->KeyPressed = Sonar::MOUSE_BUTTON_LEFT;
+			MouseEventDispatch->MousePos = Sonar::GetMousePosition();
 
 			MouseDispatcher.Dispatch(MouseEventDispatch, "MouseGlobalEvent");
 		}
 
-		if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+		if (Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_RIGHT))
 		{
-			MouseEventDispatch->KeyPressed = MOUSE_BUTTON_RIGHT;
-			MouseEventDispatch->MousePos = GetMousePosition();
+			MouseEventDispatch->KeyPressed = Sonar::MOUSE_BUTTON_RIGHT;
+			MouseEventDispatch->MousePos = Sonar::GetMousePosition();
 
 			MouseDispatcher.Dispatch(MouseEventDispatch, "MouseGlobalEvent");
 		}
 
-		if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
+		if (Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_MIDDLE))
 		{
-			MouseEventDispatch->KeyPressed = MOUSE_BUTTON_MIDDLE;
-			MouseEventDispatch->MousePos = GetMousePosition();
+			MouseEventDispatch->KeyPressed = Sonar::MOUSE_BUTTON_MIDDLE;
+			MouseEventDispatch->MousePos = Sonar::GetMousePosition();
 
 			MouseDispatcher.Dispatch(MouseEventDispatch, "MouseGlobalEvent");
 		}
 
 		MainQueue.ProcessTasks();
-		BeginDrawing();
+		Sonar::BeginDrawing();
 		if (g_ActiveStateMachine.isPendingKillLastMode())
 		{
 			g_ActiveStateMachine.KillLastGameMode();
@@ -280,14 +281,14 @@ void GameInstance::GameLoop()
 		g_ActiveStateMachine.UpdateGameMode();
 
 		// Windows Resize Event
-		if (GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.m_ScreenHeight || GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.m_ScreenWidth)
+		if (Sonar::GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.m_ScreenHeight || Sonar::GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.m_ScreenWidth)
 		{
-			GameInstance::GetInstance()->m_WindowProperties.m_ScreenHeight = GetScreenHeight();
-			GameInstance::GetInstance()->m_WindowProperties.m_ScreenWidth = GetScreenWidth();
+			GameInstance::GetInstance()->m_WindowProperties.m_ScreenHeight = Sonar::GetScreenHeight();
+			GameInstance::GetInstance()->m_WindowProperties.m_ScreenWidth = Sonar::GetScreenWidth();
 
 			// Dispatch Event
-			CurrentWindowResizeData->width = GetScreenWidth();
-			CurrentWindowResizeData->height = GetScreenHeight();
+			CurrentWindowResizeData->width = Sonar::GetScreenWidth();
+			CurrentWindowResizeData->height = Sonar::GetScreenHeight();
 
 			std::shared_ptr<IEventData> Payload = std::static_pointer_cast<IEventData>(CurrentWindowResizeData);
 
@@ -297,8 +298,8 @@ void GameInstance::GameLoop()
 		}
 
 		// GameMode Independend UI Drawings
-		DrawText((std::string("Version: ") + Version).c_str(), 0 + 5, GetScreenHeight() - 20, 12, WHITE);
-		EndDrawing();
+		Sonar::DrawText((std::string("Version: ") + Version).c_str(), 0 + 5, Sonar::GetScreenHeight() - 20, 12, Sonar::WHITE);
+		Sonar::EndDrawing();
 	}
 
 	LOG_INFO(l_GAME_INSTANCE, "Waiting for resource cleanup threads...");
@@ -312,10 +313,10 @@ void GameInstance::GameLoop()
 
 	LOG_INFO(l_GAME_INSTANCE, "Closing audio and window...");
 
-	SetTraceLogCallback(nullptr);
+	Sonar::SetTraceLogCallback(nullptr);
 
-	RLAPI::CloseAudioDevice();
-	RLAPI::CloseWindow();
+	Sonar::CloseAudioDevice();
+	Sonar::CloseWindow();
 
 	LOG_INFO(l_GAME_INSTANCE, "GameInstance shutdown complete");
 

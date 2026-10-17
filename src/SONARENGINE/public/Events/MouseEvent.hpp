@@ -1,11 +1,12 @@
 #pragma once
 #include "Base/Event.hpp"
 
-#include "raylib.h"
+#include "Rendering/Graphics.hpp"
 
-class MouseEvent : public Event
+class SONARENGINE_API MouseEvent : public Event
 {
+	AUTOBODY(MouseEvent, Event)
 public:
-	MouseButton KeyPressed;
-	Vector2 MousePos;
+	Sonar::MouseButton KeyPressed;
+	Sonar::Vector2 MousePos;
 };

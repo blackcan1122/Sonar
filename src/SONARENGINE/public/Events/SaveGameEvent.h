@@ -2,7 +2,7 @@
 #include "Base/Event.hpp"
 
 // TODO REFACTOR
-class SaveGameEvent : public Event
+class SONARENGINE_API SaveGameEvent : public Event
 {
 public:
 	virtual ~SaveGameEvent() override;

@@ -4,7 +4,7 @@
 #include "Events/WindowResizeData.hpp"
 #include <memory>
 
-class AllPurposeEvent : public Event
+class SONARENGINE_API AllPurposeEvent : public Event
 {
 	AUTOBODY(AllPurposeEvent, Event)
 

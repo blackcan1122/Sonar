@@ -19,16 +19,15 @@
  * - Ensure derived classes define meaningful payload structures.
  */
 
-class IEventData
+class SONARENGINE_API IEventData
 {
     ROOTBODY(IEventData)
+public:
+    virtual ~IEventData() = default;
 };
 
 
-
-class EventData : public IEventData
+class SONARENGINE_API EventData : public IEventData
 {
     AUTOBODY(EventData, IEventData)
 };
-
-

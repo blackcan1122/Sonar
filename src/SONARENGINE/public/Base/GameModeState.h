@@ -1,6 +1,7 @@
 #pragma once
+#include "Base/Export.hpp"
 
-class GameModeState
+class SONARENGINE_API GameModeState
 {
 public:
 	GameModeState() = default;

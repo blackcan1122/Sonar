@@ -26,10 +26,10 @@ OptionsMode::~OptionsMode()
 
 void OptionsMode::Update()
 {
-	ClearBackground(PURPLE);
-	DrawTexture(Background, 0, 0, WHITE);
+	Sonar::ClearBackground(Sonar::PURPLE);
+	Sonar::DrawTexture(Background, 0, 0, Sonar::WHITE);
 
-	float DeltaTime = GetFrameTime();
+	float DeltaTime = Sonar::GetFrameTime();
 
 
 	Back->Tick(DeltaTime);
@@ -46,13 +46,13 @@ void OptionsMode::BeginPlay()
 
 	int CenterX = GetRuntimeContext().GetScreenWidth() / 2;
 
-	Rectangle ApplyRec = { GetScreenWidth() - (ButtonWidth + Padding), GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
+	Sonar::Rectangle ApplyRec = { Sonar::GetScreenWidth() - (ButtonWidth + Padding), Sonar::GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
 	Apply = std::make_shared<Button>();
-	Apply->Construct(ApplyRec, "Apply", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Apply");
+	Apply->Construct(ApplyRec, "Apply", Sonar::RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Apply");
 
-	Rectangle BackRec = { Padding, GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
+	Sonar::Rectangle BackRec = { Padding, Sonar::GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
 	Back = std::make_shared<Button>();
-	Back->Construct(BackRec, "Back", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Back");
+	Back->Construct(BackRec, "Back", Sonar::RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Back");
 
 	SetUpEvents();
 }

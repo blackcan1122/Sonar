@@ -28,7 +28,7 @@ struct LayoutSpawnOption
 	}
 };
 
-class LayoutManager : public Object
+class SONARENGINE_API LayoutManager : public Object
 {
 	AUTOBODY(LayoutManager, Object)
 

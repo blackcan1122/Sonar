@@ -1,9 +1,7 @@
 #pragma once
 // Raylib
 
-#include "raylib.h"
-#include "rlgl.h"
-#include "raymath.h"
+#include "Rendering/Graphics.hpp"
 
 // C++ Std
 #include <functional>
@@ -53,7 +51,6 @@
 #include "Base/Object.hpp"
 #include "Base/Macros.h"
 //#include "Base/SoftObject.hpp"
-#include "Base/NavalTypedefs.h"
 
 // Unsure if i should keep them away, as handling recursive includes suck
 //#include "Base/TickableFactory.h"
@@ -67,5 +64,3 @@
 //#include "Base/StateMachine.h"
 //#include "Base/GameMode.h"
 //#include "GameInstance.h"
-
-

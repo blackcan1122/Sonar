@@ -1,22 +1,21 @@
 #pragma once
+#include "Base/Export.hpp"
 #include "Base/Core.h"
-#include "single_include/nlohmann/json.hpp"
 #include <fstream>
 #include <atomic>
 #include <thread>
 #include <future>
-#include "Texture2DWrap.hpp"
+#include <optional>
+#include "Base/Texture2DWrap.hpp"
 #include "Base/EventDispatcher.hpp"
 #include "Events/AllPurposeEvent.h"
 #include "Events/StringEventData.hpp"
 #include "Base/GameThreadQueue.hpp"
 
-using json = nlohmann::json;
-
 class ResourceManager;
 
 /**
- * @class ResourceManager
+ * @class SONARENGINE_API ResourceManager
  * @brief Manages the loading, parsing, and lifecycle of game resources.
  *
  * Purpose:
@@ -56,14 +55,14 @@ struct TextureNPatchInfo
     std::string layout;
 
     // Conversion Operator to return a NPatchInfo implicitly
-    operator NPatchInfo()
+    operator Sonar::NPatchInfo()
     {
-        return NPatchInfo { Rectangle {(float)sourceX, (float)sourceY, (float)sourceWidth, (float)sourceHeight }, padLeft, padTop, padRight, padBottom };
+        return Sonar::NPatchInfo { Sonar::Rectangle {(float)sourceX, (float)sourceY, (float)sourceWidth, (float)sourceHeight }, padLeft, padTop, padRight, padBottom };
     }
 
-    NPatchInfo GetOfsettedNPatchInfo()
+    Sonar::NPatchInfo GetOfsettedNPatchInfo()
     {
-        return NPatchInfo{ Rectangle {(float)sourceX + HoverOffsetX, (float)sourceY + HoverOffsetY, (float)sourceWidth, (float)sourceHeight }, padLeft, padTop, padRight, padBottom };
+        return Sonar::NPatchInfo{ Sonar::Rectangle {(float)sourceX + HoverOffsetX, (float)sourceY + HoverOffsetY, (float)sourceWidth, (float)sourceHeight }, padLeft, padTop, padRight, padBottom };
 
     }
 };
@@ -156,7 +155,7 @@ struct TextureResource
 
 private:
 
-    Texture2D LoadedTexture = {};
+    Sonar::Texture2D LoadedTexture = {};
     std::atomic<int> RefCount = 0;
     std::atomic<bool> WorkerDone;
     std::atomic<bool> ShutdownRequested{false};
@@ -172,9 +171,12 @@ private:
     bool UnloadTexture();
 };
 
-class ResourceManager
+class SONARENGINE_API ResourceManager
 {
 public:
+	ResourceManager() = default;
+	ResourceManager(const ResourceManager&) = delete;
+	ResourceManager& operator=(const ResourceManager&) = delete;
 	void ParseJson();
     void CleanAllResources();
     void SetWorkingDirectory(std::string WorkingDirectory) { m_WorkingDirectory = std::move(WorkingDirectory); }

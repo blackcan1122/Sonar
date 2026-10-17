@@ -589,7 +589,7 @@ The switcher handles cleanup of the previous GameMode automatically, ensuring al
 
 ### Naval Units & Physics
 
-The engine includes a naval units system with proper type aliases and conversions:
+The SONAR game layer owns naval unit aliases and conversions:
 
 ```cpp
 namespace NavalUnits
@@ -643,11 +643,11 @@ public:
 };
 ```
 
-The `World` class collects these signals and provides them to displays:
+The game's `SignalSystem` collects these signals and provides them to displays:
 
 ```cpp
-std::vector<Signals> World::GetSignals();
-std::vector<int> World::GetAmbientLevel();
+std::vector<Signals> SignalSystem::GetSignals();
+std::vector<int> SignalSystem::GetAmbientLevel();
 ```
 
 ### Rendering Approaches
@@ -718,60 +718,16 @@ void Waterfall:: ProcessBackBuffer(int LinesToShift, ...)
 
 #### GPU-Based Rendering (World Map)
 
-The world map uses raw OpenGL (via GLAD) for rendering coastlines efficiently.  This bypasses Raylib for performance-critical geometry:
+SONAR owns continent geometry and camera calculations. It submits reusable line buffers through the engine API; the engine privately manages OpenGL buffers, shaders, uniforms, and draw-state restoration.
 
 ```cpp
-// In Map::Draw()
-rlDrawRenderBatchActive();  // Flush Raylib's batch
-
-// Switch to custom OpenGL shader
-Matrix viewProj = GetOpenGLProjectionMatrix();
-glUseProgram(shader.id);
-glUniformMatrix4fv(locMVP, 1, GL_TRUE, &viewProj. m0);
-
-// Render all continent coastlines with a single multi-draw call
-for (auto& Continent : World->Continents)
+Sonar::Matrix projection = GetOpenGLProjectionMatrix();
+for (float offset : worldCopyOffsets)
 {
-    Continent. RenderBuffer();  // Uses glMultiDrawArrays
+    for (auto& continent : Continents)
+        continent.RenderBuffer(shader, projection, offset);
 }
-
-// Return to Raylib's default shader
-glBindVertexArray(0);
-glUseProgram(rlGetShaderIdDefault());
 ```
-
-The `RenderBufferArrayLine` class manages VAO/VBO for efficient line rendering: 
-
-```cpp
-class RenderBufferArrayLine
-{
-    unsigned int vao = 0;
-    unsigned int vbo = 0;
-    
-    void LoadBuffer()
-    {
-        glGenVertexArrays(1, &vao);
-        glGenBuffers(1, &vbo);
-        glBindVertexArray(vao);
-        glBufferData(GL_ARRAY_BUFFER, 
-                     Vertices.size() * sizeof(float),
-                     Vertices.data(), GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-        glEnableVertexAttribArray(0);
-    }
-    
-    void RenderBuffer()
-    {
-        glBindVertexArray(vao);
-        glMultiDrawArrays(GL_LINE_LOOP, 
-                          GLOffsets.data(),   // Start indices
-                          GLCounts.data(),    // Vertex counts per loop
-                          DrawCount);         // Number of loops
-    }
-};
-```
-
-This allows rendering thousands of coastline segments with a single draw call, which is significantly faster than individual Raylib draw calls. 
 
 ### Custom Shaders
 
@@ -896,10 +852,10 @@ public:
     virtual void Draw() override
     {
         // Draw to the internal render target
-        BeginTextureMode(ActiveRenderTarget);
+        BeginDisplayDraw();
         ClearBackground(BLACK);
         // ... your rendering code
-        EndTextureMode();
+        EndDisplayDraw();
     }
 };
 
@@ -1055,25 +1011,17 @@ The game layer is where the submarine stuff lives. It uses SonarEngine's systems
 
 ## Getting Started
 
-### Prerequisites
+### Building and SDK usage
 
-Dependencies download automatically via Premake: 
-- [Raylib](https://github.com/raysan5/raylib) (rendering backend - may change in the future)
-- [spdlog](https://github.com/gabime/spdlog)
-- [nlohmann/json](https://github.com/nlohmann/json)
+The engine is a shared C++20 library. SONAR links only SONARENGINE; raylib, spdlog, and JSON remain engine implementation dependencies. CMake replaces Premake.
 
-### Building
-
-```bash
-git clone https://github.com/blackcan1122/Sonar.git
-cd Sonar
-
-# Visual Studio 2022
-build-VisualStudio2022.bat
-
-# MinGW-W64
-build-MinGW-W64.bat
+```sh
+cmake --preset mingw-debug
+cmake --build --preset mingw-debug
+ctest --test-dir out/mingw-debug --output-on-failure
 ```
+
+Use `msvc` / `msvc-debug` for Visual Studio, or `linux-debug` for Linux GCC/Ninja. See [SDK build and API documentation](docs/SDK.md) for prerequisites, Release builds, installation, and consuming the engine from another repository.
 
 ### Running
 
@@ -1088,20 +1036,15 @@ Default window:  1280x720 at 60 FPS
 
 ```
 Sonar/
-├── src/
-│   ├── main.cpp
-│   ├── public/                 # Headers
-│   │   ├── Base/               # Engine core (GameInstance, Factory, SClass, etc.)
-│   │   ├── Entities/           # Game entities (Player, submarines)
-│   │   ├── Events/             # Event types (KeyEvent, MouseEvent, AllPurposeEvent)
-│   │   ├── GameModes/          # Game states (Menu, Sandbox, Options)
-│   │   ├── Rendering/          # Render utilities
-│   │   ├── StateMachines/      # State management
-│   │   └── UI/                 # UI components (Button, TextBox, Display, GridLayoutManager)
-│   ├── private/                # Implementations
-│   └── shaders/                # GLSL shaders
-├── resources/                  # Assets and JSON configs
-└── images/                     # Repo images
+  CMakeLists.txt             # Shared engine, game, installation, and packaging
+  CMakePresets.json          # MSVC and GCC/Ninja configurations
+  src/SONARENGINE/public/    # Installed engine API
+  src/SONARENGINE/private/   # Engine implementation and backend adapters
+  src/SONAR/                 # Game entry point, headers, implementation, shaders
+  resources/                # Game assets and manifests
+  examples/sdk-consumer/     # Independent engine consumer
+  tests/                    # Public header, SDK, graphics, and game checks
+  docs/SDK.md               # Build and API contract
 ```
 
 ## What's Next

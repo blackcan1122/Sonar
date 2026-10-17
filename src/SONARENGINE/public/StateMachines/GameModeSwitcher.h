@@ -1,9 +1,8 @@
 #pragma once
+#include "Base/Export.hpp"
 #include "Base/StateMachine.h"
 
-
-
-class GameModeSwitcher : public StateMachine
+class SONARENGINE_API GameModeSwitcher : public StateMachine
 {
 private:
 

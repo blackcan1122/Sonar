@@ -4,7 +4,7 @@
 
 class Display;
 
-class DisplayMoveData : public EventData
+class SONARENGINE_API DisplayMoveData : public EventData
 {
 	AUTOBODY(DisplayMoveData, EventData)
 public:
@@ -12,12 +12,12 @@ public:
 
 	float NewX = 0.0f;
 	float NewY = 0.0f;
-	
+
 	float MouseX = 0.0f;
 	float MouseY = 0.0f;
-	
+
 	float DisplayWidth = 0.0f;
 	float DisplayHeight = 0.0f;
-	
+
 	bool bIsMoveComplete = false;
 };

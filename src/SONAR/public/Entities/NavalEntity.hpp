@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base/NavalTypedefs.h"
+#include "SONAR/NavalUnits.hpp"
 #include "Base/Entity.hpp"
 
 class NavalEntity : public Entity
@@ -17,7 +17,7 @@ public:
 
 	NavalUnits::Knot GetCurrentSpeed() const { return m_CurrentKnots; }
 
-	void MoveEntityToPosition(Vector2 TargetPosition);
+	void MoveEntityToPosition(Sonar::Vector2 TargetPosition);
 
 	virtual void SetSpeed(NavalUnits::Knot DesiredKnots);
 	virtual void SetInitialSpeed(NavalUnits::Knot DesiredKnots);

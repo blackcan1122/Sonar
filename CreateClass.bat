@@ -10,8 +10,14 @@ set /p classname=Enter the class name:
 :: Prompt for the subdirectory name
 set /p subdirname=Enter the subdirectory name:
 
-:: Define the base src directory (assumed to be inside the batch file directory)
-set "src_dir=%base_dir%src"
+:: Select the module so generated files stay inside the engine/game split.
+set "module=SONAR"
+set /p module=Enter module (SONAR or SONARENGINE) [SONAR]:
+if /i not "%module%"=="SONAR" if /i not "%module%"=="SONARENGINE" (
+    echo Invalid module.
+    exit /b 1
+)
+set "src_dir=%base_dir%src\%module%"
 
 :: Define public and private directories with the subdirectory name inside them
 set "public_dir=%src_dir%\public\%subdirname%"
@@ -39,7 +45,7 @@ echo Files created successfully:
 echo Header: %header_file%
 echo Source: %source_file%
 
-build-VisualStudio2022.bat
+:: CMake discovers the new files on the next build.
 
 endlocal
 pause

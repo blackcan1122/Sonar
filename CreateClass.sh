@@ -9,8 +9,14 @@ read -p "Enter the class name: " classname
 # Prompt for the subdirectory name
 read -p "Enter the subdirectory name: " subdirname
 
-# Define the base src directory
-src_dir="$base_dir/src"
+# Keep generated files inside the selected engine/game module.
+read -p "Enter module (SONAR or SONARENGINE) [SONAR]: " module
+module="${module:-SONAR}"
+case "$module" in
+    SONAR|SONARENGINE) ;;
+    *) echo "Invalid module" >&2; exit 1 ;;
+esac
+src_dir="$base_dir/src/$module"
 
 # Define public and private directories with the subdirectory name inside them
 public_dir="$src_dir/public/$subdirname"
@@ -39,7 +45,4 @@ echo "Files created successfully:"
 echo "Header: $header_file"
 echo "Source: $source_file"
 
-# Make the script executable if build exists
-if [ -f "$base_dir/Makefile" ]; then
-    make -C "$base_dir"
-fi
+# CMake discovers the new files on the next build.

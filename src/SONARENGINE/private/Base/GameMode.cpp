@@ -30,7 +30,7 @@ GameMode::~GameMode()
 	#endif
 	// Set flag to prevent UnregisterObject calls during destruction
 	m_IsDestroying = true;
-	
+
 	// Clear objects map - this will trigger shared_ptr destructors
 	// but UnregisterObject calls will be ignored due to m_IsDestroying flag
 	    // Remove all event listeners FIRST to break the circular reference
@@ -51,7 +51,7 @@ GameMode::~GameMode()
 
 void GameMode::Update()
 {
-	float Dt = GetFrameTime();
+	float Dt = Sonar::GetFrameTime();
 	for (auto& DefaultTickObj : m_ObjectsByTickGroup[ETickGroup::DefaultTick])
 	{
 		auto ObjPtr = DefaultTickObj.TryLoad();
@@ -196,7 +196,7 @@ void GameMode::UnregisterObject(IObject* inObject)
 	if (m_IsDestroying) {
 		return;
 	}
-	
+
 	m_Objects.erase(inObject->GetName());
 }
 

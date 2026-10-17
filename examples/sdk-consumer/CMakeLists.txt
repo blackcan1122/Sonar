@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.25)
+project(EngineConsumer LANGUAGES CXX)
+find_package(SONARENGINE CONFIG REQUIRED)
+add_executable(engine_consumer main.cpp)
+target_link_libraries(engine_consumer PRIVATE SONARENGINE::SONARENGINE)
+enable_testing()
+add_test(NAME engine_consumer COMMAND engine_consumer)

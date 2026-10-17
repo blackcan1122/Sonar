@@ -3,7 +3,7 @@
 
 Display::Display(int Width, int Height)
 {
-	ActiveRenderTarget = LoadRenderTexture(Width, Height);
+	ActiveRenderTarget = Sonar::LoadRenderTexture(Width, Height);
 	SourceRect = { 0, 0, (float)Width, -(float)Height };
 	DestinationRect = { 0, 0, (float)Width, (float)Height };
 	m_TickGroup.SetTickGroup(ETickGroup::PostTick);
@@ -11,14 +11,14 @@ Display::Display(int Width, int Height)
 
 Display::~Display()
 {
-	UnloadRenderTexture(ActiveRenderTarget);
+	Sonar::UnloadRenderTexture(ActiveRenderTarget);
 }
 
 void Display::Draw()
 {
-	BeginTextureMode(ActiveRenderTarget);
-	ClearBackground(BLACK);
-	EndTextureMode();
+	Sonar::BeginTextureMode(ActiveRenderTarget);
+	Sonar::ClearBackground(Sonar::BLACK);
+	Sonar::EndTextureMode();
 }
 
 void Display::MarkForDestruction()
@@ -38,7 +38,7 @@ void Display::Initialize()
 	MoveData = std::make_shared<DisplayMoveData>();
 }
 
-void Display::SetPosition(Vector2 NewPosition)
+void Display::SetPosition(Sonar::Vector2 NewPosition)
 {
 	DestinationRect.x = NewPosition.x;
 	DestinationRect.y = NewPosition.y;
@@ -51,12 +51,12 @@ void Display::SetPosition(Vector2 NewPosition)
 
 void Display::RenderToMainBuffer()
 {
-	DrawTexturePro(ActiveRenderTarget.texture, SourceRect, GetDisplayedRect(), { 0, 0 }, 0, WHITE);
+	Sonar::DrawTexturePro(ActiveRenderTarget.texture, SourceRect, GetDisplayedRect(), { 0, 0 }, 0, Sonar::WHITE);
 	DrawResizeHandle();
 	DrawMoveHandle();
 }
 
-Rectangle Display::GetDisplayedRect() const
+Sonar::Rectangle Display::GetDisplayedRect() const
 {
 	if (m_DisplayPreviewRect.has_value())
 	{
@@ -66,7 +66,7 @@ Rectangle Display::GetDisplayedRect() const
 	return DestinationRect;
 }
 
-void Display::SetDisplayPreviewRect(const Rectangle& PreviewRect)
+void Display::SetDisplayPreviewRect(const Sonar::Rectangle& PreviewRect)
 {
 	m_DisplayPreviewRect = PreviewRect;
 }
@@ -91,8 +91,8 @@ void Display::ResizeDisplay(int NewWidth, int NewHeight)
 
 	std::lock_guard<std::mutex> lock(m_ResizeMutex);
 
-	UnloadRenderTexture(ActiveRenderTarget);
-	ActiveRenderTarget = LoadRenderTexture(NewWidth, NewHeight);
+	Sonar::UnloadRenderTexture(ActiveRenderTarget);
+	ActiveRenderTarget = Sonar::LoadRenderTexture(NewWidth, NewHeight);
 
 	SourceRect = { 0, 0, (float)NewWidth, -(float)NewHeight };
 	DestinationRect.width = (float)NewWidth;
@@ -113,11 +113,11 @@ void Display::HandleResizeInteraction()
 		return;
 	}
 
-	Vector2 mousePos = GetMousePosition();
-	Rectangle handleRect = GetResizeHandleRect();
-	bool isOverHandle = CheckCollisionPointRec(mousePos, handleRect);
+	Sonar::Vector2 mousePos = Sonar::GetMousePosition();
+	Sonar::Rectangle handleRect = GetResizeHandleRect();
+	bool isOverHandle = Sonar::CheckCollisionPointRec(mousePos, handleRect);
 
-	if (isOverHandle && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+	if (isOverHandle && Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
 	{
 		bIsResizing = true;
 		m_ResizeStartMousePos = mousePos;
@@ -126,7 +126,7 @@ void Display::HandleResizeInteraction()
 
 	if (bIsResizing)
 	{
-		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+		if (Sonar::IsMouseButtonDown(Sonar::MOUSE_BUTTON_LEFT))
 		{
 			float deltaX = mousePos.x - m_ResizeStartMousePos.x;
 			float deltaY = mousePos.y - m_ResizeStartMousePos.y;
@@ -159,7 +159,7 @@ void Display::HandleResizeInteraction()
 		}
 		else
 		{
-			const Rectangle DisplayedRect = GetDisplayedRect();
+			const Sonar::Rectangle DisplayedRect = GetDisplayedRect();
 			bIsResizing = false;
 
 			ResizeData->DisplayToResize = SoftObjectPath<Display>(this->m_Name);
@@ -184,14 +184,14 @@ void Display::DrawResizeHandle()
 		return;
 	}
 
-	Rectangle handleRect = GetResizeHandleRect();
-	Vector2 bottomRight = { handleRect.x + handleRect.width, handleRect.y + handleRect.height };
-	Color gripColor = bIsResizing ? YELLOW : GRAY;
+	Sonar::Rectangle handleRect = GetResizeHandleRect();
+	Sonar::Vector2 bottomRight = { handleRect.x + handleRect.width, handleRect.y + handleRect.height };
+	Sonar::Color gripColor = bIsResizing ? Sonar::YELLOW : Sonar::GRAY;
 
 	for (int i = 0; i < 3; i++)
 	{
 		float offset = (float)(i * 4 + 3);
-		DrawLine(
+		Sonar::DrawLine(
 			(int)(bottomRight.x - offset), (int)bottomRight.y,
 			(int)bottomRight.x, (int)(bottomRight.y - offset),
 			gripColor
@@ -199,9 +199,9 @@ void Display::DrawResizeHandle()
 	}
 }
 
-Rectangle Display::GetResizeHandleRect() const
+Sonar::Rectangle Display::GetResizeHandleRect() const
 {
-	const Rectangle DisplayedRect = GetDisplayedRect();
+	const Sonar::Rectangle DisplayedRect = GetDisplayedRect();
 	return {
 		DisplayedRect.x + DisplayedRect.width - m_ResizeHandleSize,
 		DisplayedRect.y + DisplayedRect.height - m_ResizeHandleSize,
@@ -217,11 +217,11 @@ void Display::HandleMoveInteraction()
 		return;
 	}
 
-	Vector2 MousePos = GetMousePosition();
-	Rectangle HandleRect = GetMoveHandleRect();
-	bool IsOverHandle = CheckCollisionPointRec(MousePos, HandleRect);
+	Sonar::Vector2 MousePos = Sonar::GetMousePosition();
+	Sonar::Rectangle HandleRect = GetMoveHandleRect();
+	bool IsOverHandle = Sonar::CheckCollisionPointRec(MousePos, HandleRect);
 
-	if (IsOverHandle && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+	if (IsOverHandle && Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
 	{
 		bIsMoving = true;
 		m_MoveStartMousePos = MousePos;
@@ -230,7 +230,7 @@ void Display::HandleMoveInteraction()
 
 	if (bIsMoving)
 	{
-		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+		if (Sonar::IsMouseButtonDown(Sonar::MOUSE_BUTTON_LEFT))
 		{
 			float DeltaX = MousePos.x - m_MoveStartMousePos.x;
 			float DeltaY = MousePos.y - m_MoveStartMousePos.y;
@@ -276,22 +276,22 @@ void Display::DrawMoveHandle()
 		return;
 	}
 
-	Rectangle HandleRect = GetMoveHandleRect();
-	Color GripColor = bIsMoving ? YELLOW : GRAY;
+	Sonar::Rectangle HandleRect = GetMoveHandleRect();
+	Sonar::Color GripColor = bIsMoving ? Sonar::YELLOW : Sonar::GRAY;
 
 	float CenterX = HandleRect.x + HandleRect.width / 2;
 	float CenterY = HandleRect.y + HandleRect.height / 2;
 	float Spacing = 3.0f;
 
-	DrawCircle((int)CenterX, (int)(CenterY - Spacing), 2, GripColor);
-	DrawCircle((int)CenterX, (int)(CenterY + Spacing), 2, GripColor);
-	DrawCircle((int)(CenterX - Spacing), (int)CenterY, 2, GripColor);
-	DrawCircle((int)(CenterX + Spacing), (int)CenterY, 2, GripColor);
+	Sonar::DrawCircle((int)CenterX, (int)(CenterY - Spacing), 2, GripColor);
+	Sonar::DrawCircle((int)CenterX, (int)(CenterY + Spacing), 2, GripColor);
+	Sonar::DrawCircle((int)(CenterX - Spacing), (int)CenterY, 2, GripColor);
+	Sonar::DrawCircle((int)(CenterX + Spacing), (int)CenterY, 2, GripColor);
 }
 
-Rectangle Display::GetMoveHandleRect() const
+Sonar::Rectangle Display::GetMoveHandleRect() const
 {
-	const Rectangle DisplayedRect = GetDisplayedRect();
+	const Sonar::Rectangle DisplayedRect = GetDisplayedRect();
 	return {
 		DisplayedRect.x,
 		DisplayedRect.y,
@@ -299,3 +299,5 @@ Rectangle Display::GetMoveHandleRect() const
 		(float)m_MoveHandleSize
 	};
 }
+void Display::BeginDisplayDraw() { Sonar::BeginTextureMode(ActiveRenderTarget); }
+void Display::EndDisplayDraw() { Sonar::EndTextureMode(); }

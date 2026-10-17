@@ -1,5 +1,6 @@
 #pragma once
 #include "Base/Core.h"
+#include "Base/EventDispatcher.hpp"
 #include "Base/EngineRuntimeContext.hpp"
 #include "Base/GameMode.h"
 #include "Events/KeyEvent.hpp"
@@ -112,4 +113,10 @@ public:
 		m_Outter->RegisterObject(std::dynamic_pointer_cast<IObject>(Obj));
 		return SoftObjectPath<T>(CastedObj->GetName());
 	}
+};
+
+template<typename T, typename... Args>
+SoftObjectPath<T> GameMode::NewObject(Args&&... args)
+{
+	return m_ObjectFactory->NewObject<T>(std::forward<Args>(args)...);
 };

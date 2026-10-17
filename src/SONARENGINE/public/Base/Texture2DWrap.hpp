@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/Macros.h"
+#include "Rendering/Graphics.hpp"
 
 
 class ResourceManager;
@@ -25,9 +26,9 @@ struct TextureResource;
 class SONARENGINE_API SharedTexture2D
 {
 public:
-	
+
 	SharedTexture2D() = default;
-	SharedTexture2D(Texture2D* TextureHandle, TextureResource* Outter);
+	SharedTexture2D(Sonar::Texture2D* TextureHandle, TextureResource* Outter);
 	SharedTexture2D(const SharedTexture2D& other);
 	SharedTexture2D(SharedTexture2D&& Other) noexcept;
 
@@ -41,8 +42,8 @@ public:
 	SharedTexture2D& operator=(SharedTexture2D&& Other);
 
 	// Conversion Operator to Texture2D
-	operator Texture2D();
-	operator Texture2D* ();
+	operator Sonar::Texture2D();
+	operator Sonar::Texture2D* ();
 
 	bool isValid() const;
 
@@ -51,6 +52,6 @@ private:
 
 	bool m_IsInitialized = false;
 	TextureResource* m_Outter = nullptr;
-	Texture2D* m_Texture = nullptr;
+	Sonar::Texture2D* m_Texture = nullptr;
 
 };

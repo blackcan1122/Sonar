@@ -1,4 +1,5 @@
 #pragma once
+#include <cstring>
 #include "Base/Core.h"
 #include "UI/Display.hpp"
 #include <atomic>
@@ -18,7 +19,7 @@ struct PixelData
 	uint8_t A = 255;
 
 	PixelData() = default;
-	PixelData(Color inColor)
+	PixelData(Sonar::Color inColor)
 	{
 		R = inColor.r;
 		G = inColor.g;
@@ -34,9 +35,9 @@ struct PixelData
 		A = inA;
 	}
 
-	operator Color() const
+	operator Sonar::Color() const
 	{
-		 Color ReturnColor{ R,G,B,A };
+		 Sonar::Color ReturnColor{ R,G,B,A };
 		 return ReturnColor;
 	}
 };
@@ -54,7 +55,7 @@ struct PixelBuffer
 	}
 
 	PixelBuffer() = default;
-	
+
 	PixelBuffer(unsigned int Width, unsigned int Height)
 	{
 		PixelArray.resize(Width * Height);
@@ -120,7 +121,7 @@ private:
 	std::mutex AccDeltaMutex;
 	std::shared_ptr<PixelBuffer> FrontBuffer;
 	std::shared_ptr<PixelBuffer> BackBuffer;
-	Texture2D FrontTexture;
+	Sonar::Texture2D FrontTexture;
 	std::atomic<bool> WorkerDone;
 	std::atomic<bool> RenderReady;
 	std::future<void> WorkerFuture;
