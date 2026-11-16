@@ -8,6 +8,9 @@
 #include "StateMachines/GameModeSwitcher.h"
 #include "Base/GameThreadQueue.hpp"
 
+#include "Base/SSubSystem.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
+
 class AssetRegistry;
 
 struct WindowProperties
@@ -163,6 +166,8 @@ public:
 
 	static GameMode* GetCurrentGameMode();
 	static std::shared_ptr<AssetRegistry> GetAssetRegistry();
+
+	static SSubSystem* GetSubSystem;
 
 
 	static EventDispatcher& GetUIEventDispatcher();
