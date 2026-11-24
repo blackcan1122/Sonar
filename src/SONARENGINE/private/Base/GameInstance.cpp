@@ -67,6 +67,9 @@ GameInstance::GameInstance(WindowProperties Properties)
 	LOG_INFO(l_GAME_INSTANCE, SONAR_FMT("sizeof std::string: {}", (sizeof(std::string))));
 
 	Sonar::SetTraceLogCallback(&GameInstance::RedirectTraceLog);
+
+	GetSubSystem = new GraphicSubSystem();
+	GetSubSystem->Initialize();
 }
 
 TextureResource* GameInstance::GetResource(std::string Name)
@@ -89,17 +92,6 @@ void GameInstance::InitGameInstance(WindowProperties Properties)
 		LOG_ERROR(l_GAME_INSTANCE, "It was tried to initialize a GameInstance, when GameInstace is already initialized");
 		return;
 	}
-	LOG_INFO(l_GAME_INSTANCE, "FUUUCK");
-	if (GetSubSystem == nullptr)
-	{
-		LOG_ERROR(l_GAME_INSTANCE, "FOTZE SubSystem not initialized");
-		return;
-	}
-	else
-	{
-		LOG_INFO(l_GAME_INSTANCE, "FOTZE SubSystem initialized");
-		GetSubSystem->Initialize();
-	}	
 
 	g_WorkingDirectory = std::filesystem::current_path().generic_string();
 	g_ResourceRoot = g_WorkingDirectory + "/resources";
