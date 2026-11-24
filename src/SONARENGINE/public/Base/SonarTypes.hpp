@@ -1,11 +1,8 @@
 #pragma once
 #include "Base/Export.hpp"
-#include <memory>
-#include <vector>
 #include <cstdarg>
 // Engine values and opaque resources. No backend headers are needed by consumers.
 namespace Sonar {
-struct BackendAccess;
 struct Vector2 {
     float x;                
     float y;                
@@ -285,109 +282,66 @@ inline constexpr Color BLANK{0,0,0,0};
 inline constexpr Color MAGENTA{255,0,255,255};
 inline constexpr Color RAYWHITE{245,245,245,255};
 inline constexpr float PI=3.14159265358979323846f, DEG2RAD=PI/180.0f, RAD2DEG=180.0f/PI;
+// Non-owning resource descriptors. Copies refer to the same underlying resource.
+// The caller/resource manager must unload each resource once, after its last use.
+// IsValid checks descriptor fields; it cannot detect resources freed through another copy.
 struct Texture2D {
-    int width = 0, height = 0;
-    SONARENGINE_API bool IsValid() const;
-private:
-    std::shared_ptr<void> native;
-    friend struct BackendAccess;
+    unsigned int id = 0;
+    int width = 0;
+    int height = 0;
+    int mipmaps = 0;
+    int format = 0;
+
+    bool IsValid() const noexcept { return id != 0; }
 };
+using Texture = Texture2D;
+using TextureCubemap = Texture2D;
+
 struct Shader {
-    
-    SONARENGINE_API bool IsValid() const;
-private:
-    std::shared_ptr<void> native;
-    friend struct BackendAccess;
+    unsigned int id = 0;
+    int* locs = nullptr;
+
+    bool IsValid() const noexcept { return id != 0; }
 };
+
+struct AudioStream {
+    void* buffer = nullptr;
+    void* processor = nullptr;
+    unsigned int sampleRate = 0;
+    unsigned int sampleSize = 0;
+    unsigned int channels = 0;
+
+    bool IsValid() const noexcept { return buffer != nullptr; }
+};
+
 struct Music {
-    
-    SONARENGINE_API bool IsValid() const;
-private:
-    std::shared_ptr<void> native;
-    friend struct BackendAccess;
+    AudioStream stream{};
+    unsigned int frameCount = 0;
+    bool looping = false;
+    int ctxType = 0;
+    void* ctxData = nullptr;
+
+    bool IsValid() const noexcept { return stream.IsValid(); }
 };
+
 struct RenderTexture2D {
-    Texture2D texture;
-    SONARENGINE_API bool IsValid() const;
-private:
-    std::shared_ptr<void> native;
-    friend struct BackendAccess;
+    unsigned int id = 0;
+    Texture2D texture{};
+    Texture2D depth{};
+
+    bool IsValid() const noexcept { return id != 0; }
 };
-struct Image { std::vector<Color> pixels; int width=0, height=0; };
+using RenderTexture = RenderTexture2D;
+
+struct Image {
+    void* data = nullptr;
+    int width = 0;
+    int height = 0;
+    int mipmaps = 0;
+    int format = 0;
+
+    bool IsValid() const noexcept { return data != nullptr; }
+};
+
 using TraceLogCallback = void (*)(int, const char*, va_list);
-SONARENGINE_API void InitWindow(int width, int height, const char *title);
-SONARENGINE_API void CloseWindow(void);
-SONARENGINE_API bool WindowShouldClose(void);
-SONARENGINE_API int GetScreenWidth(void);
-SONARENGINE_API int GetScreenHeight(void);
-SONARENGINE_API bool IsCursorOnScreen(void);
-SONARENGINE_API void ClearBackground(Color color);
-SONARENGINE_API void BeginDrawing(void);
-SONARENGINE_API void EndDrawing(void);
-SONARENGINE_API void BeginTextureMode(RenderTexture2D target);
-SONARENGINE_API void EndTextureMode(void);
-SONARENGINE_API Shader LoadShader(const char *vsFileName, const char *fsFileName);
-SONARENGINE_API void UnloadShader(Shader resource);
-SONARENGINE_API void SetTargetFPS(int fps);
-SONARENGINE_API float GetFrameTime(void);
-SONARENGINE_API int GetRandomValue(int min, int max);
-SONARENGINE_API void SetConfigFlags(unsigned int flags);
-SONARENGINE_API void SetTraceLogCallback(TraceLogCallback callback);
-SONARENGINE_API bool IsKeyPressed(int key);
-SONARENGINE_API bool IsKeyDown(int key);
-SONARENGINE_API int GetKeyPressed(void);
-SONARENGINE_API int GetCharPressed(void);
-SONARENGINE_API bool IsMouseButtonPressed(int button);
-SONARENGINE_API bool IsMouseButtonDown(int button);
-SONARENGINE_API bool IsMouseButtonReleased(int button);
-SONARENGINE_API Vector2 GetMousePosition(void);
-SONARENGINE_API float GetMouseWheelMove(void);
-SONARENGINE_API void SetMouseCursor(int cursor);
-SONARENGINE_API void DrawLine(int startPosX, int startPosY, int endPosX, int endPosY, Color color);
-SONARENGINE_API void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color);
-SONARENGINE_API void DrawCircle(int centerX, int centerY, float radius, Color color);
-SONARENGINE_API void DrawCircleLinesV(Vector2 center, float radius, Color color);
-SONARENGINE_API void DrawRectangle(int posX, int posY, int width, int height, Color color);
-SONARENGINE_API void DrawRectangleRec(Rectangle rec, Color color);
-SONARENGINE_API void DrawRectangleLinesEx(Rectangle rec, float lineThick, Color color);
-SONARENGINE_API void DrawRectangleRounded(Rectangle rec, float roundness, int segments, Color color);
-SONARENGINE_API void DrawRectangleRoundedLinesEx(Rectangle rec, float roundness, int segments, float lineThick, Color color);
-SONARENGINE_API bool CheckCollisionPointRec(Vector2 point, Rectangle rec);
-SONARENGINE_API bool CheckCollisionPointCircle(Vector2 point, Vector2 center, float radius);
-SONARENGINE_API Image LoadImageFromTexture(Texture2D texture);
-SONARENGINE_API Image GenImageColor(int width, int height, Color color);
-SONARENGINE_API Texture2D LoadTexture(const char *fileName);
-SONARENGINE_API Texture2D LoadTextureFromImage(Image image);
-SONARENGINE_API RenderTexture2D LoadRenderTexture(int width, int height);
-SONARENGINE_API void UnloadTexture(Texture2D resource);
-SONARENGINE_API void UnloadRenderTexture(RenderTexture2D resource);
-SONARENGINE_API void UpdateTexture(Texture2D texture, const void *pixels);
-SONARENGINE_API void GenTextureMipmaps(Texture2D *texture);
-SONARENGINE_API void SetTextureFilter(Texture2D texture, int filter);
-SONARENGINE_API void DrawTexture(Texture2D texture, int posX, int posY, Color tint);
-SONARENGINE_API void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint);
-SONARENGINE_API void DrawTextureNPatch(Texture2D texture, NPatchInfo nPatchInfo, Rectangle dest, Vector2 origin, float rotation, Color tint);
-SONARENGINE_API Color ColorAlpha(Color color, float alpha);
-SONARENGINE_API void DrawFPS(int posX, int posY);
-SONARENGINE_API void DrawText(const char *text, int posX, int posY, int fontSize, Color color);
-SONARENGINE_API int MeasureText(const char *text, int fontSize);
-SONARENGINE_API void InitAudioDevice(void);
-SONARENGINE_API void CloseAudioDevice(void);
-SONARENGINE_API Music LoadMusicStream(const char *fileName);
-SONARENGINE_API void UnloadMusicStream(Music resource);
-SONARENGINE_API void PlayMusicStream(Music music);
-SONARENGINE_API void UpdateMusicStream(Music music);
-SONARENGINE_API void StopMusicStream(Music music);
-SONARENGINE_API void SetMusicVolume(Music music, float volume);
-SONARENGINE_API void SetMusicLooping(Music music, bool looping);
-SONARENGINE_API float Clamp(float value, float min, float max);
-SONARENGINE_API Vector2 Vector2Add(Vector2 v1, Vector2 v2);
-SONARENGINE_API Vector2 Vector2Subtract(Vector2 v1, Vector2 v2);
-SONARENGINE_API Vector2 Vector2Scale(Vector2 v, float scale);
-SONARENGINE_API Vector2 Vector2Normalize(Vector2 v);
-SONARENGINE_API Vector2 Vector2Clamp(Vector2 v, Vector2 min, Vector2 max);
-SONARENGINE_API Matrix MatrixMultiply(Matrix left, Matrix right);
-SONARENGINE_API Matrix MatrixTranslate(float x, float y, float z);
-SONARENGINE_API Matrix MatrixScale(float x, float y, float z);
-inline void UnloadImage(Image&) {}
 }

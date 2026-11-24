@@ -1,3 +1,7 @@
+#include "Base/Math.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Controls/ControlSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include <cstring>
 #include "UI/TextBox.h"
 
@@ -172,13 +176,13 @@ void TextInputBox::Tick(float DeltaTime)
 		NumberOfLines = 0;
 	}
 
-	Sonar::DrawRectangle(this->Box.x, this->Box.y, this->Box.width, this->Box.height, this->BoxBackgroundColor);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangle(this->Box.x, this->Box.y, this->Box.width, this->Box.height, this->BoxBackgroundColor);
 
-	if (bIsFocused(Sonar::GetMousePosition()) && this->IsEditable)
+	if (bIsFocused(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition()) && this->IsEditable)
 	{
-		int PressedKey = Sonar::GetCharPressed();
+		int PressedKey = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetCharPressed();
 
-		if (Sonar::IsKeyPressed(Sonar::KEY_BACKSPACE))
+		if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsKeyPressed(Sonar::KEY_BACKSPACE))
 		{
 			if (LetterCount > 0)
 			{
@@ -194,9 +198,9 @@ void TextInputBox::Tick(float DeltaTime)
 			DelayTimer = 0.0f;
 			RepeatTimer = 0.0f;
 		}
-		else if (Sonar::IsKeyDown(Sonar::KEY_BACKSPACE))
+		else if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsKeyDown(Sonar::KEY_BACKSPACE))
 		{
-			float DeltaTimeFrame = Sonar::GetFrameTime();
+			float DeltaTimeFrame = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetFrameTime();
 			DelayTimer += DeltaTimeFrame;
 
 			if (DelayTimer >= Delay)
@@ -226,7 +230,7 @@ void TextInputBox::Tick(float DeltaTime)
 
 		if (strlen(StringToHold) < MaxChars && PressedKey > 0)
 		{
-			if (Sonar::MeasureText(StringToHold, FontSize) > Box.width && bContainsText)
+			if (GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().MeasureText(StringToHold, FontSize) > Box.width && bContainsText)
 			{
 				if (bWordWrap)
 				{
@@ -284,7 +288,7 @@ void TextInputBox::Tick(float DeltaTime)
 			pos++;
 		}
 
-		int textWidth = Sonar::MeasureText(TempString.c_str(), FontSize);
+		int textWidth = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().MeasureText(TempString.c_str(), FontSize);
 		int LineHeight = FontSize * LineCount;
 
 		float XPosition = (Box.width - textWidth) / 2.0f;
@@ -296,10 +300,10 @@ void TextInputBox::Tick(float DeltaTime)
 
 	if (IsEditable)
 	{
-		Sonar::DrawText(StringToHold, Box.x + TextOffset.x, Box.y + TextOffset.y, FontSize, FontColor);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(StringToHold, Box.x + TextOffset.x, Box.y + TextOffset.y, FontSize, FontColor);
 	}
 	else
 	{
-		Sonar::DrawText(Text.c_str(), Box.x + TextOffset.x, Box.y + TextOffset.y, FontSize, FontColor);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(Text.c_str(), Box.x + TextOffset.x, Box.y + TextOffset.y, FontSize, FontColor);
 	}
 }

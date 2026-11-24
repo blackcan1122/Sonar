@@ -1,3 +1,7 @@
+#include "Base/Math.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Controls/ControlSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "UI/Button.h"
 #include "Events/UIEvent.h"
 #include "Base/EventDispatcher.hpp"
@@ -75,7 +79,7 @@ Button& Button::CenterText()
 		pos++;
 	}
 
-	int textWidth = Sonar::MeasureText(m_Text.c_str(), FontSize);
+	int textWidth = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().MeasureText(m_Text.c_str(), FontSize);
 	int LineHeight = FontSize * LineCount;
 
 	float XPosition = (ButtonDim.width - textWidth) / 2.0f;
@@ -134,8 +138,8 @@ Button& Button::UpdateFontSize(int NewFontSize)
 
 Button& Button::SetStickyPosition(Sonar::Vector2 StickyPos)
 {
-	const int ScreenWidth = Sonar::GetScreenWidth();
-	const int ScreenHeight = Sonar::GetScreenHeight();
+	const int ScreenWidth = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth();
+	const int ScreenHeight = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight();
 
 	m_StickyPosition = StickyPos;
 	UpdateButtonPosition(StickyPos);
@@ -153,7 +157,7 @@ Button& Button::SetStickyPosition(int X, int Y)
 
 Button& Button::CalculateRelativePosition()
 {
-	Sonar::Vector2 CurrentPos = { static_cast<float>(Sonar::GetScreenWidth()) + m_OffsetPosition.x, static_cast<float>(Sonar::GetScreenHeight()) + m_OffsetPosition.y };
+	Sonar::Vector2 CurrentPos = { static_cast<float>(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth()) + m_OffsetPosition.x, static_cast<float>(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight()) + m_OffsetPosition.y };
 	UpdateButtonPosition(CurrentPos);
 
 	return *this;
@@ -210,12 +214,12 @@ std::shared_ptr<UIEvent> Button::OnClickEvent()
 
 bool Button::IsClicked(Sonar::Vector2 MousePosition, bool IsHovered)
 {
-	return Sonar::IsMouseButtonPressed(0) && IsHovered;
+	return GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(0) && IsHovered;
 }
 
 void Button::Tick(float DeltaTime)
 {
-	bool isHovered = (Sonar::CheckCollisionPointRec(Sonar::GetMousePosition(), ButtonDim) && Sonar::IsCursorOnScreen());
+	bool isHovered = (Sonar::CheckCollisionPointRec(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition(), ButtonDim) && GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsCursorOnScreen());
 
 	if (isHovered && m_WasLastHovered == false && HoverCallback)
 	{
@@ -228,7 +232,7 @@ void Button::Tick(float DeltaTime)
 
 	m_WasLastHovered = isHovered;
 
-	if (IsClicked(Sonar::GetMousePosition(), isHovered))
+	if (IsClicked(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition(), isHovered))
 	{
 		if (UsedEventDispatcher)
 		{
@@ -241,24 +245,24 @@ void Button::Tick(float DeltaTime)
 	{
 		if (m_IsRounded)
 		{
-			Sonar::DrawRectangleRounded(ButtonDim, m_Roundness, 32, m_BacgroundColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRounded(ButtonDim, m_Roundness, 32, m_BacgroundColor);
 		}
 		else
 		{
-			Sonar::DrawRectangle(ButtonDim.x, ButtonDim.y, ButtonDim.width, ButtonDim.height, m_BacgroundColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangle(ButtonDim.x, ButtonDim.y, ButtonDim.width, ButtonDim.height, m_BacgroundColor);
 		}
 	}
 	else
 	{
 		if (m_UseNpatch)
 		{
-			Sonar::DrawTextureNPatch(m_Texture, m_NpatchTextureInfo, ButtonDim, { 0, 0 }, 0, Sonar::WHITE);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTextureNPatch(m_Texture, m_NpatchTextureInfo, ButtonDim, { 0, 0 }, 0, Sonar::WHITE);
 		}
 		else
 		{
-			Sonar::DrawTexture(m_Texture, ButtonDim.x, ButtonDim.y, Sonar::WHITE);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTexture(m_Texture, ButtonDim.x, ButtonDim.y, Sonar::WHITE);
 		}
 	}
 
-	Sonar::DrawText(m_Text.c_str(), ButtonDim.x + TextPosition.x, ButtonDim.y + TextPosition.y, FontSize, m_TextColor);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(m_Text.c_str(), ButtonDim.x + TextPosition.x, ButtonDim.y + TextPosition.y, FontSize, m_TextColor);
 }

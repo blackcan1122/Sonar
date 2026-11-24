@@ -1,3 +1,4 @@
+#include "Base/Math.hpp"
 #include "SONAR/NavalUnits.hpp"
 #include "Entities/BaseSubmarine.hpp"
 #include "Base/EngineRuntimeContext.hpp"

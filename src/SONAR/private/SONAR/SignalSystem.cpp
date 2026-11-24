@@ -1,3 +1,4 @@
+#include "Base/Utility.hpp"
 #include "SONAR/SignalSystem.hpp"
 
 #include "Base/EngineRuntimeContext.hpp"

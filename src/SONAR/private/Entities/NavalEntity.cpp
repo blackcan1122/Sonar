@@ -1,8 +1,9 @@
+#include "Base/Math.hpp"
 #include "SONAR/NavalUnits.hpp"
 #include "Entities/NavalEntity.hpp"
 
 #include "Base/Logging.h"
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 
 void NavalEntity::MoveEntityToPosition(Sonar::Vector2 TargetPosition)
 {

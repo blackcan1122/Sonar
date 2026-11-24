@@ -4,7 +4,7 @@
 #include "SONAR/NavalUnits.hpp"
 #include "Base/SoftObject.hpp"
 
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 
 class Entity;
 

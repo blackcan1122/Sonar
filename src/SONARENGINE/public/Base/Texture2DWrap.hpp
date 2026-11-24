@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base/Macros.h"
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 
 
 class ResourceManager;

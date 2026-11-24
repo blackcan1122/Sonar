@@ -1,14 +1,17 @@
 #pragma once
 
-#include "Base/Core.h"
+#include "Base/Export.hpp"
+#include "Base/Macros.h"
 
-class SSubSystem
+// Engine service interface, independent of the IObject/reflection hierarchy.
+class SONARENGINE_API SSubSystem
 {
-    mutable bool m_Initialized = false;
+    ROOTBODY(SSubSystem)
 public:
-
     SSubSystem() = default;
-    virtual ~SSubSystem() = default;
+    virtual ~SSubSystem();
+    SSubSystem(const SSubSystem&) = delete;
+    SSubSystem& operator=(const SSubSystem&) = delete;
 
     void Initialize()
     {
@@ -18,6 +21,7 @@ public:
             m_Initialized = true;
         }
     }
+
     void Shutdown()
     {
         if (m_Initialized)
@@ -27,13 +31,14 @@ public:
         }
     }
 
-    void Update()
-    {
-        OnUpdate();
-    }
+    void Update() { if (m_Initialized) OnUpdate(); }
+    bool IsInitialized() const noexcept { return m_Initialized; }
 
 protected:
-    virtual void OnInitialize(){};
-    virtual void OnShutdown(){};
-    virtual void OnUpdate(){};
+    virtual void OnInitialize() = 0;
+    virtual void OnShutdown() = 0;
+    virtual void OnUpdate() = 0;
+
+private:
+    bool m_Initialized = false;
 };

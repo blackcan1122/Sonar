@@ -1,3 +1,6 @@
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Controls/ControlSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "GameModes/SandboxGameMode.hpp"
 #include "Entities/BaseSubmarine.hpp"
 #include "Base/Factory.hpp"
@@ -100,7 +103,7 @@ void SandboxGameMode::BeginPlay()
 
 void SandboxGameMode::Update()
 {
-		Sonar::ClearBackground(Sonar::BLACK);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ClearBackground(Sonar::BLACK);
 		GameMode::Update();
 
 
@@ -114,14 +117,14 @@ void SandboxGameMode::Update()
 		//Entity::StaticClass()->SetPropertyValue("m_Position", PlayerOne.TryLoad().get(), true); // Wrong type test
 
 #if DEBUG
-		Sonar::DrawFPS(GetRuntimeContext().GetScreenWidth() - 100, 20);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawFPS(GetRuntimeContext().GetScreenWidth() - 100, 20);
 #endif
-		if (Sonar::IsKeyPressed(Sonar::KEY_K))
+		if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsKeyPressed(Sonar::KEY_K))
 		{
 			GetRuntimeContext().RequestGameModeChange("Menu");
 		}
 
-		if (Sonar::IsKeyPressed(Sonar::KEY_T))
+		if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsKeyPressed(Sonar::KEY_T))
 		{
 			for (auto prop : SubmarinePlayer::StaticClass()->GetAllProperties())
 			{
@@ -130,12 +133,12 @@ void SandboxGameMode::Update()
 			SubmarinePlayer::StaticClass()->SetPropertyValue("m_DisplayName", PlayerOne.TryLoad().get(), std::string("FIIICKER"));
 		}
 
-		if (Sonar::IsKeyPressed(Sonar::KEY_Y))
+		if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsKeyPressed(Sonar::KEY_Y))
 		{
 			SubmarinePlayer::StaticClass()->SetPropertyValue("m_AccelerationRate", PlayerOne.TryLoad().get(), 200.f);
 		}
 
-		if (Sonar::IsKeyPressed(Sonar::KEY_L))
+		if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsKeyPressed(Sonar::KEY_L))
 		{
 			//SubmarinePlayer* PlayerOnePtr = nullptr;
 			//PlayerOnePtr->GetDisplayName();

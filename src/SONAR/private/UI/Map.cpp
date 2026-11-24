@@ -1,3 +1,7 @@
+#include "Base/Math.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Controls/ControlSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "UI/Map.hpp"
 #include <cstdio>
 #include "Entities/SubmarinePlayer.hpp"
@@ -30,7 +34,7 @@ Map::Map(int X, int Y)
 
 Map::~Map()
 {
-    Sonar::UnloadShader(shader);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UnloadShader(shader);
 }
 
 long double Map::GetMinimumZoomLevel() const
@@ -80,7 +84,7 @@ void Map::ClampCameraToWorldBounds()
 void Map::Draw()
 {
     // Border and stuff outside of RenderTarget
-    Sonar::DrawTextureNPatch(BorderTexture, MapBorder->nPatchInfo.value(), BorderRect,{0,0}, 0, Sonar::WHITE);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTextureNPatch(BorderTexture, MapBorder->nPatchInfo.value(), BorderRect,{0,0}, 0, Sonar::WHITE);
 
 	Sonar::Texture2D playerIconTexture = {};
 	if (PlayerIcon.isValid())
@@ -90,7 +94,7 @@ void Map::Draw()
 
     // RenderTarget 
     BeginDisplayDraw();
-    Sonar::ClearBackground(Sonar::BLACK);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ClearBackground(Sonar::BLACK);
 
     const float gridSpacing = ZoomLevel < 0.01f ? 500000.f : 1000.f;
 
@@ -111,7 +115,7 @@ void Map::Draw()
         Sonar::Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
         Sonar::Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
-        Sonar::DrawLineEx(screenStart, screenEnd, 2, GridColor);
+        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx(screenStart, screenEnd, 2, GridColor);
 
     }
 
@@ -124,7 +128,7 @@ void Map::Draw()
         Sonar::Vector2 screenStart = ConvertWorldToScreenPos(worldStart);
         Sonar::Vector2 screenEnd = ConvertWorldToScreenPos(worldEnd);
 
-        Sonar::DrawLineEx(screenStart, screenEnd, 2, GridColor);
+        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx(screenStart, screenEnd, 2, GridColor);
     }
 
 
@@ -165,7 +169,7 @@ void Map::Draw()
         std::weak_ptr<Entity> TempObject = std::dynamic_pointer_cast<Entity>(obj);
 
         Sonar::Vector2 screenPos = ConvertWorldToScreenPos(TempObject.lock()->GetEntityLocation());
-        Sonar::Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(Sonar::GetMousePosition());
+        Sonar::Vector2 MousePos = ConvertMouseScreenPosToMapScreenPos(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition());
 
         if (!PlayerIcon.isValid())
         {
@@ -187,7 +191,7 @@ void Map::Draw()
         if (Sonar::CheckCollisionPointCircle(MousePos, screenPos, playerIconTexture.width * ZoomLevel / 2))
         {
             HoveredUnit = obj;
-            if (Sonar::IsMouseButtonPressed(Sonar::MouseButton::MOUSE_BUTTON_LEFT))
+            if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MouseButton::MOUSE_BUTTON_LEFT))
             {
                 FocusedUnit = obj;
                 ClickDataPayload->ClickedObject = obj->GetName();
@@ -218,19 +222,19 @@ void Map::Draw()
                     // BoundingBox Drawing for hover and focused
                     if (HoveredUnit.lock() == obj)
                     {
-                        Sonar::DrawCircleLinesV(screenPos, playerIconTexture.width * ZoomLevel / 2, Sonar::YELLOW);
+                        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawCircleLinesV(screenPos, playerIconTexture.width * ZoomLevel / 2, Sonar::YELLOW);
                     }
                     if (FocusedUnit.lock() == obj)
                     {
-                        Sonar::DrawCircleLinesV(screenPos, playerIconTexture.width * ZoomLevel / 2, Sonar::PURPLE);
+                        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawCircleLinesV(screenPos, playerIconTexture.width * ZoomLevel / 2, Sonar::PURPLE);
                         std::string CourseString = std::to_string(Submarine->GetEntityRotation());
                         std::string SpeedString = std::to_string(Submarine->GetCurrentSpeed());
-                        Sonar::DrawText(("Name: " + obj->GetDisplayName()).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y - 24, 12, Sonar::GREEN);
-                        Sonar::DrawText(("Course: " + CourseString).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y, 12, Sonar::GREEN);
-                        Sonar::DrawText(("Speed: " + SpeedString).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, Sonar::GREEN);
+                        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(("Name: " + obj->GetDisplayName()).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y - 24, 12, Sonar::GREEN);
+                        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(("Course: " + CourseString).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y, 12, Sonar::GREEN);
+                        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(("Speed: " + SpeedString).c_str(), screenPos.x + (playerIconTexture.width * ZoomLevel / 2) + 2, screenPos.y + 12, 12, Sonar::GREEN);
                     }
 
-                    Sonar::DrawTexturePro(
+                    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTexturePro(
                         playerIconTexture,
                         { 0, 0, (float)playerIconTexture.width, (float)playerIconTexture.height }, // Source rectangle
                         destRec,                                                      // Destination rectangle
@@ -245,7 +249,7 @@ void Map::Draw()
         }
     }
     auto Mark = ConvertWorldToScreenPos(MarkedPos);
-    Sonar::DrawCircle(Mark.x, Mark.y, 10, Sonar::GREEN);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawCircle(Mark.x, Mark.y, 10, Sonar::GREEN);
 
     for (const auto Index : IndicesPendingKill)
     {
@@ -275,34 +279,34 @@ void Map::Tick(float DeltaTime)
         return;
     }
 
-    if (Sonar::CheckCollisionPointRec(Sonar::GetMousePosition(), DestinationRect))
+    if (Sonar::CheckCollisionPointRec(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition(), DestinationRect))
     {
         int Multiply = 100.f;
-        if (Sonar::IsKeyDown(Sonar::KEY_LEFT_CONTROL))
+        if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsKeyDown(Sonar::KEY_LEFT_CONTROL))
         {
             Multiply = 1.f;
         }
-        ZoomLevel += Sonar::GetMouseWheelMove() * (0.0001f * Multiply);
+        ZoomLevel += GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMouseWheelMove() * (0.0001f * Multiply);
         ClampZoomToWorldBounds();
 
         // Pan
-        if (Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
+        if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
         {
             IsDragging = true;
-            LastMousePosition = Sonar::GetMousePosition();
+            LastMousePosition = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition();
         }
-        if (Sonar::IsMouseButtonReleased(Sonar::MOUSE_BUTTON_LEFT))
+        if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonReleased(Sonar::MOUSE_BUTTON_LEFT))
         {
             IsDragging = false;
         }
         if (IsDragging)
         {
             Sonar::Vector2 delta = Sonar::Vector2Scale(
-                Sonar::Vector2Subtract(Sonar::GetMousePosition(), LastMousePosition),
+                Sonar::Vector2Subtract(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition(), LastMousePosition),
                 static_cast<float>(1.0L / ZoomLevel));
             CameraWorldPosition = Sonar::Vector2Subtract(CameraWorldPosition, delta);
 
-            LastMousePosition = Sonar::GetMousePosition();
+            LastMousePosition = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition();
         }
     }
     else
@@ -359,7 +363,7 @@ void Map::Init()
             FragmentShaderPath));
     }
 
-    shader = Sonar::LoadShader(
+    shader = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().LoadShader(
         VertexShaderPath.empty() ? nullptr : VertexShaderPath.c_str(),
         FragmentShaderPath.empty() ? nullptr : FragmentShaderPath.c_str());
     try
@@ -612,7 +616,7 @@ void Map::LoadRessources()
         if (PlayerIcon.isValid())
         {
             Sonar::Texture2D LoadedPlayerIcon = PlayerIcon;
-            Sonar::SetTextureFilter(LoadedPlayerIcon, Sonar::TextureFilter::TEXTURE_FILTER_TRILINEAR);
+            GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().SetTextureFilter(LoadedPlayerIcon, Sonar::TextureFilter::TEXTURE_FILTER_TRILINEAR);
         }
     }
     else
@@ -626,7 +630,7 @@ void Map::LoadRessources()
         if (ShipIcon.isValid())
         {
             Sonar::Texture2D LoadedShipIcon = ShipIcon;
-            Sonar::SetTextureFilter(LoadedShipIcon, Sonar::TextureFilter::TEXTURE_FILTER_TRILINEAR);
+            GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().SetTextureFilter(LoadedShipIcon, Sonar::TextureFilter::TEXTURE_FILTER_TRILINEAR);
         }
     }
     else

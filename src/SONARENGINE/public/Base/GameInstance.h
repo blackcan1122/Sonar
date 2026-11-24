@@ -9,7 +9,7 @@
 #include "Base/GameThreadQueue.hpp"
 
 #include "Base/SSubSystem.hpp"
-#include "Rendering/GraphicSubSystem.hpp"
+#include "Base/SubSystemRegistry.hpp"
 
 class AssetRegistry;
 
@@ -100,6 +100,8 @@ private:
 	~GameInstance() = default;
 
 	static GameInstance* g_Instance;
+    SubSystemRegistry m_SubSystems;
+    void Shutdown();
 
 protected:
 
@@ -167,7 +169,23 @@ public:
 	static GameMode* GetCurrentGameMode();
 	static std::shared_ptr<AssetRegistry> GetAssetRegistry();
 
-	static SSubSystem* GetSubSystem;
+    void RegisterSubSystem(std::unique_ptr<SSubSystem> SubSystem);
+    template<typename T, typename... Args>
+    T& RegisterSubSystem(Args&&... Arguments)
+    {
+        static_assert(std::is_base_of_v<SSubSystem, T>);
+        auto SubSystem = std::make_unique<T>(std::forward<Args>(Arguments)...);
+        auto& Instance = *SubSystem;
+        RegisterSubSystem(std::move(SubSystem));
+        return Instance;
+    }
+    SSubSystem* FindSubSystem(const SClass* Class) const { return m_SubSystems.FindSubSystem(Class); }
+    SSubSystem& GetSubSystem(const SClass* Class) const { return m_SubSystems.GetSubSystem(Class); }
+    template<typename T>
+    T& GetSubSystem(const SClass* Class = T::StaticClass()) const
+    {
+        return m_SubSystems.GetSubSystem<T>(Class);
+    }
 
 
 	static EventDispatcher& GetUIEventDispatcher();

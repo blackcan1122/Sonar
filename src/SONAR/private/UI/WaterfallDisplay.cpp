@@ -1,8 +1,11 @@
+#include "Base/Math.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "UI/WaterfallDisplay.hpp"
 #include "Base/GameMode.h"
 #include "Entities/SubmarinePlayer.hpp"
 #include "SONAR/SignalSystem.hpp"
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 #include <chrono>
 #include <string>
 #include "omp.h"
@@ -16,9 +19,9 @@ Waterfall::Waterfall(int Width, int Height, int TimeFrame)
     BackBuffer = std::make_shared<PixelBuffer>(Width, Height);
 
     // Create textures with initial data
-    Sonar::Image frontImg = Sonar::GenImageColor(Width, Height, Sonar::BLACK);
-    FrontTexture = Sonar::LoadTextureFromImage(frontImg);
-    Sonar::UnloadImage(frontImg);
+    Sonar::Image frontImg = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GenImageColor(Width, Height, Sonar::BLACK);
+    FrontTexture = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().LoadTextureFromImage(frontImg);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UnloadImage(frontImg);
 
     int Size = (FrontBuffer->m_Width * FrontBuffer->m_Height * sizeof(PixelData)) / 1024;
     LOG_INFO(l_RESOURCES, SONAR_FMT("Allocated Waterfall RenderTexture on VRAM with Size: {} x {} and {} Kilobytes", 
@@ -36,7 +39,7 @@ Waterfall::~Waterfall()
     {
         WorkerFuture.wait();
     }
-    Sonar::UnloadTexture(FrontTexture);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UnloadTexture(FrontTexture);
 }
 
 void Waterfall::Tick(float DeltaTime) 
@@ -136,7 +139,7 @@ auto PlayerPtr = AssignedPlayer.TryLoad();
     if (WorkerDone.load() && RenderReady.load())
     {
         std::swap(FrontBuffer, BackBuffer);
-        Sonar::UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
+        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
         std::swap(FrontBuffer, BackBuffer);
         RenderReady.store(false);
 
@@ -204,8 +207,8 @@ void Waterfall::ProcessBackBuffer(int LinesToShift, std::vector<int> Accumulated
 void Waterfall::Draw() 
 {
     BeginDisplayDraw();
-    Sonar::ClearBackground(Sonar::BLACK);
-    Sonar::DrawTexture(FrontTexture, 0, 0, Sonar::WHITE);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ClearBackground(Sonar::BLACK);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTexture(FrontTexture, 0, 0, Sonar::WHITE);
     GenerateBearings();
     GenerateTimeScale();
     EndDisplayDraw();
@@ -245,12 +248,12 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
 
     WorkerDone.store(false);
 
-    Sonar::Image oldImage = Sonar::LoadImageFromTexture(FrontTexture);
+    Sonar::Image oldImage = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().LoadImageFromTexture(FrontTexture);
     int oldWidth = oldImage.width;
     int oldHeight = oldImage.height;
-    const Sonar::Color* oldPixels = static_cast<const Sonar::Color*>(oldImage.pixels.data());
+    const Sonar::Color* oldPixels = static_cast<const Sonar::Color*>(oldImage.data);
 
-    Sonar::UnloadTexture(FrontTexture);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UnloadTexture(FrontTexture);
 
     FrontBuffer = std::make_shared<PixelBuffer>(NewWidth, NewHeight);
     BackBuffer = std::make_shared<PixelBuffer>(NewWidth, NewHeight);
@@ -312,15 +315,15 @@ void Waterfall::ResizeDisplay(int NewWidth, int NewHeight)
         }
     }
 
-    Sonar::UnloadImage(oldImage);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UnloadImage(oldImage);
 
     BackBuffer->PixelArray = FrontBuffer->PixelArray;
 
-    Sonar::Image frontImg = Sonar::GenImageColor(NewWidth, NewHeight, Sonar::BLACK);
-    FrontTexture = Sonar::LoadTextureFromImage(frontImg);
-    Sonar::UnloadImage(frontImg);
+    Sonar::Image frontImg = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GenImageColor(NewWidth, NewHeight, Sonar::BLACK);
+    FrontTexture = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().LoadTextureFromImage(frontImg);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UnloadImage(frontImg);
 
-    Sonar::UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UpdateTexture(FrontTexture, FrontBuffer->PixelArray.data());
 
     m_AccumulatedSignals.clear();
     m_AccumulatedSignals.resize(NewWidth, 0);
@@ -374,26 +377,26 @@ void Waterfall::GenerateBearings()
 
             if (i == NumberOfLines)
             {
-                int TextLength = Sonar::MeasureText(std::to_string(bearing).c_str(), FontSize);
-                Sonar::DrawText(std::to_string(bearing).c_str(), Pos - TextLength, 20, FontSize, Sonar::PURPLE);
+                int TextLength = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().MeasureText(std::to_string(bearing).c_str(), FontSize);
+                GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(std::to_string(bearing).c_str(), Pos - TextLength, 20, FontSize, Sonar::PURPLE);
             }
 
             else if (i == 0)
             {
-                Sonar::DrawText(std::to_string(bearing).c_str(), Pos, 20, 10, Sonar::PURPLE);
+                GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(std::to_string(bearing).c_str(), Pos, 20, 10, Sonar::PURPLE);
             }
             else
             {
-                int TextLength = Sonar::MeasureText(std::to_string(bearing).c_str(), FontSize);
-                Sonar::DrawText(std::to_string(bearing).c_str(), Pos - (TextLength / 2), 20, FontSize, Sonar::PURPLE);
+                int TextLength = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().MeasureText(std::to_string(bearing).c_str(), FontSize);
+                GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(std::to_string(bearing).c_str(), Pos - (TextLength / 2), 20, FontSize, Sonar::PURPLE);
             }
-            Sonar::DrawLine(Pos, 0, Pos, 15, Sonar::PURPLE); // Long line for labeled bearings
+            GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLine(Pos, 0, Pos, 15, Sonar::PURPLE); // Long line for labeled bearings
         }
 
         else 
         {
             // Draw shorter line for minor bearings
-            Sonar::DrawLine(Pos, 0, Pos, 5, Sonar::PURPLE);
+            GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLine(Pos, 0, Pos, 5, Sonar::PURPLE);
         }
     }
 }
@@ -468,15 +471,15 @@ void Waterfall::GenerateTimeScale()
         bool IsMajor = (static_cast<int>(TimeValue) % static_cast<int>(TimeStep * 2) == 0) || i == 0;
         int TickLength = IsMajor ? 10 : 5;
 
-        Sonar::DrawLine(0, static_cast<int>(YPos), TickLength, static_cast<int>(YPos), Sonar::ORANGE);
+        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLine(0, static_cast<int>(YPos), TickLength, static_cast<int>(YPos), Sonar::ORANGE);
 
         // Draw label for major ticks
         if (IsMajor || NumMarkers <= 6)
         {
-            Sonar::DrawText(TimeLabel, TickLength + 2, static_cast<int>(YPos) - FontSize / 2, FontSize, Sonar::ORANGE);
+            GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(TimeLabel, TickLength + 2, static_cast<int>(YPos) - FontSize / 2, FontSize, Sonar::ORANGE);
         }
 
         // Also draw tick on right side (optional mirror)
-        Sonar::DrawLine(BufferWidth - TickLength, static_cast<int>(YPos), BufferWidth, static_cast<int>(YPos), Sonar::ORANGE);
+        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLine(BufferWidth - TickLength, static_cast<int>(YPos), BufferWidth, static_cast<int>(YPos), Sonar::ORANGE);
     }
 }

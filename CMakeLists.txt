@@ -101,7 +101,7 @@ target_include_directories(SONARENGINE PRIVATE "${raylib_source}")
 if(WIN32)
   if(NOT SONAR_RGFW)
     target_compile_definitions(raylib PRIVATE CloseWindow=RaylibCloseWindow ShowCursor=RaylibShowCursor PlaySound=RaylibPlaySound)
-    set_source_files_properties(src/SONARENGINE/private/Rendering/Graphics.cpp PROPERTIES COMPILE_DEFINITIONS "CloseWindow=RaylibCloseWindow;ShowCursor=RaylibShowCursor;PlaySound=RaylibPlaySound")
+    set_source_files_properties(src/SONARENGINE/private/Rendering/GraphicSubSystem.cpp PROPERTIES COMPILE_DEFINITIONS "CloseWindow=RaylibCloseWindow;ShowCursor=RaylibShowCursor;PlaySound=RaylibPlaySound")
   endif()
 
   target_compile_definitions(SONARENGINE PRIVATE NOGDI NOUSER WIN32_LEAN_AND_MEAN NOMINMAX)

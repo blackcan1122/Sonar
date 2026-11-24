@@ -1,3 +1,6 @@
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Audio/AudioSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "GameModes/Menu.hpp"
 #include "Base/EventDispatcher.hpp"
 #include "Base/Factory.hpp"
@@ -21,17 +24,17 @@ MenuMode::MenuMode()
 
 MenuMode::~MenuMode()
 {
-	Sonar::StopMusicStream(MenuMusic);
-	Sonar::UnloadMusicStream(MenuMusic);
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().StopMusicStream(MenuMusic);
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().UnloadMusicStream(MenuMusic);
 	GetRuntimeContext().GetAllPurposeDispatcher().RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
 }
 
 void MenuMode::Update()
 {
-	Sonar::ClearBackground(Sonar::GREEN);
-	Sonar::DrawTexture(Background,0,0,Sonar::WHITE);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ClearBackground(Sonar::GREEN);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTexture(Background,0,0,Sonar::WHITE);
 	GameMode::Update();
-	Sonar::UpdateMusicStream(MenuMusic);
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().UpdateMusicStream(MenuMusic);
 }
 
 void MenuMode::BeginPlay()
@@ -40,18 +43,18 @@ void MenuMode::BeginPlay()
 	// InitAudioDevice(); // Removed to prevent conflicts when creating multiple MenuMode instances
 
 	const std::string MenuMusicPath = GetRuntimeContext().ResolveResourcePath("music/Untitled.mp3");
-	MenuMusic = Sonar::LoadMusicStream(MenuMusicPath.c_str());
-	Sonar::SetMusicLooping(MenuMusic, true);
-	Sonar::PlayMusicStream(MenuMusic);
-	Sonar::SetMusicVolume(MenuMusic, 0.02f);
+	MenuMusic = GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().LoadMusicStream(MenuMusicPath.c_str());
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().SetMusicLooping(MenuMusic, true);
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().PlayMusicStream(MenuMusic);
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().SetMusicVolume(MenuMusic, 0.02f);
 
 	UIDispatcher = std::make_shared<EventDispatcher>();
 	UIDispatcher->m_Name = "UIDispatcher Menu";
 
 	BackgroundResource = GetRuntimeContext().GetResource("BackgroundMenu");
-	BackgroundResource->SetHeight(Sonar::GetScreenHeight());
-	BackgroundResource->SetWidth(Sonar::GetScreenWidth());
-	BackgroundResource->SetWidth(Sonar::GetScreenWidth());
+	BackgroundResource->SetHeight(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight());
+	BackgroundResource->SetWidth(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth());
+	BackgroundResource->SetWidth(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth());
 	Background = BackgroundResource->LoadTexture();
 
 	TextureResource* ButtonResource = GetRuntimeContext().GetResource("ButtonImage");

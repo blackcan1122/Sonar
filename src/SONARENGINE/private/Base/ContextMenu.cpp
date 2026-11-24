@@ -1,3 +1,7 @@
+#include "Base/Math.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Controls/ControlSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "Base/ContextMenu.hpp"
 
 void ContextMenu::Tick(float DeltaTime)
@@ -119,19 +123,19 @@ void ContextMenu::CalculateSize()
 
 void ContextMenu::Draw() const
 {
-	Sonar::DrawRectangle(Window.x, Window.y, Window.width + 20, Window.height, BackgroundColor);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangle(Window.x, Window.y, Window.width + 20, Window.height, BackgroundColor);
 
 	for (auto& Entry : MenuEntries)
 	{
-		if (Sonar::CheckCollisionPointRec(Sonar::GetMousePosition(), Entry.ContextMenuEntryRec) == false)
+		if (Sonar::CheckCollisionPointRec(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition(), Entry.ContextMenuEntryRec) == false)
 		{
-			Sonar::DrawRectangle(static_cast<int>(Entry.ContextMenuEntryRec.x), static_cast<int>(Entry.ContextMenuEntryRec.y), Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, Sonar::BLANK);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangle(static_cast<int>(Entry.ContextMenuEntryRec.x), static_cast<int>(Entry.ContextMenuEntryRec.y), Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, Sonar::BLANK);
 		}
 		else
 		{
-			Sonar::DrawRectangle(static_cast<int>(Entry.ContextMenuEntryRec.x), Entry.ContextMenuEntryRec.y, Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, Sonar::BLACK);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangle(static_cast<int>(Entry.ContextMenuEntryRec.x), Entry.ContextMenuEntryRec.y, Entry.ContextMenuEntryRec.width, Entry.ContextMenuEntryRec.height, Sonar::BLACK);
 		}
 
-		Sonar::DrawText(Entry.GetDisplayName().c_str(), Entry.ContextMenuEntryRec.x, Entry.ContextMenuEntryRec.y, Entry.FontSize, Sonar::GREEN);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(Entry.GetDisplayName().c_str(), Entry.ContextMenuEntryRec.x, Entry.ContextMenuEntryRec.y, Entry.FontSize, Sonar::GREEN);
 	}
 }

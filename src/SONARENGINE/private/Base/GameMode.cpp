@@ -1,3 +1,4 @@
+#include "Rendering/GraphicSubSystem.hpp"
 #include "Base/GameMode.h"
 #include "Base/EngineRuntimeContext.hpp"
 #include "Base/Factory.hpp"
@@ -51,7 +52,7 @@ GameMode::~GameMode()
 
 void GameMode::Update()
 {
-	float Dt = Sonar::GetFrameTime();
+	float Dt = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetFrameTime();
 	for (auto& DefaultTickObj : m_ObjectsByTickGroup[ETickGroup::DefaultTick])
 	{
 		auto ObjPtr = DefaultTickObj.TryLoad();

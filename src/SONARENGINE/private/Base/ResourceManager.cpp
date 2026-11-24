@@ -1,3 +1,5 @@
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 #include "Base/ResourceManager.hpp"
@@ -233,7 +235,7 @@ SharedTexture2D TextureResource::LoadTexture()
         }
 
         LOG_INFO(l_RESOURCES, SONAR_FMT("Loading: '{}' into VRAM", name));
-        LoadedTexture = Sonar::LoadTexture(path.c_str());
+        LoadedTexture = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().LoadTexture(path.c_str());
 
         if (!LoadedTexture.IsValid())
         {
@@ -276,7 +278,7 @@ void TextureResource::GenerateMipMaps()
 {
     if (LoadedTexture.IsValid())
     {
-        Sonar::GenTextureMipmaps(&LoadedTexture);
+        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GenTextureMipmaps(&LoadedTexture);
     }
 }
 
@@ -356,7 +358,7 @@ bool TextureResource::UnloadTexture()
 {
     if (LoadedTexture.IsValid())
     {
-        Sonar::UnloadTexture(LoadedTexture);
+        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UnloadTexture(LoadedTexture);
         LoadedTexture = {};
         LOG_INFO(l_RESOURCES, SONAR_FMT("'{}' was Cleaned from Vram", name));
         return true;

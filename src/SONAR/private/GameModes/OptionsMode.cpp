@@ -1,3 +1,5 @@
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "GameModes/OptionsMode.hpp"
 #include "Base/EventDispatcher.hpp"
 #include "Base/ResourceManager.hpp"
@@ -26,10 +28,10 @@ OptionsMode::~OptionsMode()
 
 void OptionsMode::Update()
 {
-	Sonar::ClearBackground(Sonar::PURPLE);
-	Sonar::DrawTexture(Background, 0, 0, Sonar::WHITE);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ClearBackground(Sonar::PURPLE);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTexture(Background, 0, 0, Sonar::WHITE);
 
-	float DeltaTime = Sonar::GetFrameTime();
+	float DeltaTime = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetFrameTime();
 
 
 	Back->Tick(DeltaTime);
@@ -46,11 +48,11 @@ void OptionsMode::BeginPlay()
 
 	int CenterX = GetRuntimeContext().GetScreenWidth() / 2;
 
-	Sonar::Rectangle ApplyRec = { Sonar::GetScreenWidth() - (ButtonWidth + Padding), Sonar::GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
+	Sonar::Rectangle ApplyRec = { GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth() - (ButtonWidth + Padding), GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
 	Apply = std::make_shared<Button>();
 	Apply->Construct(ApplyRec, "Apply", Sonar::RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Apply");
 
-	Sonar::Rectangle BackRec = { Padding, Sonar::GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
+	Sonar::Rectangle BackRec = { Padding, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
 	Back = std::make_shared<Button>();
 	Back->Construct(BackRec, "Back", Sonar::RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Back");
 

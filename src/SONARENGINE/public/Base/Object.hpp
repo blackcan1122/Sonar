@@ -1,5 +1,5 @@
 #pragma once
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 #include <typeindex>
 #include <string>
 #include "Base/SClass.hpp"

@@ -1,7 +1,7 @@
 #pragma once
 // Raylib
 
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 
 // C++ Std
 #include <functional>

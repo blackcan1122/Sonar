@@ -4,7 +4,7 @@
 #include "Events/AllPurposeEvent.h"
 #include "Events/DisplayResizeData.hpp"
 #include "Events/DisplayMoveData.hpp"
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 
 #include <memory>
 #include <mutex>

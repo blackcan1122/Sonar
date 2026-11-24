@@ -1,9 +1,13 @@
+#include "Base/Math.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Controls/ControlSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "UI/Display.hpp"
 #include "Events/AllPurposeEvent.h"
 
 Display::Display(int Width, int Height)
 {
-	ActiveRenderTarget = Sonar::LoadRenderTexture(Width, Height);
+	ActiveRenderTarget = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().LoadRenderTexture(Width, Height);
 	SourceRect = { 0, 0, (float)Width, -(float)Height };
 	DestinationRect = { 0, 0, (float)Width, (float)Height };
 	m_TickGroup.SetTickGroup(ETickGroup::PostTick);
@@ -11,14 +15,14 @@ Display::Display(int Width, int Height)
 
 Display::~Display()
 {
-	Sonar::UnloadRenderTexture(ActiveRenderTarget);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UnloadRenderTexture(ActiveRenderTarget);
 }
 
 void Display::Draw()
 {
-	Sonar::BeginTextureMode(ActiveRenderTarget);
-	Sonar::ClearBackground(Sonar::BLACK);
-	Sonar::EndTextureMode();
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().BeginTextureMode(ActiveRenderTarget);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ClearBackground(Sonar::BLACK);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().EndTextureMode();
 }
 
 void Display::MarkForDestruction()
@@ -51,7 +55,7 @@ void Display::SetPosition(Sonar::Vector2 NewPosition)
 
 void Display::RenderToMainBuffer()
 {
-	Sonar::DrawTexturePro(ActiveRenderTarget.texture, SourceRect, GetDisplayedRect(), { 0, 0 }, 0, Sonar::WHITE);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTexturePro(ActiveRenderTarget.texture, SourceRect, GetDisplayedRect(), { 0, 0 }, 0, Sonar::WHITE);
 	DrawResizeHandle();
 	DrawMoveHandle();
 }
@@ -91,8 +95,8 @@ void Display::ResizeDisplay(int NewWidth, int NewHeight)
 
 	std::lock_guard<std::mutex> lock(m_ResizeMutex);
 
-	Sonar::UnloadRenderTexture(ActiveRenderTarget);
-	ActiveRenderTarget = Sonar::LoadRenderTexture(NewWidth, NewHeight);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UnloadRenderTexture(ActiveRenderTarget);
+	ActiveRenderTarget = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().LoadRenderTexture(NewWidth, NewHeight);
 
 	SourceRect = { 0, 0, (float)NewWidth, -(float)NewHeight };
 	DestinationRect.width = (float)NewWidth;
@@ -113,11 +117,11 @@ void Display::HandleResizeInteraction()
 		return;
 	}
 
-	Sonar::Vector2 mousePos = Sonar::GetMousePosition();
+	Sonar::Vector2 mousePos = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition();
 	Sonar::Rectangle handleRect = GetResizeHandleRect();
 	bool isOverHandle = Sonar::CheckCollisionPointRec(mousePos, handleRect);
 
-	if (isOverHandle && Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
+	if (isOverHandle && GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
 	{
 		bIsResizing = true;
 		m_ResizeStartMousePos = mousePos;
@@ -126,7 +130,7 @@ void Display::HandleResizeInteraction()
 
 	if (bIsResizing)
 	{
-		if (Sonar::IsMouseButtonDown(Sonar::MOUSE_BUTTON_LEFT))
+		if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonDown(Sonar::MOUSE_BUTTON_LEFT))
 		{
 			float deltaX = mousePos.x - m_ResizeStartMousePos.x;
 			float deltaY = mousePos.y - m_ResizeStartMousePos.y;
@@ -191,7 +195,7 @@ void Display::DrawResizeHandle()
 	for (int i = 0; i < 3; i++)
 	{
 		float offset = (float)(i * 4 + 3);
-		Sonar::DrawLine(
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLine(
 			(int)(bottomRight.x - offset), (int)bottomRight.y,
 			(int)bottomRight.x, (int)(bottomRight.y - offset),
 			gripColor
@@ -217,11 +221,11 @@ void Display::HandleMoveInteraction()
 		return;
 	}
 
-	Sonar::Vector2 MousePos = Sonar::GetMousePosition();
+	Sonar::Vector2 MousePos = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition();
 	Sonar::Rectangle HandleRect = GetMoveHandleRect();
 	bool IsOverHandle = Sonar::CheckCollisionPointRec(MousePos, HandleRect);
 
-	if (IsOverHandle && Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
+	if (IsOverHandle && GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
 	{
 		bIsMoving = true;
 		m_MoveStartMousePos = MousePos;
@@ -230,7 +234,7 @@ void Display::HandleMoveInteraction()
 
 	if (bIsMoving)
 	{
-		if (Sonar::IsMouseButtonDown(Sonar::MOUSE_BUTTON_LEFT))
+		if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonDown(Sonar::MOUSE_BUTTON_LEFT))
 		{
 			float DeltaX = MousePos.x - m_MoveStartMousePos.x;
 			float DeltaY = MousePos.y - m_MoveStartMousePos.y;
@@ -283,10 +287,10 @@ void Display::DrawMoveHandle()
 	float CenterY = HandleRect.y + HandleRect.height / 2;
 	float Spacing = 3.0f;
 
-	Sonar::DrawCircle((int)CenterX, (int)(CenterY - Spacing), 2, GripColor);
-	Sonar::DrawCircle((int)CenterX, (int)(CenterY + Spacing), 2, GripColor);
-	Sonar::DrawCircle((int)(CenterX - Spacing), (int)CenterY, 2, GripColor);
-	Sonar::DrawCircle((int)(CenterX + Spacing), (int)CenterY, 2, GripColor);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawCircle((int)CenterX, (int)(CenterY - Spacing), 2, GripColor);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawCircle((int)CenterX, (int)(CenterY + Spacing), 2, GripColor);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawCircle((int)(CenterX - Spacing), (int)CenterY, 2, GripColor);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawCircle((int)(CenterX + Spacing), (int)CenterY, 2, GripColor);
 }
 
 Sonar::Rectangle Display::GetMoveHandleRect() const
@@ -299,5 +303,5 @@ Sonar::Rectangle Display::GetMoveHandleRect() const
 		(float)m_MoveHandleSize
 	};
 }
-void Display::BeginDisplayDraw() { Sonar::BeginTextureMode(ActiveRenderTarget); }
-void Display::EndDisplayDraw() { Sonar::EndTextureMode(); }
+void Display::BeginDisplayDraw() { GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().BeginTextureMode(ActiveRenderTarget); }
+void Display::EndDisplayDraw() { GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().EndTextureMode(); }

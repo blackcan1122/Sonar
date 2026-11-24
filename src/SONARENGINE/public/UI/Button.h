@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/BaseUI.h"
 #include "Base/Texture2DWrap.hpp"
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 
 #include <functional>
 #include <memory>

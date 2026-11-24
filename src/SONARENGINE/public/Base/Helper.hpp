@@ -2,7 +2,7 @@
 #include <cmath>
 #include "Base/Export.hpp"
 #include "Base/Logging.h"
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 
 #include <algorithm>
 #include <chrono>

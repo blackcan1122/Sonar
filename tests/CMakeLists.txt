@@ -16,3 +16,20 @@ target_link_libraries(graphics_contract PRIVATE SONARENGINE::SONARENGINE)
 target_compile_definitions(graphics_contract PRIVATE CONTRACT_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders")
 add_test(NAME graphics_contract COMMAND graphics_contract)
 add_custom_command(TARGET sdk_contract POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SONARENGINE>" "$<TARGET_FILE_DIR:sdk_contract>")
+
+add_executable(sonar_types_contract sonar_types_contract.cpp ../src/SONARENGINE/private/Base/SonarTypes.cpp)
+target_compile_features(sonar_types_contract PRIVATE cxx_std_20)
+target_include_directories(sonar_types_contract PRIVATE
+  "${PROJECT_SOURCE_DIR}/src/SONARENGINE/public"
+  "${PROJECT_SOURCE_DIR}/src/SONARENGINE/private"
+  "${raylib_source}")
+add_test(NAME sonar_types_contract COMMAND sonar_types_contract)
+
+add_executable(subsystem_contract subsystem_contract.cpp)
+target_link_libraries(subsystem_contract PRIVATE SONARENGINE::SONARENGINE)
+add_test(NAME subsystem_contract COMMAND subsystem_contract)
+
+add_executable(runtime_contract runtime_contract.cpp)
+target_link_libraries(runtime_contract PRIVATE SONARENGINE::SONARENGINE)
+add_test(NAME runtime_contract COMMAND runtime_contract)
+set_tests_properties(runtime_contract PROPERTIES WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" TIMEOUT 30)

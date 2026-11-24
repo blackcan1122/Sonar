@@ -1,6 +1,7 @@
+#include "Base/Math.hpp"
 #include "Base/Entity.hpp"
 
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 
 void Entity::Initialize()
 {

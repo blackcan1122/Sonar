@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Event.hpp"
 
-#include "Rendering/Graphics.hpp"
+#include "Base/SonarTypes.hpp"
 
 class SONARENGINE_API MouseEvent : public Event
 {

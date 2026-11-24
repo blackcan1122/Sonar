@@ -1,3 +1,7 @@
+#include "Base/Math.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Controls/ControlSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "UI/GridLayoutManager.hpp"
 
 #include "Base/EngineRuntimeContext.hpp"
@@ -684,13 +688,13 @@ void GridLayoutManager::DrawDebugGrid() const
 	for (int c = 0; c <= m_Columns; ++c)
 	{
 		int x = gridLeft + c * m_CellWidth;
-		Sonar::DrawLine(x, gridTop, x, gridBottom, Sonar::DARKGREEN);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLine(x, gridTop, x, gridBottom, Sonar::DARKGREEN);
 	}
 
 	for (int r = 0; r <= m_Rows; ++r)
 	{
 		int y = gridTop + r * m_CellHeight;
-		Sonar::DrawLine(gridLeft, y, gridRight, y, Sonar::DARKGREEN);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLine(gridLeft, y, gridRight, y, Sonar::DARKGREEN);
 	}
 
 	for (int r = 0; r < m_Rows; ++r)
@@ -701,7 +705,7 @@ void GridLayoutManager::DrawDebugGrid() const
 			int y = gridTop + r * m_CellHeight + 5;
 			std::string label = std::to_string(r) + "," + std::to_string(c);
 			Sonar::Color textColor = FindDisplayOccupyingCellForRendering(r, c).IsValid() ? Sonar::GREEN : Sonar::DARKGRAY;
-			Sonar::DrawText(label.c_str(), x, y, 12, textColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(label.c_str(), x, y, 12, textColor);
 		}
 	}
 }
@@ -806,16 +810,16 @@ void GridLayoutManager::DrawGridControls()
 				buttonSize
 			};
 
-			bool hover = Sonar::CheckCollisionPointRec(Sonar::GetMousePosition(), deleteButtonRect);
+			bool hover = Sonar::CheckCollisionPointRec(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition(), deleteButtonRect);
 			if (hover)
 			{
-				Sonar::SetMouseCursor(Sonar::MOUSE_CURSOR_POINTING_HAND);
+				GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().SetMouseCursor(Sonar::MOUSE_CURSOR_POINTING_HAND);
 			}
-			Sonar::Color buttonColor = hover ? Sonar::ColorAlpha(Sonar::RED, 0.9f) : Sonar::ColorAlpha(Sonar::RED, 0.6f);
+			Sonar::Color buttonColor = hover ? GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.9f) : GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.6f);
 			Sonar::Color iconColor = Sonar::WHITE;
 
-			Sonar::DrawRectangleRounded(deleteButtonRect, 0.3f, 8, buttonColor);
-			Sonar::DrawRectangleRoundedLinesEx(deleteButtonRect, 0.3f, 8, 1, iconColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRounded(deleteButtonRect, 0.3f, 8, buttonColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRoundedLinesEx(deleteButtonRect, 0.3f, 8, 1, iconColor);
 
 			float iconPadding = buttonSize * 0.25f;
 			float x1 = deleteButtonRect.x + iconPadding;
@@ -823,10 +827,10 @@ void GridLayoutManager::DrawGridControls()
 			float x2 = deleteButtonRect.x + buttonSize - iconPadding;
 			float y2 = deleteButtonRect.y + buttonSize - iconPadding;
 
-			Sonar::DrawLineEx({ x1, y1 }, { x2, y2 }, 2, iconColor);
-			Sonar::DrawLineEx({ x2, y1 }, { x1, y2 }, 2, iconColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ x1, y1 }, { x2, y2 }, 2, iconColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ x2, y1 }, { x1, y2 }, 2, iconColor);
 
-			if (hover && Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
+			if (hover && GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
 			{
 				DeleteDisplay(display);
 				return;
@@ -840,15 +844,15 @@ void GridLayoutManager::DrawSnapPreviews() const
 	for (const auto& [display, previewCell] : m_DraggingDisplays)
 	{
 		Sonar::Rectangle previewRect = GetCellRect(previewCell);
-		Sonar::DrawRectangleRec(previewRect, Sonar::ColorAlpha(Sonar::GREEN, 0.25f));
-		Sonar::DrawRectangleLinesEx(previewRect, 3, Sonar::ColorAlpha(Sonar::GREEN, 0.9f));
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRec(previewRect, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.25f));
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleLinesEx(previewRect, 3, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.9f));
 	}
 
 	for (const auto& [display, previewCell] : m_ResizingDisplays)
 	{
 		Sonar::Rectangle previewRect = GetCellRect(previewCell);
-		Sonar::DrawRectangleRec(previewRect, Sonar::ColorAlpha(Sonar::SKYBLUE, 0.18f));
-		Sonar::DrawRectangleLinesEx(previewRect, 3, Sonar::ColorAlpha(Sonar::SKYBLUE, 0.85f));
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRec(previewRect, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::SKYBLUE, 0.18f));
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleLinesEx(previewRect, 3, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::SKYBLUE, 0.85f));
 	}
 }
 
@@ -1047,7 +1051,7 @@ bool GridLayoutManager::FindEmptyCell(int rowSpan, int colSpan, GridCell& outCel
 
 void GridLayoutManager::DrawEmptyTiles() const
 {
-	Sonar::Vector2 mousePos = Sonar::GetMousePosition();
+	Sonar::Vector2 mousePos = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition();
 
 	for (int r = 0; r < m_Rows; ++r)
 	{
@@ -1058,8 +1062,8 @@ void GridLayoutManager::DrawEmptyTiles() const
 				GridCell emptyCell{ r, c, 1, 1 };
 				Sonar::Rectangle rect = GetCellRect(emptyCell);
 
-				Sonar::DrawRectangleRec(rect, Sonar::ColorAlpha(Sonar::DARKGRAY, 0.3f));
-				Sonar::DrawRectangleLinesEx(rect, 1, Sonar::ColorAlpha(Sonar::GRAY, 0.5f));
+				GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRec(rect, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::DARKGRAY, 0.3f));
+				GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleLinesEx(rect, 1, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GRAY, 0.5f));
 
 				float centerX = rect.x + rect.width / 2;
 				float centerY = rect.y + rect.height / 2;
@@ -1075,17 +1079,17 @@ void GridLayoutManager::DrawEmptyTiles() const
 					};
 
 					bool hover = Sonar::CheckCollisionPointRec(mousePos, addButtonRect);
-					Sonar::Color buttonColor = hover ? Sonar::ColorAlpha(Sonar::GREEN, 0.7f) : Sonar::ColorAlpha(Sonar::GRAY, 0.5f);
-					Sonar::Color iconColor = hover ? Sonar::WHITE : Sonar::ColorAlpha(Sonar::WHITE, 0.7f);
+					Sonar::Color buttonColor = hover ? GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.7f) : GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GRAY, 0.5f);
+					Sonar::Color iconColor = hover ? Sonar::WHITE : GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::WHITE, 0.7f);
 
-					Sonar::DrawRectangleRounded(addButtonRect, 0.2f, 8, buttonColor);
-					Sonar::DrawRectangleRoundedLinesEx(addButtonRect, 0.2f, 8, 2, iconColor);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRounded(addButtonRect, 0.2f, 8, buttonColor);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRoundedLinesEx(addButtonRect, 0.2f, 8, 2, iconColor);
 
 					float iconSize = buttonSize * 0.3f;
-					Sonar::DrawLineEx({ centerX - iconSize, centerY }, { centerX + iconSize, centerY }, 3, iconColor);
-					Sonar::DrawLineEx({ centerX, centerY - iconSize }, { centerX, centerY + iconSize }, 3, iconColor);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ centerX - iconSize, centerY }, { centerX + iconSize, centerY }, 3, iconColor);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ centerX, centerY - iconSize }, { centerX, centerY + iconSize }, 3, iconColor);
 
-					if (hover && Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT) && !m_SpawnMenu.isOpen)
+					if (hover && GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT) && !m_SpawnMenu.isOpen)
 					{
 						const_cast<GridLayoutManager*>(this)->OpenSpawnMenu(emptyCell, mousePos);
 					}
@@ -1094,9 +1098,9 @@ void GridLayoutManager::DrawEmptyTiles() const
 				{
 					float iconSize = std::min(rect.width, rect.height) * 0.15f;
 					iconSize = std::min(iconSize, 20.0f);
-					Sonar::Color iconColor = Sonar::ColorAlpha(Sonar::GRAY, 0.4f);
-					Sonar::DrawLineEx({ centerX - iconSize, centerY }, { centerX + iconSize, centerY }, 2, iconColor);
-					Sonar::DrawLineEx({ centerX, centerY - iconSize }, { centerX, centerY + iconSize }, 2, iconColor);
+					Sonar::Color iconColor = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GRAY, 0.4f);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ centerX - iconSize, centerY }, { centerX + iconSize, centerY }, 2, iconColor);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ centerX, centerY - iconSize }, { centerX, centerY + iconSize }, 2, iconColor);
 				}
 			}
 		}
@@ -1127,14 +1131,14 @@ void GridLayoutManager::InitializeControlButtons()
 		ButtonPtr->Construct(AddRowButtonRect, "+R", Sonar::GREEN)
 			.CenterText()
 			.UpdateFontSize(14)
-			.UpdateColor(Sonar::ColorAlpha(Sonar::GREEN, 0.6f))
+			.UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.6f))
 			.OnHover([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(Sonar::ColorAlpha(Sonar::GREEN, 0.9f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.9f));
 				})
 			.OnHoverLeave([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(Sonar::ColorAlpha(Sonar::GREEN, 0.6f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.6f));
 				})
 			.SetEventDispatcher(GridLayoutUIDispatcher)
 			.SetEventPayload("AddRow")
@@ -1151,14 +1155,14 @@ void GridLayoutManager::InitializeControlButtons()
 			}, "-R", Sonar::RED)
 			.CenterText()
 			.UpdateFontSize(14)
-			.UpdateColor(Sonar::ColorAlpha(Sonar::RED, 0.6f))
+			.UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.6f))
 			.OnHover([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(Sonar::ColorAlpha(Sonar::RED, 0.9f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.9f));
 				})
 			.OnHoverLeave([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(Sonar::ColorAlpha(Sonar::RED, 0.6f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.6f));
 				})
 			.SetEventDispatcher(GridLayoutUIDispatcher)
 			.SetEventPayload("RemoveRow")
@@ -1175,14 +1179,14 @@ void GridLayoutManager::InitializeControlButtons()
 			}, "+C", Sonar::GREEN)
 			.CenterText()
 			.UpdateFontSize(14)
-			.UpdateColor(Sonar::ColorAlpha(Sonar::GREEN, 0.6f))
+			.UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.6f))
 			.OnHover([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(Sonar::ColorAlpha(Sonar::GREEN, 0.9f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.9f));
 				})
 			.OnHoverLeave([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(Sonar::ColorAlpha(Sonar::GREEN, 0.6f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.6f));
 				})
 			.SetEventDispatcher(GridLayoutUIDispatcher)
 			.SetEventPayload("AddCol")
@@ -1199,14 +1203,14 @@ void GridLayoutManager::InitializeControlButtons()
 			}, "-C", Sonar::RED)
 			.CenterText()
 			.UpdateFontSize(14)
-			.UpdateColor(Sonar::ColorAlpha(Sonar::RED, 0.6f))
+			.UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.6f))
 			.OnHover([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(Sonar::ColorAlpha(Sonar::RED, 0.9f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.9f));
 				})
 			.OnHoverLeave([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(Sonar::ColorAlpha(Sonar::RED, 0.6f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.6f));
 				})
 			.SetEventDispatcher(GridLayoutUIDispatcher)
 			.SetEventPayload("RemoveCol")

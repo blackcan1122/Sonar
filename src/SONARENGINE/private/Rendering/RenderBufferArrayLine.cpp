@@ -1,5 +1,6 @@
+#include "Base/GameInstance.h"
 #include "external/glad.h"
-#include "Rendering/Backend.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
 #include "Rendering/RenderBufferArrayLine.hpp"
 
 void RenderBufferArrayLine::LoadBuffer()
@@ -42,7 +43,7 @@ void RenderBufferArrayLine::RenderBuffer(const Sonar::Shader& shader, const Sona
 {
     if (vao == 0) return;
 
-    Sonar::BeginLineRendering(shader, projection, worldOffset);
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().BeginLineRendering(shader, projection, worldOffset);
 
     glBindVertexArray(vao);
 
@@ -52,7 +53,7 @@ void RenderBufferArrayLine::RenderBuffer(const Sonar::Shader& shader, const Sona
         GLCounts.data(),    // array of vertex counts per loop
         DrawCount         // number of loops
     );
-    Sonar::EndLineRendering();
+    GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().EndLineRendering();
 }
 
 RenderBufferArrayLine::~RenderBufferArrayLine()

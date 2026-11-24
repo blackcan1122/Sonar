@@ -1,3 +1,6 @@
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Controls/ControlSubSystem.hpp"
+#include "Audio/AudioSubSystem.hpp"
 #include "Base/LoggingBackend.hpp"
 #ifndef RAYGUI_IMPLEMENTATION
 #define RAYGUI_IMPLEMENTATION
@@ -43,7 +46,6 @@ EventDispatcher GameInstance::AllPurposeDispatcher;
 EventDispatcher GameInstance::KeyDispatcher;
 EventDispatcher GameInstance::MouseDispatcher;
 
-SSubSystem* GameInstance::GetSubSystem = nullptr;
 
 GameModeSwitcher GameInstance::g_ActiveStateMachine;
 
@@ -66,10 +68,11 @@ GameInstance::GameInstance(WindowProperties Properties)
 	LOG_INFO(l_GAME_INSTANCE, SONAR_FMT("GameInstance Initialized"));
 	LOG_INFO(l_GAME_INSTANCE, SONAR_FMT("sizeof std::string: {}", (sizeof(std::string))));
 
-	Sonar::SetTraceLogCallback(&GameInstance::RedirectTraceLog);
-
-	GetSubSystem = new GraphicSubSystem();
-	GetSubSystem->Initialize();
+    g_RuntimeContext.m_SubSystems = &m_SubSystems;
+    RegisterSubSystem<GraphicSubSystem>();
+    RegisterSubSystem<ControlSubSystem>();
+    RegisterSubSystem<AudioSubSystem>();
+    GetSubSystem<GraphicSubSystem>().SetTraceLogCallback(&GameInstance::RedirectTraceLog);
 }
 
 TextureResource* GameInstance::GetResource(std::string Name)
@@ -132,9 +135,33 @@ void GameInstance::InitGameInstance(WindowProperties Properties)
 			GameInstance::GetInstance()->ChangeGameMode(GameModeName);
 		});
 
+    g_RuntimeContext.m_ShouldShutdown.store(false);
 	g_Instance = new GameInstance(Properties);
-	CreateWindow();
-	GameLoop();
+    try
+    {
+        CreateWindow();
+        g_Instance->m_SubSystems.Initialize();
+        GameLoop();
+    }
+    catch (...)
+    {
+        g_Instance->Shutdown();
+        delete g_Instance;
+        g_Instance = nullptr;
+        g_RuntimeContext.m_SubSystems = nullptr;
+        spdlog::shutdown();
+        throw;
+    }
+    g_Instance->Shutdown();
+    delete g_Instance;
+    g_Instance = nullptr;
+    g_RuntimeContext.m_SubSystems = nullptr;
+    spdlog::shutdown();
+}
+
+void GameInstance::RegisterSubSystem(std::unique_ptr<SSubSystem> SubSystem)
+{
+    m_SubSystems.RegisterSubSystem(std::move(SubSystem));
 }
 
 void GameInstance::RegisterGameMode(const std::string& GameModeName, std::function<GameMode*()> FactoryFunction)
@@ -209,12 +236,12 @@ void GameInstance::RedirectTraceLog(int logLevel, const char* text, va_list args
 
 void GameInstance::CreateWindow()
 {
-	Sonar::SetConfigFlags(Sonar::FLAG_WINDOW_HIGHDPI | Sonar::FLAG_MSAA_4X_HINT | Sonar::FLAG_WINDOW_RESIZABLE);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().SetConfigFlags(Sonar::FLAG_WINDOW_HIGHDPI | Sonar::FLAG_MSAA_4X_HINT | Sonar::FLAG_WINDOW_RESIZABLE);
 
-	Sonar::InitWindow(g_Instance->m_WindowProperties.m_ScreenWidth, g_Instance->m_WindowProperties.m_ScreenHeight, "Sonar");
-	Sonar::SetTargetFPS(g_Instance->m_WindowProperties.m_TargetFps);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().InitWindow(g_Instance->m_WindowProperties.m_ScreenWidth, g_Instance->m_WindowProperties.m_ScreenHeight, "Sonar");
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().SetTargetFPS(g_Instance->m_WindowProperties.m_TargetFps);
 
-	Sonar::InitAudioDevice();
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().InitAudioDevice();
 
 	LOG_INFO(l_GAME_INSTANCE, SONAR_FMT("Window Initialized with Properties, Size: {} x {}, TargetFPS: {}",
 		g_Instance->m_WindowProperties.m_ScreenWidth,
@@ -242,43 +269,44 @@ void GameInstance::GameLoop()
 	std::shared_ptr<MouseEvent> MouseEventDispatch = std::make_shared<MouseEvent>();
 
 	// GAMELOOP //
-	while (!Sonar::WindowShouldClose() && !GetRuntimeContext().m_ShouldShutdown.load())
+	while (!GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().WindowShouldClose() && !GetRuntimeContext().m_ShouldShutdown.load())
 	{
-		int KeyPressed = Sonar::GetKeyPressed();
+		int KeyPressed = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetKeyPressed();
 		if (KeyPressed != 0)
 		{
 			KeyEventDispatch->KeyPressed = static_cast<Sonar::KeyboardKey>(KeyPressed);
-			KeyEventDispatch->MousePos = Sonar::GetMousePosition();
+			KeyEventDispatch->MousePos = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition();
 
 			KeyDispatcher.Dispatch(KeyEventDispatch, "GlobalKeyEvent");
 		}
 
-		if (Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
+		if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
 		{
 			MouseEventDispatch->KeyPressed = Sonar::MOUSE_BUTTON_LEFT;
-			MouseEventDispatch->MousePos = Sonar::GetMousePosition();
+			MouseEventDispatch->MousePos = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition();
 
 			MouseDispatcher.Dispatch(MouseEventDispatch, "MouseGlobalEvent");
 		}
 
-		if (Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_RIGHT))
+		if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MOUSE_BUTTON_RIGHT))
 		{
 			MouseEventDispatch->KeyPressed = Sonar::MOUSE_BUTTON_RIGHT;
-			MouseEventDispatch->MousePos = Sonar::GetMousePosition();
+			MouseEventDispatch->MousePos = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition();
 
 			MouseDispatcher.Dispatch(MouseEventDispatch, "MouseGlobalEvent");
 		}
 
-		if (Sonar::IsMouseButtonPressed(Sonar::MOUSE_BUTTON_MIDDLE))
+		if (GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MOUSE_BUTTON_MIDDLE))
 		{
 			MouseEventDispatch->KeyPressed = Sonar::MOUSE_BUTTON_MIDDLE;
-			MouseEventDispatch->MousePos = Sonar::GetMousePosition();
+			MouseEventDispatch->MousePos = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition();
 
 			MouseDispatcher.Dispatch(MouseEventDispatch, "MouseGlobalEvent");
 		}
 
 		MainQueue.ProcessTasks();
-		Sonar::BeginDrawing();
+        g_Instance->m_SubSystems.Update();
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().BeginDrawing();
 		if (g_ActiveStateMachine.isPendingKillLastMode())
 		{
 			g_ActiveStateMachine.KillLastGameMode();
@@ -286,14 +314,14 @@ void GameInstance::GameLoop()
 		g_ActiveStateMachine.UpdateGameMode();
 
 		// Windows Resize Event
-		if (Sonar::GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.m_ScreenHeight || Sonar::GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.m_ScreenWidth)
+		if (GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight() != GameInstance::GetInstance()->m_WindowProperties.m_ScreenHeight || GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth() != GameInstance::GetInstance()->m_WindowProperties.m_ScreenWidth)
 		{
-			GameInstance::GetInstance()->m_WindowProperties.m_ScreenHeight = Sonar::GetScreenHeight();
-			GameInstance::GetInstance()->m_WindowProperties.m_ScreenWidth = Sonar::GetScreenWidth();
+			GameInstance::GetInstance()->m_WindowProperties.m_ScreenHeight = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight();
+			GameInstance::GetInstance()->m_WindowProperties.m_ScreenWidth = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth();
 
 			// Dispatch Event
-			CurrentWindowResizeData->width = Sonar::GetScreenWidth();
-			CurrentWindowResizeData->height = Sonar::GetScreenHeight();
+			CurrentWindowResizeData->width = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth();
+			CurrentWindowResizeData->height = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight();
 
 			std::shared_ptr<IEventData> Payload = std::static_pointer_cast<IEventData>(CurrentWindowResizeData);
 
@@ -303,10 +331,14 @@ void GameInstance::GameLoop()
 		}
 
 		// GameMode Independend UI Drawings
-		Sonar::DrawText((std::string("Version: ") + Version).c_str(), 0 + 5, Sonar::GetScreenHeight() - 20, 12, Sonar::WHITE);
-		Sonar::EndDrawing();
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText((std::string("Version: ") + Version).c_str(), 0 + 5, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight() - 20, 12, Sonar::WHITE);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().EndDrawing();
 	}
 
+}
+
+void GameInstance::Shutdown()
+{
 	LOG_INFO(l_GAME_INSTANCE, "Waiting for resource cleanup threads...");
 	g_ActiveStateMachine.ShutdownCurrentGameMode();
 	GameInstance::g_ResourceManager.CleanAllResources();
@@ -316,16 +348,17 @@ void GameInstance::GameLoop()
 
 	LOG_INFO(l_GAME_INSTANCE, "Resources cleared");
 
+    m_SubSystems.Shutdown();
+
 	LOG_INFO(l_GAME_INSTANCE, "Closing audio and window...");
 
-	Sonar::SetTraceLogCallback(nullptr);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().SetTraceLogCallback(nullptr);
 
-	Sonar::CloseAudioDevice();
-	Sonar::CloseWindow();
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().CloseAudioDevice();
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().CloseWindow();
 
 	LOG_INFO(l_GAME_INSTANCE, "GameInstance shutdown complete");
 
-	spdlog::shutdown();
 }
 
 void GameInstance::ChangeGameMode(std::string GameModeName)
