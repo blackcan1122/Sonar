@@ -1,3 +1,5 @@
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "Base/ContextMenuEntry.hpp"
 #include "Base/Logging.h"
 
@@ -7,7 +9,7 @@ void ContextMenuEntry::Construct()
 	{
 		LOG_ERROR(l_DEFAULT, SONAR_FMT("Missing Display Name for Context Menu. Should be Changed"));
 	}
-	MeasuredText =  MeasureText(GetDisplayName().c_str(), FontSize);
+	MeasuredText =  GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().MeasureText(GetDisplayName().c_str(), FontSize);
 }
 
 void ContextMenuEntry::OnClick()

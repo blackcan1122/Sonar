@@ -1,4 +1,4 @@
-﻿/*
+/*
  Copyright (C) [Year] [Your Name]
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,6 +39,8 @@
  Contributions are welcome! Please fork the repository and submit your pull requests.
 */
 
+#include <cstring>
+
 #include "Base/GameInstance.h"
 #include "SONAR/GameBootstrap.hpp"
 int main (int args, char* argv[])
@@ -60,6 +62,7 @@ int main (int args, char* argv[])
 
 	SONAR::RegisterDefaultGameModes();
 
-	GameInstance::InitGameInstance(WindowProperties(1280, 720, 60, false, isDebug));
-	
+	WindowProperties properties(1280, 720, 60, false, isDebug);
+	GameInstance::InitGameInstance(properties);
+
 }

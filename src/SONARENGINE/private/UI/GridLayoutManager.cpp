@@ -1,3 +1,7 @@
+#include "Base/Math.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Controls/ControlSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "UI/GridLayoutManager.hpp"
 
 #include "Base/EngineRuntimeContext.hpp"
@@ -39,13 +43,13 @@ void GridLayoutManager::RecalculateCellDimensions()
 {
 	if (m_Rows > 0 && m_Columns > 0)
 	{
-		const Rectangle GridContentRect = GetGridContentRect();
+		const Sonar::Rectangle GridContentRect = GetGridContentRect();
 		m_CellWidth = std::max(1, static_cast<int>(GridContentRect.width) / m_Columns);
 		m_CellHeight = std::max(1, static_cast<int>(GridContentRect.height) / m_Rows);
 	}
 }
 
-Rectangle GridLayoutManager::GetGridContentRect() const
+Sonar::Rectangle GridLayoutManager::GetGridContentRect() const
 {
 	const float left = static_cast<float>(GRID_OUTER_PADDING);
 	const float top = static_cast<float>(GRID_OUTER_PADDING);
@@ -263,8 +267,8 @@ void GridLayoutManager::OnDisplayResize(std::shared_ptr<IEvent> Event)
 
 	int gridWidth = GetWindowWidth();
 	int gridHeight = GetWindowHeight();
-	const Rectangle GridContentRect = GetGridContentRect();
-	Rectangle destRect = displayObj->GetDestinationRect();
+	const Sonar::Rectangle GridContentRect = GetGridContentRect();
+	Sonar::Rectangle destRect = displayObj->GetDestinationRect();
 	int maxWidth = static_cast<int>(GridContentRect.x + GridContentRect.width - destRect.x);
 	int maxHeight = static_cast<int>(GridContentRect.y + GridContentRect.height - destRect.y);
 	auto newWidth = std::min(PayloadNewWidth, maxWidth);
@@ -325,30 +329,30 @@ void GridLayoutManager::OnDisplayMove(std::shared_ptr<IEvent> Event)
 
 	if (MoveData->bIsMoveComplete)
 	{
-		Vector2 mousePos = { MoveData->MouseX, MoveData->MouseY };
+		Sonar::Vector2 mousePos = { MoveData->MouseX, MoveData->MouseY };
 		GridCell targetCell = SnapToGrid(DisplayToUse, mousePos, true);
 		SetDisplayDragging(DisplayToUse, false, targetCell);
 		MoveDisplayToCell(DisplayToUse, targetCell);
 		return;
 	}
 
-	const Rectangle GridContentRect = GetGridContentRect();
+	const Sonar::Rectangle GridContentRect = GetGridContentRect();
 	float minX = GridContentRect.x;
 	float minY = GridContentRect.y;
 	float maxX = GridContentRect.x + GridContentRect.width - MoveData->DisplayWidth;
 	float maxY = GridContentRect.y + GridContentRect.height - MoveData->DisplayHeight;
 	float newX = std::max(minX, std::min(MoveData->NewX, maxX));
 	float newY = std::max(minY, std::min(MoveData->NewY, maxY));
-	Vector2 mousePos = { MoveData->MouseX, MoveData->MouseY };
+	Sonar::Vector2 mousePos = { MoveData->MouseX, MoveData->MouseY };
 	GridCell previewCell = SnapToGrid(DisplayToUse, mousePos, true);
 	SetDisplayDragging(DisplayToUse, true, previewCell);
 	displayObj->SetPosition({ newX, newY });
 }
 
-GridCell GridLayoutManager::GetCellAtPosition(Vector2 screenPos) const
+GridCell GridLayoutManager::GetCellAtPosition(Sonar::Vector2 screenPos) const
 {
 	GridCell cell;
-	const Rectangle GridContentRect = GetGridContentRect();
+	const Sonar::Rectangle GridContentRect = GetGridContentRect();
 
 	if (m_CellWidth > 0 && m_CellHeight > 0)
 	{
@@ -363,7 +367,7 @@ GridCell GridLayoutManager::GetCellAtPosition(Vector2 screenPos) const
 	return cell;
 }
 
-GridCell GridLayoutManager::SnapToGrid(SoftObjectPath<Display> InDisplay, Vector2 screenPos, bool maintainSpan)
+GridCell GridLayoutManager::SnapToGrid(SoftObjectPath<Display> InDisplay, Sonar::Vector2 screenPos, bool maintainSpan)
 {
 	GridCell targetCell = GetCellAtPosition(screenPos);
 
@@ -580,7 +584,7 @@ bool GridLayoutManager::RemoveRow()
 	int numDisplays = static_cast<int>(m_DisplayCells.size());
 	if ((m_Rows - 1) * m_Columns < numDisplays)
 	{
-		SPDLOG_WARN("GridLayoutManager: Cannot remove row - not enough cells for all displays");
+		LOG_WARN("GridLayoutManager: Cannot remove row - not enough cells for all displays");
 		return false;
 	}
 
@@ -588,7 +592,7 @@ bool GridLayoutManager::RemoveRow()
 	{
 		if (cell.row + cell.rowSpan > m_Rows - 1)
 		{
-			SPDLOG_WARN("GridLayoutManager: Cannot remove row - display occupies cells in last row");
+			LOG_WARN("GridLayoutManager: Cannot remove row - display occupies cells in last row");
 			return false;
 		}
 	}
@@ -609,7 +613,7 @@ bool GridLayoutManager::RemoveColumn()
 	int numDisplays = static_cast<int>(m_DisplayCells.size());
 	if (m_Rows * (m_Columns - 1) < numDisplays)
 	{
-		SPDLOG_WARN("GridLayoutManager: Cannot remove column - not enough cells for all displays");
+		LOG_WARN("GridLayoutManager: Cannot remove column - not enough cells for all displays");
 		return false;
 	}
 
@@ -617,7 +621,7 @@ bool GridLayoutManager::RemoveColumn()
 	{
 		if (cell.column + cell.colSpan > m_Columns - 1)
 		{
-			SPDLOG_WARN("GridLayoutManager: Cannot remove column - display occupies cells in last column");
+			LOG_WARN("GridLayoutManager: Cannot remove column - display occupies cells in last column");
 			return false;
 		}
 	}
@@ -658,9 +662,9 @@ bool GridLayoutManager::IsCellOccupied(int row, int col) const
 	return FindDisplayOccupyingCell(row, col).IsValid();
 }
 
-Rectangle GridLayoutManager::GetCellRect(const GridCell& cell) const
+Sonar::Rectangle GridLayoutManager::GetCellRect(const GridCell& cell) const
 {
-	const Rectangle GridContentRect = GetGridContentRect();
+	const Sonar::Rectangle GridContentRect = GetGridContentRect();
 	float x = GridContentRect.x + static_cast<float>(cell.column * m_CellWidth);
 	float y = GridContentRect.y + static_cast<float>(cell.row * m_CellHeight);
 	float width = static_cast<float>(cell.colSpan * m_CellWidth);
@@ -675,7 +679,7 @@ Rectangle GridLayoutManager::GetCellRect(const GridCell& cell) const
 
 void GridLayoutManager::DrawDebugGrid() const
 {
-	const Rectangle GridContentRect = GetGridContentRect();
+	const Sonar::Rectangle GridContentRect = GetGridContentRect();
 	const int gridLeft = static_cast<int>(GridContentRect.x);
 	const int gridTop = static_cast<int>(GridContentRect.y);
 	const int gridRight = static_cast<int>(GridContentRect.x + m_CellWidth * m_Columns);
@@ -684,13 +688,13 @@ void GridLayoutManager::DrawDebugGrid() const
 	for (int c = 0; c <= m_Columns; ++c)
 	{
 		int x = gridLeft + c * m_CellWidth;
-		DrawLine(x, gridTop, x, gridBottom, DARKGREEN);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLine(x, gridTop, x, gridBottom, Sonar::DARKGREEN);
 	}
 
 	for (int r = 0; r <= m_Rows; ++r)
 	{
 		int y = gridTop + r * m_CellHeight;
-		DrawLine(gridLeft, y, gridRight, y, DARKGREEN);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLine(gridLeft, y, gridRight, y, Sonar::DARKGREEN);
 	}
 
 	for (int r = 0; r < m_Rows; ++r)
@@ -700,8 +704,8 @@ void GridLayoutManager::DrawDebugGrid() const
 			int x = gridLeft + c * m_CellWidth + 5;
 			int y = gridTop + r * m_CellHeight + 5;
 			std::string label = std::to_string(r) + "," + std::to_string(c);
-			Color textColor = FindDisplayOccupyingCellForRendering(r, c).IsValid() ? GREEN : DARKGRAY;
-			DrawText(label.c_str(), x, y, 12, textColor);
+			Sonar::Color textColor = FindDisplayOccupyingCellForRendering(r, c).IsValid() ? Sonar::GREEN : Sonar::DARKGRAY;
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(label.c_str(), x, y, 12, textColor);
 		}
 	}
 }
@@ -714,7 +718,7 @@ void GridLayoutManager::ApplyLayoutToDisplay(SoftObjectPath<Display> InDisplay, 
 		return;
 	}
 
-	Rectangle rect = GetCellRect(cell);
+	Sonar::Rectangle rect = GetCellRect(cell);
 	display->SetPosition({ rect.x, rect.y });
 	display->ResizeDisplay(static_cast<int>(rect.width), static_cast<int>(rect.height));
 }
@@ -796,26 +800,26 @@ void GridLayoutManager::DrawGridControls()
 	{
 		for (const auto& [display, cell] : m_DisplayCells)
 		{
-			Rectangle cellRect = GetCellRect(cell);
+			Sonar::Rectangle cellRect = GetCellRect(cell);
 			float buttonSize = 24.0f;
 			float margin = 8.0f;
-			Rectangle deleteButtonRect = {
+			Sonar::Rectangle deleteButtonRect = {
 				cellRect.x + cellRect.width - buttonSize - margin,
 				cellRect.y + margin,
 				buttonSize,
 				buttonSize
 			};
 
-			bool hover = CheckCollisionPointRec(GetMousePosition(), deleteButtonRect);
+			bool hover = Sonar::CheckCollisionPointRec(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition(), deleteButtonRect);
 			if (hover)
 			{
-				SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+				GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().SetMouseCursor(Sonar::MOUSE_CURSOR_POINTING_HAND);
 			}
-			Color buttonColor = hover ? ColorAlpha(RED, 0.9f) : ColorAlpha(RED, 0.6f);
-			Color iconColor = WHITE;
+			Sonar::Color buttonColor = hover ? GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.9f) : GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.6f);
+			Sonar::Color iconColor = Sonar::WHITE;
 
-			DrawRectangleRounded(deleteButtonRect, 0.3f, 8, buttonColor);
-			DrawRectangleRoundedLinesEx(deleteButtonRect, 0.3f, 8, 1, iconColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRounded(deleteButtonRect, 0.3f, 8, buttonColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRoundedLinesEx(deleteButtonRect, 0.3f, 8, 1, iconColor);
 
 			float iconPadding = buttonSize * 0.25f;
 			float x1 = deleteButtonRect.x + iconPadding;
@@ -823,10 +827,10 @@ void GridLayoutManager::DrawGridControls()
 			float x2 = deleteButtonRect.x + buttonSize - iconPadding;
 			float y2 = deleteButtonRect.y + buttonSize - iconPadding;
 
-			DrawLineEx({ x1, y1 }, { x2, y2 }, 2, iconColor);
-			DrawLineEx({ x2, y1 }, { x1, y2 }, 2, iconColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ x1, y1 }, { x2, y2 }, 2, iconColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ x2, y1 }, { x1, y2 }, 2, iconColor);
 
-			if (hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+			if (hover && GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT))
 			{
 				DeleteDisplay(display);
 				return;
@@ -839,16 +843,16 @@ void GridLayoutManager::DrawSnapPreviews() const
 {
 	for (const auto& [display, previewCell] : m_DraggingDisplays)
 	{
-		Rectangle previewRect = GetCellRect(previewCell);
-		DrawRectangleRec(previewRect, ColorAlpha(GREEN, 0.25f));
-		DrawRectangleLinesEx(previewRect, 3, ColorAlpha(GREEN, 0.9f));
+		Sonar::Rectangle previewRect = GetCellRect(previewCell);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRec(previewRect, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.25f));
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleLinesEx(previewRect, 3, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.9f));
 	}
 
 	for (const auto& [display, previewCell] : m_ResizingDisplays)
 	{
-		Rectangle previewRect = GetCellRect(previewCell);
-		DrawRectangleRec(previewRect, ColorAlpha(SKYBLUE, 0.18f));
-		DrawRectangleLinesEx(previewRect, 3, ColorAlpha(SKYBLUE, 0.85f));
+		Sonar::Rectangle previewRect = GetCellRect(previewCell);
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRec(previewRect, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::SKYBLUE, 0.18f));
+		GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleLinesEx(previewRect, 3, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::SKYBLUE, 0.85f));
 	}
 }
 
@@ -1047,7 +1051,7 @@ bool GridLayoutManager::FindEmptyCell(int rowSpan, int colSpan, GridCell& outCel
 
 void GridLayoutManager::DrawEmptyTiles() const
 {
-	Vector2 mousePos = GetMousePosition();
+	Sonar::Vector2 mousePos = GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition();
 
 	for (int r = 0; r < m_Rows; ++r)
 	{
@@ -1056,10 +1060,10 @@ void GridLayoutManager::DrawEmptyTiles() const
 			if (!FindDisplayOccupyingCellForRendering(r, c).IsValid())
 			{
 				GridCell emptyCell{ r, c, 1, 1 };
-				Rectangle rect = GetCellRect(emptyCell);
+				Sonar::Rectangle rect = GetCellRect(emptyCell);
 
-				DrawRectangleRec(rect, ColorAlpha(DARKGRAY, 0.3f));
-				DrawRectangleLinesEx(rect, 1, ColorAlpha(GRAY, 0.5f));
+				GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRec(rect, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::DARKGRAY, 0.3f));
+				GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleLinesEx(rect, 1, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GRAY, 0.5f));
 
 				float centerX = rect.x + rect.width / 2;
 				float centerY = rect.y + rect.height / 2;
@@ -1067,25 +1071,25 @@ void GridLayoutManager::DrawEmptyTiles() const
 				if (m_ShowAddButtons)
 				{
 					float buttonSize = std::min(std::min(rect.width, rect.height) * 0.3f, 60.0f);
-					Rectangle addButtonRect = {
+					Sonar::Rectangle addButtonRect = {
 						centerX - buttonSize / 2,
 						centerY - buttonSize / 2,
 						buttonSize,
 						buttonSize
 					};
 
-					bool hover = CheckCollisionPointRec(mousePos, addButtonRect);
-					Color buttonColor = hover ? ColorAlpha(GREEN, 0.7f) : ColorAlpha(GRAY, 0.5f);
-					Color iconColor = hover ? WHITE : ColorAlpha(WHITE, 0.7f);
+					bool hover = Sonar::CheckCollisionPointRec(mousePos, addButtonRect);
+					Sonar::Color buttonColor = hover ? GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.7f) : GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GRAY, 0.5f);
+					Sonar::Color iconColor = hover ? Sonar::WHITE : GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::WHITE, 0.7f);
 
-					DrawRectangleRounded(addButtonRect, 0.2f, 8, buttonColor);
-					DrawRectangleRoundedLinesEx(addButtonRect, 0.2f, 8, 2, iconColor);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRounded(addButtonRect, 0.2f, 8, buttonColor);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRoundedLinesEx(addButtonRect, 0.2f, 8, 2, iconColor);
 
 					float iconSize = buttonSize * 0.3f;
-					DrawLineEx({ centerX - iconSize, centerY }, { centerX + iconSize, centerY }, 3, iconColor);
-					DrawLineEx({ centerX, centerY - iconSize }, { centerX, centerY + iconSize }, 3, iconColor);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ centerX - iconSize, centerY }, { centerX + iconSize, centerY }, 3, iconColor);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ centerX, centerY - iconSize }, { centerX, centerY + iconSize }, 3, iconColor);
 
-					if (hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !m_SpawnMenu.isOpen)
+					if (hover && GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(Sonar::MOUSE_BUTTON_LEFT) && !m_SpawnMenu.isOpen)
 					{
 						const_cast<GridLayoutManager*>(this)->OpenSpawnMenu(emptyCell, mousePos);
 					}
@@ -1094,9 +1098,9 @@ void GridLayoutManager::DrawEmptyTiles() const
 				{
 					float iconSize = std::min(rect.width, rect.height) * 0.15f;
 					iconSize = std::min(iconSize, 20.0f);
-					Color iconColor = ColorAlpha(GRAY, 0.4f);
-					DrawLineEx({ centerX - iconSize, centerY }, { centerX + iconSize, centerY }, 2, iconColor);
-					DrawLineEx({ centerX, centerY - iconSize }, { centerX, centerY + iconSize }, 2, iconColor);
+					Sonar::Color iconColor = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GRAY, 0.4f);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ centerX - iconSize, centerY }, { centerX + iconSize, centerY }, 2, iconColor);
+					GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawLineEx({ centerX, centerY - iconSize }, { centerX, centerY + iconSize }, 2, iconColor);
 				}
 			}
 		}
@@ -1105,7 +1109,7 @@ void GridLayoutManager::DrawEmptyTiles() const
 
 void GridLayoutManager::InitializeControlButtons()
 {
-	Rectangle AddRowButtonRect = {
+	Sonar::Rectangle AddRowButtonRect = {
 		static_cast<float>(PanelRect.x),
 		static_cast<float>(PanelRect.y),
 		static_cast<float>(CONTROL_BUTTON_SIZE),
@@ -1124,17 +1128,17 @@ void GridLayoutManager::InitializeControlButtons()
 
 	if (auto ButtonPtr = AddRowButton.TryLoad())
 	{
-		ButtonPtr->Construct(AddRowButtonRect, "+R", GREEN)
+		ButtonPtr->Construct(AddRowButtonRect, "+R", Sonar::GREEN)
 			.CenterText()
 			.UpdateFontSize(14)
-			.UpdateColor(ColorAlpha(GREEN, 0.6f))
+			.UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.6f))
 			.OnHover([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(ColorAlpha(GREEN, 0.9f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.9f));
 				})
 			.OnHoverLeave([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(ColorAlpha(GREEN, 0.6f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.6f));
 				})
 			.SetEventDispatcher(GridLayoutUIDispatcher)
 			.SetEventPayload("AddRow")
@@ -1148,17 +1152,17 @@ void GridLayoutManager::InitializeControlButtons()
 			static_cast<float>(PanelRect.y),
 			static_cast<float>(CONTROL_BUTTON_SIZE),
 			static_cast<float>(CONTROL_BUTTON_SIZE)
-			}, "-R", RED)
+			}, "-R", Sonar::RED)
 			.CenterText()
 			.UpdateFontSize(14)
-			.UpdateColor(ColorAlpha(RED, 0.6f))
+			.UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.6f))
 			.OnHover([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(ColorAlpha(RED, 0.9f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.9f));
 				})
 			.OnHoverLeave([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(ColorAlpha(RED, 0.6f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.6f));
 				})
 			.SetEventDispatcher(GridLayoutUIDispatcher)
 			.SetEventPayload("RemoveRow")
@@ -1172,17 +1176,17 @@ void GridLayoutManager::InitializeControlButtons()
 			static_cast<float>(PanelRect.y + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN),
 			static_cast<float>(CONTROL_BUTTON_SIZE),
 			static_cast<float>(CONTROL_BUTTON_SIZE)
-			}, "+C", GREEN)
+			}, "+C", Sonar::GREEN)
 			.CenterText()
 			.UpdateFontSize(14)
-			.UpdateColor(ColorAlpha(GREEN, 0.6f))
+			.UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.6f))
 			.OnHover([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(ColorAlpha(GREEN, 0.9f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.9f));
 				})
 			.OnHoverLeave([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(ColorAlpha(GREEN, 0.6f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::GREEN, 0.6f));
 				})
 			.SetEventDispatcher(GridLayoutUIDispatcher)
 			.SetEventPayload("AddCol")
@@ -1196,17 +1200,17 @@ void GridLayoutManager::InitializeControlButtons()
 			static_cast<float>(PanelRect.y + CONTROL_BUTTON_SIZE + CONTROL_BUTTON_MARGIN),
 			static_cast<float>(CONTROL_BUTTON_SIZE),
 			static_cast<float>(CONTROL_BUTTON_SIZE)
-			}, "-C", RED)
+			}, "-C", Sonar::RED)
 			.CenterText()
 			.UpdateFontSize(14)
-			.UpdateColor(ColorAlpha(RED, 0.6f))
+			.UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.6f))
 			.OnHover([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(ColorAlpha(RED, 0.9f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.9f));
 				})
 			.OnHoverLeave([this](Button* ButtonClass)
 				{
-					ButtonClass->UpdateColor(ColorAlpha(RED, 0.6f));
+					ButtonClass->UpdateColor(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ColorAlpha(Sonar::RED, 0.6f));
 				})
 			.SetEventDispatcher(GridLayoutUIDispatcher)
 			.SetEventPayload("RemoveCol")
@@ -1230,7 +1234,7 @@ void GridLayoutManager::UpdateButtonPositions()
 	}
 }
 
-void GridLayoutManager::UpdateButtonPosition(SoftObjectPath<Button> inButton, Vector2 NewPos)
+void GridLayoutManager::UpdateButtonPosition(SoftObjectPath<Button> inButton, Sonar::Vector2 NewPos)
 {
 	if (auto ButtonPtr = inButton.TryLoad())
 	{
@@ -1251,7 +1255,7 @@ void GridLayoutManager::ResizePanelRect()
 	};
 }
 
-void GridLayoutManager::OpenSpawnMenu(const GridCell& cell, Vector2 screenPos)
+void GridLayoutManager::OpenSpawnMenu(const GridCell& cell, Sonar::Vector2 screenPos)
 {
 	if (m_SpawnMenu.isOpen || GetSpawnOptions().empty())
 	{

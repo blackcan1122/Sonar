@@ -1,15 +1,59 @@
-# Compiled Object files
+# CMake build trees, downloaded dependencies, and distribution packages
+/out/
+/dist/
+/CMakeUserPresets.json
+
+# Generated files from accidental in-source CMake builds
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+install_manifest*.txt
+CTestTestfile.cmake
+/Testing/
+/_CPack_Packages/
+/CPackConfig.cmake
+/CPackSourceConfig.cmake
+/Makefile
+/build.ninja
+/.ninja_deps
+/.ninja_log
+/compile_commands.json
+
+# Compiled objects, libraries, executables, and debug information
 *.slo
 *.lo
 *.o
 *.obj
+*.a
+*.lib
+*.dll
+*.so
+*.so.*
+*.dylib
+*.exe
+*.pdb
+*.ilk
+*.exp
+*.pch
 
-WorkingFiles/*
-build/external/*
-build/build_files/*
-bin/*
-logs/*
-.vs
+# Generated Visual Studio projects and local IDE state
+/.vs/
 *.sln
-.vscode/
-.vscode/*
+*.slnx
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Share editor configuration; ignore other local VS Code files
+/.vscode/*
+!/.vscode/settings.json
+!/.vscode/tasks.json
+!/.vscode/launch.json
+!/.vscode/extensions.json
+
+# Runtime logs and local working files
+/logs/
+/WorkingFiles/

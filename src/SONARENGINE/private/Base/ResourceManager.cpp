@@ -1,3 +1,7 @@
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Base/GameInstance.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 #include "Base/ResourceManager.hpp"
 #include <omp.h>
 
@@ -77,11 +81,11 @@ void ResourceManager::EnqueueMainThreadTask(std::function<void()> Task)
 
 void ResourceManager::ParseJson()
 {
-    
+
     std::string jsonPath = GetManifestPath();
-    
+
     LOG_INFO(l_RESOURCES, SONAR_FMT("Starting resource parsing from: '{}'", jsonPath));
-    
+
     std::ifstream file(jsonPath);
     if (!file.is_open())
     {
@@ -190,7 +194,7 @@ void ResourceManager::ParseJson()
                 info.padRight, info.padBottom, info.layout));
 #endif
         }
-        
+
         #pragma omp critical
         {
 #if DEBUG
@@ -222,7 +226,7 @@ SharedTexture2D TextureResource::LoadTexture()
 {
     LOG_INFO(l_RESOURCES, SONAR_FMT("Requesting Load for : '{}'", name));
 
-    if (LoadedTexture.id == 0)
+    if (!LoadedTexture.IsValid())
     {
         if (!std::filesystem::exists(path))
         {
@@ -231,9 +235,9 @@ SharedTexture2D TextureResource::LoadTexture()
         }
 
         LOG_INFO(l_RESOURCES, SONAR_FMT("Loading: '{}' into VRAM", name));
-        LoadedTexture = RAYLIB_H::LoadTexture(path.c_str());
+        LoadedTexture = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().LoadTexture(path.c_str());
 
-        if (LoadedTexture.id == 0)
+        if (!LoadedTexture.IsValid())
         {
             LOG_WARN(l_RESOURCES, SONAR_FMT("Texture '{}' failed to load from '{}'", name, path));
             LoadedTexture = {};
@@ -248,13 +252,13 @@ SharedTexture2D TextureResource::LoadTexture()
     {
         LOG_INFO(l_RESOURCES, SONAR_FMT("Texture '{}' already Loaded, will be reused", name));
     }
-  
+
     return SharedTexture2D(&LoadedTexture, this);
 }
 
 void TextureResource::SetHeight(int Height)
 {
-    if (LoadedTexture.id != 0)
+    if (LoadedTexture.IsValid())
     {
         LoadedTexture.height = Height;
     }
@@ -263,7 +267,7 @@ void TextureResource::SetHeight(int Height)
 
 void TextureResource::SetWidth(int Width)
 {
-    if (LoadedTexture.id != 0)
+    if (LoadedTexture.IsValid())
     {
         LoadedTexture.width = Width;
     }
@@ -272,9 +276,9 @@ void TextureResource::SetWidth(int Width)
 
 void TextureResource::GenerateMipMaps()
 {
-    if (LoadedTexture.id != 0)
+    if (LoadedTexture.IsValid())
     {
-        GenTextureMipmaps(&LoadedTexture);
+        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GenTextureMipmaps(&LoadedTexture);
     }
 }
 
@@ -298,7 +302,7 @@ void TextureResource::RemoveRef()
                     for (int i = 0; i < 50 && !ShutdownRequested.load(); ++i) {
                         std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     }
-                    
+
                     CurrentTime = std::chrono::system_clock::now();
                     if (RefCount.load(std::memory_order_relaxed) != 0)
                     {
@@ -352,9 +356,9 @@ void TextureResource::ForceCleanup()
 
 bool TextureResource::UnloadTexture()
 {
-    if (LoadedTexture.id != 0)
+    if (LoadedTexture.IsValid())
     {
-        RAYLIB_H::UnloadTexture(LoadedTexture);
+        GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().UnloadTexture(LoadedTexture);
         LoadedTexture = {};
         LOG_INFO(l_RESOURCES, SONAR_FMT("'{}' was Cleaned from Vram", name));
         return true;

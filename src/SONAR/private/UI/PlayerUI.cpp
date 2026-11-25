@@ -7,21 +7,20 @@ PlayerUI::PlayerUI(SoftObjectPath<SubmarinePlayer> Player)
 	:AssignedPlayer(Player)
 {
 	CourseBox = std::make_shared<TextInputBox>();
-	Rectangle CourseRectangle{ m_Position.x, m_Position.y, 100,50 };
-	CourseBox->Construct(CourseRectangle, BLANK).CanBeEdited(false);
+	Sonar::Rectangle CourseRectangle{ m_Position.x, m_Position.y, 100,50 };
+	CourseBox->Construct(CourseRectangle, Sonar::BLANK).CanBeEdited(false);
 
 	SpeedBox = std::make_shared<TextInputBox>();
-	Rectangle SpeedRect{ m_Position.x, m_Position.y, 100,50 };
-	SpeedBox->Construct(SpeedRect, BLANK).CanBeEdited(false);
+	Sonar::Rectangle SpeedRect{ m_Position.x, m_Position.y, 100,50 };
+	SpeedBox->Construct(SpeedRect, Sonar::BLANK).CanBeEdited(false);
 	NameBox = std::make_shared<TextInputBox>();
-	Rectangle NameRect{ m_Position.x, m_Position.y, 100,50 };
-	NameBox->Construct(NameRect, BLANK).CanBeEdited(false);
+	Sonar::Rectangle NameRect{ m_Position.x, m_Position.y, 100,50 };
+	NameBox->Construct(NameRect, Sonar::BLANK).CanBeEdited(false);
 	NameBox->SetInitialText(AssignedPlayer.TryLoad()->GetDisplayName().c_str());
 
 }
 
-
-void PlayerUI::SetPosition(Vector2 NewPos)
+void PlayerUI::SetPosition(Sonar::Vector2 NewPos)
 {
 	m_Position = NewPos;
 	CourseBox->UpdatePosition({ m_Position.x, m_Position.y });
@@ -48,5 +47,5 @@ void PlayerUI::Tick(float DeltaTime)
 
 void PlayerUI::Draw()
 {
-	
+
 }

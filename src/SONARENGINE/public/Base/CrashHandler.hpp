@@ -1,3 +1,4 @@
 #pragma once
+#include "Base/Export.hpp"
 
-void InstallCrashHandler();
+SONARENGINE_API void InstallCrashHandler();

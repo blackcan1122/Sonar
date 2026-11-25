@@ -1,5 +1,3 @@
-cd build
-premake5.exe gmake2
-cd ..
-make SHELL=CMD clean
-pause
+@echo off
+cmake --preset mingw-debug || exit /b 1
+cmake --build --preset mingw-debug || exit /b 1

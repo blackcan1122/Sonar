@@ -4,7 +4,7 @@
 class GameMode;
 
 // TODO REFACTOR
-class LoadGameEvent : public Event
+class SONARENGINE_API LoadGameEvent : public Event
 {
 public:
 	virtual ~LoadGameEvent() override;

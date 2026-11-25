@@ -20,7 +20,7 @@ struct SpawnMenuState
 {
 	bool isOpen = false;
 	GridCell targetCell;
-	Vector2 menuPosition;
+	Sonar::Vector2 menuPosition;
 	float elapsedTime = 0.0f;
 	static constexpr float CLOSE_DELAY = 0.1f;
 };
@@ -47,8 +47,8 @@ public:
 	void OnDisplayResize(std::shared_ptr<IEvent> Event);
 	void OnDisplayMove(std::shared_ptr<IEvent> Event);
 
-	GridCell GetCellAtPosition(Vector2 screenPos) const;
-	GridCell SnapToGrid(SoftObjectPath<Display> display, Vector2 screenPos, bool maintainSpan = true);
+	GridCell GetCellAtPosition(Sonar::Vector2 screenPos) const;
+	GridCell SnapToGrid(SoftObjectPath<Display> display, Sonar::Vector2 screenPos, bool maintainSpan = true);
 	bool MoveDisplayToCell(SoftObjectPath<Display> display, const GridCell& targetCell);
 	bool ResizeDisplaySpan(SoftObjectPath<Display> display, int newRowSpan, int newColSpan);
 
@@ -75,7 +75,7 @@ public:
 	const GridCell* GetDisplayCell(SoftObjectPath<Display> display) const;
 	SoftObjectPath<Display> GetDisplayAtCell(int row, int col) const;
 	bool IsCellOccupied(int row, int col) const;
-	Rectangle GetCellRect(const GridCell& cell) const;
+	Sonar::Rectangle GetCellRect(const GridCell& cell) const;
 
 	void DrawDebugGrid() const;
 	void DrawEmptyTiles() const;
@@ -95,7 +95,7 @@ public:
 
 private:
 	void RecalculateCellDimensions();
-	Rectangle GetGridContentRect() const;
+	Sonar::Rectangle GetGridContentRect() const;
 	void ApplyLayoutToDisplay(SoftObjectPath<Display> display, const GridCell& cell);
 	bool WouldOverlap(const GridCell& cell, SoftObjectPath<Display> ignoreDisplay) const;
 	SoftObjectPath<Display> FindDisplayOccupyingCell(int row, int col) const;
@@ -141,12 +141,12 @@ private:
 
 	void InitializeControlButtons();
 	void UpdateButtonPositions();
-	void UpdateButtonPosition(SoftObjectPath<Button> inButton, Vector2 NewPos);
+	void UpdateButtonPosition(SoftObjectPath<Button> inButton, Sonar::Vector2 NewPos);
 
-	Rectangle PanelRect;
+	Sonar::Rectangle PanelRect;
 	void ResizePanelRect();
 
-	void OpenSpawnMenu(const GridCell& cell, Vector2 screenPos);
+	void OpenSpawnMenu(const GridCell& cell, Sonar::Vector2 screenPos);
 	void CloseSpawnMenu();
 	bool HandleSpawnMenuInput();
 	void DeleteDisplay(SoftObjectPath<Display> Display);

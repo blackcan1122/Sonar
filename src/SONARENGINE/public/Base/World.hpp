@@ -79,6 +79,5 @@ public:
 
 	virtual void Tick(float Deltatime) override;
 	virtual void Initialize() override;
-	std::vector<RenderBufferArrayLine> Continents;
 
 };

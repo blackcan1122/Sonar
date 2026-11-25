@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base/Core.h"
-#include "Base/NavalTypedefs.h"
+#include "SONAR/NavalUnits.hpp"
 #include "Base/SoftObject.hpp"
 
 class Entity;
@@ -9,7 +9,7 @@ class IEvent;
 
 struct AcousticSignal
 {
-	Vector2 SenderPosition;
+	Sonar::Vector2 SenderPosition;
 	NavalUnits::Hz Strength;
 	SoftObjectPath<Entity> SenderEntity;
 };

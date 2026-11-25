@@ -26,7 +26,7 @@ protected:
 
 	std::shared_ptr<EventDispatcher> UIDispatcher;
 
-	Music MenuMusic;
+	Sonar::Music MenuMusic;
 	int Height;
 	int Width;
 

@@ -1,3 +1,3 @@
-cd build
-premake5.exe vs2022 || pause
-cd ../
+@echo off
+cmake --preset msvc || exit /b 1
+cmake --build --preset msvc-debug || exit /b 1

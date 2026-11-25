@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Base/SubSystemRegistry.hpp"
 #include <functional>
+#include <atomic>
 #include <memory>
 #include <string>
 
@@ -26,8 +28,10 @@ public:
 		std::function<TextureResource*(const std::string&)> InResourceResolver,
 		std::function<std::string(const std::string&)> InResourcePathResolver,
 		std::function<std::string(const std::string&)> InShaderPathResolver,
-		std::function<void(const std::string&)> InGameModeChangeRequester)
+		std::function<void(const std::string&)> InGameModeChangeRequester,
+        SubSystemRegistry* InSubSystems = nullptr)
 	{
+        m_SubSystems = InSubSystems;
 		m_UIEventDispatcher = InUIEventDispatcher;
 		m_KeyDispatcher = InKeyDispatcher;
 		m_MouseDispatcher = InMouseDispatcher;
@@ -43,6 +47,22 @@ public:
 		m_ShaderPathResolver = std::move(InShaderPathResolver);
 		m_GameModeChangeRequester = std::move(InGameModeChangeRequester);
 	}
+
+    SSubSystem* FindSubSystem(const SClass* Class) const
+    {
+        return m_SubSystems ? m_SubSystems->FindSubSystem(Class) : nullptr;
+    }
+    SSubSystem& GetSubSystem(const SClass* Class) const
+    {
+        if (!m_SubSystems) throw std::logic_error("Subsystem registry is not configured");
+        return m_SubSystems->GetSubSystem(Class);
+    }
+    template<typename T>
+    T& GetSubSystem(const SClass* Class = T::StaticClass()) const
+    {
+        if (!m_SubSystems) throw std::logic_error("Subsystem registry is not configured");
+        return m_SubSystems->GetSubSystem<T>(Class);
+    }
 
 	EventDispatcher& GetUIEventDispatcher() const { return *m_UIEventDispatcher; }
 	EventDispatcher& GetKeyDispatcher() const { return *m_KeyDispatcher; }
@@ -61,6 +81,7 @@ public:
 	void  RequestShutdown() { m_ShouldShutdown.store(true); }
 
 private:
+    SubSystemRegistry* m_SubSystems = nullptr;
 	EventDispatcher* m_UIEventDispatcher = nullptr;
 	EventDispatcher* m_KeyDispatcher = nullptr;
 	EventDispatcher* m_MouseDispatcher = nullptr;

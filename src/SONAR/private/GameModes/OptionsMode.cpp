@@ -1,3 +1,5 @@
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "GameModes/OptionsMode.hpp"
 #include "Base/EventDispatcher.hpp"
 #include "Base/ResourceManager.hpp"
@@ -26,10 +28,10 @@ OptionsMode::~OptionsMode()
 
 void OptionsMode::Update()
 {
-	ClearBackground(PURPLE);
-	DrawTexture(Background, 0, 0, WHITE);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ClearBackground(Sonar::PURPLE);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTexture(Background, 0, 0, Sonar::WHITE);
 
-	float DeltaTime = GetFrameTime();
+	float DeltaTime = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetFrameTime();
 
 
 	Back->Tick(DeltaTime);
@@ -46,13 +48,13 @@ void OptionsMode::BeginPlay()
 
 	int CenterX = GetRuntimeContext().GetScreenWidth() / 2;
 
-	Rectangle ApplyRec = { GetScreenWidth() - (ButtonWidth + Padding), GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
+	Sonar::Rectangle ApplyRec = { GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth() - (ButtonWidth + Padding), GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
 	Apply = std::make_shared<Button>();
-	Apply->Construct(ApplyRec, "Apply", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Apply");
+	Apply->Construct(ApplyRec, "Apply", Sonar::RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Apply");
 
-	Rectangle BackRec = { Padding, GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
+	Sonar::Rectangle BackRec = { Padding, GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight() - (ButtonHeight + Padding), ButtonWidth, ButtonHeight };
 	Back = std::make_shared<Button>();
-	Back->Construct(BackRec, "Back", RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Back");
+	Back->Construct(BackRec, "Back", Sonar::RED).CenterText().SetEventDispatcher(UIDispatcher).SetEventPayload("Back");
 
 	SetUpEvents();
 }

@@ -4,7 +4,7 @@
 #include <utility>
 #include <iomanip>
 
-SharedTexture2D::SharedTexture2D(Texture2D* TextureHandle, TextureResource* Outter)
+SharedTexture2D::SharedTexture2D(Sonar::Texture2D* TextureHandle, TextureResource* Outter)
 	:m_Texture(TextureHandle), m_Outter(Outter)
 {
 	if (Outter)
@@ -112,7 +112,7 @@ SharedTexture2D& SharedTexture2D::operator=(SharedTexture2D&& Other)
 	return *this;
 }
 
-SharedTexture2D::operator Texture2D()
+SharedTexture2D::operator Sonar::Texture2D()
 {
 	if (!m_IsInitialized || m_Outter == nullptr || m_Texture == nullptr)
 	{
@@ -124,7 +124,7 @@ SharedTexture2D::operator Texture2D()
 	return *m_Texture;
 }
 
-SharedTexture2D::operator Texture2D* ()
+SharedTexture2D::operator Sonar::Texture2D* ()
 {
 	if (!m_IsInitialized || m_Outter == nullptr || m_Texture == nullptr)
 	{
@@ -138,5 +138,5 @@ SharedTexture2D::operator Texture2D* ()
 
 bool SharedTexture2D::isValid() const
 {
-	return m_IsInitialized && m_Outter != nullptr && m_Texture != nullptr && m_Texture->id != 0;
+	return m_IsInitialized && m_Outter != nullptr && m_Texture != nullptr && m_Texture->IsValid();
 }

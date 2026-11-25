@@ -1,3 +1,6 @@
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Audio/AudioSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "GameModes/Menu.hpp"
 #include "Base/EventDispatcher.hpp"
 #include "Base/Factory.hpp"
@@ -21,56 +24,56 @@ MenuMode::MenuMode()
 
 MenuMode::~MenuMode()
 {
-	StopMusicStream(MenuMusic);
-	UnloadMusicStream(MenuMusic);
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().StopMusicStream(MenuMusic);
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().UnloadMusicStream(MenuMusic);
 	GetRuntimeContext().GetAllPurposeDispatcher().RemoveListener("WindowsResize Menu", AllPurposeEvent::StaticClass());
 }
 
 void MenuMode::Update()
 {
-	ClearBackground(GREEN);
-	DrawTexture(Background,0,0,WHITE);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().ClearBackground(Sonar::GREEN);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTexture(Background,0,0,Sonar::WHITE);
 	GameMode::Update();
-	UpdateMusicStream(MenuMusic);
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().UpdateMusicStream(MenuMusic);
 }
 
 void MenuMode::BeginPlay()
 {
 	// Audio device should be initialized once at application startup, not per GameMode
 	// InitAudioDevice(); // Removed to prevent conflicts when creating multiple MenuMode instances
-	
+
 	const std::string MenuMusicPath = GetRuntimeContext().ResolveResourcePath("music/Untitled.mp3");
-	MenuMusic = LoadMusicStream(MenuMusicPath.c_str());
-	MenuMusic.looping = true;
-	PlayMusicStream(MenuMusic);
-	SetMusicVolume(MenuMusic, 0.02f);
+	MenuMusic = GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().LoadMusicStream(MenuMusicPath.c_str());
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().SetMusicLooping(MenuMusic, true);
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().PlayMusicStream(MenuMusic);
+	GameInstance::GetRuntimeContext().GetSubSystem<AudioSubSystem>().SetMusicVolume(MenuMusic, 0.02f);
 
 	UIDispatcher = std::make_shared<EventDispatcher>();
 	UIDispatcher->m_Name = "UIDispatcher Menu";
 
 	BackgroundResource = GetRuntimeContext().GetResource("BackgroundMenu");
-	BackgroundResource->SetHeight(GetScreenHeight());
-	BackgroundResource->SetWidth(GetScreenWidth());
-	BackgroundResource->SetWidth(GetScreenWidth());
+	BackgroundResource->SetHeight(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight());
+	BackgroundResource->SetWidth(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth());
+	BackgroundResource->SetWidth(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth());
 	Background = BackgroundResource->LoadTexture();
 
 	TextureResource* ButtonResource = GetRuntimeContext().GetResource("ButtonImage");
 	SharedTexture2D SpriteButton = ButtonResource->LoadTexture();
-	NPatchInfo ninePatchInfo1 = ButtonResource->nPatchInfo.value();
+	Sonar::NPatchInfo ninePatchInfo1 = ButtonResource->nPatchInfo.value();
 
 	int CenterX = GetRuntimeContext().GetScreenWidth() / 2;
 
 #if DEBUG
 
-	Rectangle SandboxRec = { CenterX - ButtonWidth / 2, 100, ButtonWidth, ButtonHeight };
+	Sonar::Rectangle SandboxRec = { CenterX - ButtonWidth / 2, 100, ButtonWidth, ButtonHeight };
 	Sandbox = NewObject<Button>();
-	Sandbox.TryLoad()->Construct(SandboxRec, "Sandbox", RED)
+	Sandbox.TryLoad()->Construct(SandboxRec, "Sandbox", Sonar::RED)
 		.SetTexture(SpriteButton)
 		.CenterText()
 		.SetEventDispatcher(UIDispatcher)
 		.SetEventPayload("Sandbox")
 		.UseNPatchFeature(true)
-		.UpdateTextColor(RED)
+		.UpdateTextColor(Sonar::RED)
 		.UseTexture(true)
 		.SetNPatchInfo(ninePatchInfo1)
 		.OnHover([this, ButtonResource](Button* ButtonClass)
@@ -84,11 +87,11 @@ void MenuMode::BeginPlay()
 
 #endif
 
-	Rectangle StartGameRec = { CenterX - ButtonWidth / 2, 200, ButtonWidth, ButtonHeight };
+	Sonar::Rectangle StartGameRec = { CenterX - ButtonWidth / 2, 200, ButtonWidth, ButtonHeight };
 	StartGame = NewObject<Button>();
-	StartGame.TryLoad()->Construct(StartGameRec, "Start Game", RED)
+	StartGame.TryLoad()->Construct(StartGameRec, "Start Game", Sonar::RED)
 		.CenterText()
-		.UpdateTextColor(RED)
+		.UpdateTextColor(Sonar::RED)
 		.SetTexture(SpriteButton)
 		.UseNPatchFeature(true)
 		.UseTexture(true)
@@ -102,13 +105,13 @@ void MenuMode::BeginPlay()
 				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo.value());
 			});
 
-	Rectangle OptionRec = { CenterX - ButtonWidth / 2, 300, ButtonWidth, ButtonHeight };
+	Sonar::Rectangle OptionRec = { CenterX - ButtonWidth / 2, 300, ButtonWidth, ButtonHeight };
 	Option = NewObject<Button>();
-	Option.TryLoad()->Construct(OptionRec, "Option", RED)
+	Option.TryLoad()->Construct(OptionRec, "Option", Sonar::RED)
 		.CenterText()
 		.SetEventDispatcher(UIDispatcher)
 		.SetEventPayload("Option")
-		.UpdateTextColor(RED)
+		.UpdateTextColor(Sonar::RED)
 		.SetTexture(SpriteButton)
 		.UseNPatchFeature(true)
 		.UseTexture(true)
@@ -122,12 +125,12 @@ void MenuMode::BeginPlay()
 				ButtonClass->SetNPatchInfo(ButtonResource->nPatchInfo.value());
 			});
 
-	Rectangle ExitRec = { CenterX - ButtonWidth / 2, 400, ButtonWidth, ButtonHeight };
+	Sonar::Rectangle ExitRec = { CenterX - ButtonWidth / 2, 400, ButtonWidth, ButtonHeight };
 	Exit = NewObject<Button>();
-	Exit.TryLoad()->Construct(ExitRec, "Exit", RED).CenterText()
+	Exit.TryLoad()->Construct(ExitRec, "Exit", Sonar::RED).CenterText()
 		.SetEventDispatcher(UIDispatcher)
 		.SetEventPayload("Exit")
-		.UpdateTextColor(RED)
+		.UpdateTextColor(Sonar::RED)
 		.SetTexture(SpriteButton)
 		.UseNPatchFeature(true)
 		.UseTexture(true)
@@ -196,7 +199,7 @@ void MenuMode::SetUpEvents()
 				return;
 			}
 
-			
+
 
 			auto CastedEvent = std::dynamic_pointer_cast<UIEvent>(Event);
 			if (CastedEvent->Payload == "Exit")

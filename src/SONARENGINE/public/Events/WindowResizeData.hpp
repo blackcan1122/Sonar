@@ -2,7 +2,7 @@
 #include "Base/EventData.hpp"
 
 
-class WindowResizeData : public EventData
+class SONARENGINE_API WindowResizeData : public EventData
 {
 	AUTOBODY(WindowResizeData, EventData)
 public:

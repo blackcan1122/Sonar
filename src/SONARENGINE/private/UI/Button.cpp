@@ -1,13 +1,17 @@
+#include "Base/Math.hpp"
+#include "Rendering/GraphicSubSystem.hpp"
+#include "Controls/ControlSubSystem.hpp"
+#include "Base/GameInstance.h"
 #include "UI/Button.h"
 #include "Events/UIEvent.h"
 #include "Base/EventDispatcher.hpp"
 
-Button::Button(int X, int Y, int Width, int Height, std::string InitialText, Color BackgroundColor)
+Button::Button(int X, int Y, int Width, int Height, std::string InitialText, Sonar::Color BackgroundColor)
 {
 	Construct(X, Y, Width, Height, InitialText, BackgroundColor);
 }
 
-Button& Button::Construct(Rectangle Dim, std::string InitialText, Color BackgroundColor)
+Button& Button::Construct(Sonar::Rectangle Dim, std::string InitialText, Sonar::Color BackgroundColor)
 {
 	ButtonDim = Dim;
 	m_Text = InitialText;
@@ -15,7 +19,7 @@ Button& Button::Construct(Rectangle Dim, std::string InitialText, Color Backgrou
 	return *this;
 }
 
-Button& Button::Construct(Rectangle Dim, std::string InitialText, Color BackgroundColor, bool Rounded, float Roundness)
+Button& Button::Construct(Sonar::Rectangle Dim, std::string InitialText, Sonar::Color BackgroundColor, bool Rounded, float Roundness)
 {
 	ButtonDim = Dim;
 	m_Text = InitialText;
@@ -25,15 +29,15 @@ Button& Button::Construct(Rectangle Dim, std::string InitialText, Color Backgrou
 	return *this;
 }
 
-Button& Button::Construct(int X, int Y, int Width, int Height, std::string InitialText, Color BackgroundColor)
+Button& Button::Construct(int X, int Y, int Width, int Height, std::string InitialText, Sonar::Color BackgroundColor)
 {
-	Rectangle TempRec = { X, Y, Width, Height };
+	Sonar::Rectangle TempRec = { X, Y, Width, Height };
 	return Construct(TempRec, InitialText, BackgroundColor);
 }
 
-Button& Button::Construct(int X, int Y, int Width, int Height, std::string InitialText, Color BackgroundColor, bool Rounded, float Roundness)
+Button& Button::Construct(int X, int Y, int Width, int Height, std::string InitialText, Sonar::Color BackgroundColor, bool Rounded, float Roundness)
 {
-	Rectangle TempRec = { X, Y, Width, Height };
+	Sonar::Rectangle TempRec = { X, Y, Width, Height };
 	return Construct(TempRec, InitialText, BackgroundColor, Rounded, Roundness);
 }
 
@@ -58,7 +62,7 @@ Button& Button::SetEventPayload(std::string Payload)
 	return *this;
 }
 
-Button& Button::UpdateTextPosition(Vector2 NewPos)
+Button& Button::UpdateTextPosition(Sonar::Vector2 NewPos)
 {
 	TextPosition = NewPos;
 	return *this;
@@ -75,7 +79,7 @@ Button& Button::CenterText()
 		pos++;
 	}
 
-	int textWidth = MeasureText(m_Text.c_str(), FontSize);
+	int textWidth = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().MeasureText(m_Text.c_str(), FontSize);
 	int LineHeight = FontSize * LineCount;
 
 	float XPosition = (ButtonDim.width - textWidth) / 2.0f;
@@ -94,7 +98,7 @@ Button& Button::UpdateTextPosition(int X, int Y)
 	return *this;
 }
 
-Button& Button::UpdateButtonPosition(Vector2 NewPos)
+Button& Button::UpdateButtonPosition(Sonar::Vector2 NewPos)
 {
 	ButtonDim.x = NewPos.x;
 	ButtonDim.y = NewPos.y;
@@ -108,7 +112,7 @@ Button& Button::UpdateButtonPosition(int X, int Y)
 	return *this;
 }
 
-Button& Button::UpdateColor(Color NewColor)
+Button& Button::UpdateColor(Sonar::Color NewColor)
 {
 	m_BacgroundColor = NewColor;
 	return *this;
@@ -120,7 +124,7 @@ Button& Button::UpdateText(std::string NewText)
 	return *this;
 }
 
-Button& Button::UpdateTextColor(Color NewTextColor)
+Button& Button::UpdateTextColor(Sonar::Color NewTextColor)
 {
 	m_TextColor = NewTextColor;
 	return *this;
@@ -132,10 +136,10 @@ Button& Button::UpdateFontSize(int NewFontSize)
 	return *this;
 }
 
-Button& Button::SetStickyPosition(Vector2 StickyPos)
+Button& Button::SetStickyPosition(Sonar::Vector2 StickyPos)
 {
-	const int ScreenWidth = GetScreenWidth();
-	const int ScreenHeight = GetScreenHeight();
+	const int ScreenWidth = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth();
+	const int ScreenHeight = GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight();
 
 	m_StickyPosition = StickyPos;
 	UpdateButtonPosition(StickyPos);
@@ -153,7 +157,7 @@ Button& Button::SetStickyPosition(int X, int Y)
 
 Button& Button::CalculateRelativePosition()
 {
-	Vector2 CurrentPos = { static_cast<float>(GetScreenWidth()) + m_OffsetPosition.x, static_cast<float>(GetScreenHeight()) + m_OffsetPosition.y };
+	Sonar::Vector2 CurrentPos = { static_cast<float>(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenWidth()) + m_OffsetPosition.x, static_cast<float>(GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().GetScreenHeight()) + m_OffsetPosition.y };
 	UpdateButtonPosition(CurrentPos);
 
 	return *this;
@@ -171,9 +175,9 @@ Button& Button::SetTexture(SharedTexture2D Texture)
 	return *this;
 }
 
-Button& Button::SetNPatchInfo(NPatchInfo NPatchInfo)
+Button& Button::SetNPatchInfo(Sonar::NPatchInfo PatchInfo)
 {
-	m_NpatchTextureInfo = NPatchInfo;
+	m_NpatchTextureInfo = PatchInfo;
 	return *this;
 }
 
@@ -208,14 +212,14 @@ std::shared_ptr<UIEvent> Button::OnClickEvent()
 	return EventUI;
 }
 
-bool Button::IsClicked(Vector2 MousePosition, bool IsHovered)
+bool Button::IsClicked(Sonar::Vector2 MousePosition, bool IsHovered)
 {
-	return IsMouseButtonPressed(0) && IsHovered;
+	return GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsMouseButtonPressed(0) && IsHovered;
 }
 
 void Button::Tick(float DeltaTime)
 {
-	bool isHovered = (CheckCollisionPointRec(GetMousePosition(), ButtonDim) && IsCursorOnScreen());
+	bool isHovered = (Sonar::CheckCollisionPointRec(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition(), ButtonDim) && GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().IsCursorOnScreen());
 
 	if (isHovered && m_WasLastHovered == false && HoverCallback)
 	{
@@ -228,7 +232,7 @@ void Button::Tick(float DeltaTime)
 
 	m_WasLastHovered = isHovered;
 
-	if (IsClicked(GetMousePosition(), isHovered))
+	if (IsClicked(GameInstance::GetRuntimeContext().GetSubSystem<ControlSubSystem>().GetMousePosition(), isHovered))
 	{
 		if (UsedEventDispatcher)
 		{
@@ -241,24 +245,24 @@ void Button::Tick(float DeltaTime)
 	{
 		if (m_IsRounded)
 		{
-			DrawRectangleRounded(ButtonDim, m_Roundness, 32, m_BacgroundColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangleRounded(ButtonDim, m_Roundness, 32, m_BacgroundColor);
 		}
 		else
 		{
-			DrawRectangle(ButtonDim.x, ButtonDim.y, ButtonDim.width, ButtonDim.height, m_BacgroundColor);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawRectangle(ButtonDim.x, ButtonDim.y, ButtonDim.width, ButtonDim.height, m_BacgroundColor);
 		}
 	}
 	else
 	{
 		if (m_UseNpatch)
 		{
-			DrawTextureNPatch(m_Texture, m_NpatchTextureInfo, ButtonDim, { 0, 0 }, 0, WHITE);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTextureNPatch(m_Texture, m_NpatchTextureInfo, ButtonDim, { 0, 0 }, 0, Sonar::WHITE);
 		}
 		else
 		{
-			DrawTexture(m_Texture, ButtonDim.x, ButtonDim.y, WHITE);
+			GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawTexture(m_Texture, ButtonDim.x, ButtonDim.y, Sonar::WHITE);
 		}
 	}
 
-	DrawText(m_Text.c_str(), ButtonDim.x + TextPosition.x, ButtonDim.y + TextPosition.y, FontSize, m_TextColor);
+	GameInstance::GetRuntimeContext().GetSubSystem<GraphicSubSystem>().DrawText(m_Text.c_str(), ButtonDim.x + TextPosition.x, ButtonDim.y + TextPosition.y, FontSize, m_TextColor);
 }

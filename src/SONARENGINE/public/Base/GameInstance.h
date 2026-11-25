@@ -8,6 +8,9 @@
 #include "StateMachines/GameModeSwitcher.h"
 #include "Base/GameThreadQueue.hpp"
 
+#include "Base/SSubSystem.hpp"
+#include "Base/SubSystemRegistry.hpp"
+
 class AssetRegistry;
 
 struct WindowProperties
@@ -64,7 +67,7 @@ struct WindowProperties
  * Usage:
 	 1. Initialize the game instance:
 		GameInstance::InitGameInstance(WindowProperties(parameters));
- 
+
 	 2. Use `GetInstance()` to retrieve the global instance for accessing features like :
 	-`GetCurrentGameMode()` to access the active game mode.
 	 -`LoadAssetFromSoftObjectPath()` to safely load assets.
@@ -86,7 +89,7 @@ struct WindowProperties
 	-When using std::shared_ptr or SoftObjectPath and SharedTexure2D this will happen automatically, when you allocate memory yourself, you are also responsible for it
 		  -**Event Dispatching * *:
 		 -Use the provided dispatchers for decoupled communication, avoiding direct dependencies between systems.
-		 
+
 */
 
 class SONARENGINE_API GameInstance
@@ -97,6 +100,8 @@ private:
 	~GameInstance() = default;
 
 	static GameInstance* g_Instance;
+    SubSystemRegistry m_SubSystems;
+    void Shutdown();
 
 protected:
 
@@ -131,7 +136,7 @@ public:
 	static EventDispatcher UIEventDispatcher;
 	static EventDispatcher KeyDispatcher;
 	static EventDispatcher MouseDispatcher;
-  
+
 	static EventDispatcher SaveStateDispatcher;
 	static EventDispatcher AllPurposeDispatcher;
 
@@ -163,6 +168,24 @@ public:
 
 	static GameMode* GetCurrentGameMode();
 	static std::shared_ptr<AssetRegistry> GetAssetRegistry();
+
+    void RegisterSubSystem(std::unique_ptr<SSubSystem> SubSystem);
+    template<typename T, typename... Args>
+    T& RegisterSubSystem(Args&&... Arguments)
+    {
+        static_assert(std::is_base_of_v<SSubSystem, T>);
+        auto SubSystem = std::make_unique<T>(std::forward<Args>(Arguments)...);
+        auto& Instance = *SubSystem;
+        RegisterSubSystem(std::move(SubSystem));
+        return Instance;
+    }
+    SSubSystem* FindSubSystem(const SClass* Class) const { return m_SubSystems.FindSubSystem(Class); }
+    SSubSystem& GetSubSystem(const SClass* Class) const { return m_SubSystems.GetSubSystem(Class); }
+    template<typename T>
+    T& GetSubSystem(const SClass* Class = T::StaticClass()) const
+    {
+        return m_SubSystems.GetSubSystem<T>(Class);
+    }
 
 
 	static EventDispatcher& GetUIEventDispatcher();

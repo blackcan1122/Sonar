@@ -1,4 +1,5 @@
 #pragma once
+#include "Base/Export.hpp"
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -12,12 +13,12 @@ public: \
 	using Super = Parent; \
 	virtual SClass* GetStaticClass() override { return StaticClass(); } \
 	static SClass* StaticClass() { \
-		static SClass instance(Parent::StaticClass(), #Base); \
+		static SClass* instance = SClass::GetOrCreate(Parent::StaticClass(), #Base); \
 		if constexpr (EnableReflection) \
 		{ \
 			ThisClass::RegisterReflection(); \
 		} \
-		return &instance; \
+		return instance; \
 	} \
 	static void RegisterReflection(); \
 private:
@@ -34,8 +35,8 @@ private: \
 public: \
 	virtual SClass* GetStaticClass() { return StaticClass(); } \
 	static SClass* StaticClass() { \
-		static SClass instance(nullptr, #Base); \
-		return &instance; \
+		static SClass* instance = SClass::GetOrCreate(nullptr, #Base); \
+		return instance; \
 	} \
 private:
 
@@ -106,13 +107,3 @@ public: \
 AUTOBODY(ClassName, BaseClass)
 
 #define END_CLASS };
-
-#if defined(_WIN32) && defined(SONARENGINE_SHARED)
-#if defined(SONARENGINE_BUILD)
-#define SONARENGINE_API __declspec(dllexport)
-#else
-#define SONARENGINE_API __declspec(dllimport)
-#endif
-#else
-#define SONARENGINE_API
-#endif
