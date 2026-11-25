@@ -6,12 +6,12 @@
     {"name":"linux-debug","generator":"Ninja","binaryDir":"${sourceDir}/out/linux-debug","cacheVariables":{"CMAKE_BUILD_TYPE":"Debug","CMAKE_C_COMPILER":"gcc","CMAKE_CXX_COMPILER":"g++"}},
     {"name":"linux-release","inherits":"linux-debug","binaryDir":"${sourceDir}/out/linux-release","cacheVariables":{"CMAKE_BUILD_TYPE":"Release"}},
     {
-  "name": "msvc",
+"name": "msvc",
   "generator": "Visual Studio 17 2022",
   "architecture": "x64",
   "binaryDir": "${sourceDir}/out/msvc",
   "cacheVariables": {
-    "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist/msvc-release"
+    "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist/msvc"
   }
 }
   ],
@@ -23,10 +23,20 @@
     {"name":"linux-debug","configurePreset":"linux-debug"},
     {"name":"linux-release","configurePreset":"linux-release"},
     {
-  "name": "msvc-dist",
+  "name": "msvc-dist-debug",
   "configurePreset": "msvc",
-  "configuration": "Release",
+  "configuration": "Debug",
   "targets": ["INSTALL"]
+},
+{
+  "name": "msvc-dist-release",
+  "inherits": "msvc-dist-debug",
+  "configuration": "Release"
+},
+{
+  "name": "msvc-dist-relwithdebinfo",
+  "inherits": "msvc-dist-debug",
+  "configuration": "RelWithDebInfo"
 }
   ]
 }

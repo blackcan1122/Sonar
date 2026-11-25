@@ -117,6 +117,10 @@ else()
   target_link_options(SONARENGINE PRIVATE "LINKER:--exclude-libs,ALL")
 endif()
 
+set_target_properties(SONARENGINE PROPERTIES
+    DEBUG_POSTFIX "_d"
+)
+
 # -----------------------------------------------------------------------------
 # Game target
 # -----------------------------------------------------------------------------
@@ -146,11 +150,13 @@ endif()
 # -----------------------------------------------------------------------------
 # Installation and packaging
 # -----------------------------------------------------------------------------
-install(TARGETS SONARENGINE EXPORT SONARENGINETargets
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+install(TARGETS SONARENGINE
+    EXPORT SONARENGINETargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
 )
+
 install(DIRECTORY src/SONARENGINE/public/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(EXPORT SONARENGINETargets NAMESPACE SONARENGINE:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SONARENGINE)
 
